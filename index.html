@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b16">
+<meta name="description" content="izzi TV Pocoyito: televisión en vivo, guía de canales, películas y series.">
+<meta name="application-name" content="izzi TV Pocoyito">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="izzi Pocoyito">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon.svg">
+<link rel="apple-touch-icon" href="./icons/icon.svg"><title>izzi TV Pocoyito | Televisión, películas y series</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20"></script>
+<style>
+:root{--bg:#080b16;--panel:#101629;--panel2:#141e35;--blue:#1468ff;--cyan:#19c8ff;--red:#ef3340;--muted:#9ba8c4;--white:#f7f9ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#173b80 0,transparent 48%),var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,5vw,72px);border-bottom:1px solid #ffffff18;background:#080b16dd;backdrop-filter:blur(12px);position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:13px;font-weight:900;letter-spacing:-1px}.mark{width:42px;height:42px;display:grid;place-items:center;background:linear-gradient(135deg,var(--blue),#1c2d7d);clip-path:polygon(0 0,100% 0,78% 100%,0 78%);font-size:20px;font-style:italic}.brand small{display:block;color:#9eb8ff;font-size:10px;letter-spacing:3px;margin-top:3px}.live{display:flex;align-items:center;gap:8px;color:#fff;font-size:12px;font-weight:bold;letter-spacing:1.5px}.dot{width:8px;height:8px;border-radius:50%;background:#ff334b;box-shadow:0 0 12px #ff334b}
+main{width:min(1260px,94vw);margin:36px auto 60px}.eyebrow{color:#6fa5ff;font-size:11px;letter-spacing:3px;font-weight:800}.headline{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:12px 0 23px}.headline h1{font-size:clamp(32px,5vw,56px);line-height:.98;letter-spacing:-2.5px;margin:0;font-weight:900}.headline h1 span{color:#5ba5ff}.headline p{color:var(--muted);margin:0 0 5px;font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,.85fr);gap:18px;align-items:start}.player-shell{background:#05070d;border:1px solid #ffffff20;border-radius:18px;overflow:hidden;box-shadow:0 24px 80px #0009,0 0 0 1px #176bff22}.player-top{min-height:48px;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(90deg,#101a35,#11182a);border-bottom:1px solid #ffffff16}.channel{display:flex;align-items:center;gap:10px;font-weight:800;font-size:13px}.channel-badge{background:linear-gradient(135deg,#166cff,#153c9c);padding:6px 9px;border-radius:5px;font-size:11px;letter-spacing:1px}.quality{font-size:10px;color:#b6c5e6;letter-spacing:1px}.screen{position:relative;aspect-ratio:16/9;background:radial-gradient(ellipse at center,#182b50,#05070d 68%);display:grid;place-items:center}video{width:100%;height:100%;object-fit:contain;background:#000}.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;pointer-events:none}.overlay.hidden{display:none}.big-logo{font-size:clamp(42px,8vw,76px);font-weight:1000;letter-spacing:-5px;font-style:italic;text-shadow:0 8px 35px #167bff88}.big-logo span{color:#4e9bff}.overlay p{color:#b8c7e5;font-size:13px;margin:8px 0 0}.spinner{width:25px;height:25px;border:3px solid #ffffff30;border-top-color:#55aaff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}@keyframes spin{to{transform:rotate(360deg)}}
+.controls{display:flex;align-items:center;gap:9px;padding:12px 14px;background:#0b1020;border-top:1px solid #ffffff14;flex-wrap:wrap}.control{border:0;background:#172442;color:white;border-radius:9px;padding:10px 12px;cursor:pointer;font-weight:700}.control:hover{background:#2054a8}.control.primary{background:linear-gradient(135deg,#126bff,#1646b2)}.spacer{flex:1}.status{font-size:11px;color:#aebbd5}.volume{width:80px;accent-color:#3989ff}.info{margin-top:14px;padding:16px 18px;background:linear-gradient(120deg,#101a33,#0d1222);border:1px solid #ffffff16;border-radius:14px}.info h2{font-size:14px;margin:0 0 6px}.info p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
+.catalog{background:#0d1425;border:1px solid #ffffff1b;border-radius:16px;overflow:hidden}.catalog-head{padding:16px;border-bottom:1px solid #ffffff14}.catalog-head h2{font-size:17px;margin:0 0 5px}.catalog-head p{font-size:11px;color:var(--muted);margin:0}.search{width:100%;margin-top:13px;background:#080e1d;border:1px solid #ffffff20;border-radius:9px;color:white;padding:11px 12px;font-size:13px;outline:none}.search:focus{border-color:#3989ff}.tabs{display:flex;gap:7px;padding:12px 14px 0;flex-wrap:wrap}.tab{border:1px solid #ffffff20;background:#121d34;color:#c8d4eb;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:700;cursor:pointer}.tab.active{background:#1458c9;border-color:#3989ff;color:white}.count{padding:10px 15px 7px;color:#8192b4;font-size:11px}.channels{max-height:560px;overflow:auto;padding:0 9px 10px}.channel-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px;border:1px solid transparent;border-radius:10px;background:transparent;color:white;text-align:left;cursor:pointer}.channel-item:hover{background:#16233d}.channel-item.selected{background:#142b50;border-color:#286dd0}.logo{width:46px;height:36px;flex:0 0 46px;object-fit:contain;background:#fff;border-radius:6px;padding:3px}.logo-fallback{display:grid;place-items:center;background:#1b2d50;color:#a9c9ff;font-weight:900;font-size:12px}.ch-text{min-width:0;flex:1}.ch-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ch-meta{font-size:10px;color:#90a2c4;margin-top:4px}.tag{font-size:9px;border-radius:4px;padding:4px 5px;background:#153d78;color:#a9d2ff}.tag.spanish{background:#3b263c;color:#ffc5d0}.empty{padding:30px 15px;text-align:center;color:#9ba8c4;font-size:12px}.foot{text-align:center;color:#71809e;font-size:11px;padding:22px 20px 28px;line-height:1.7}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.channels{max-height:420px}.headline{display:block}.headline p{margin-top:10px}}@media(max-width:600px){header{height:65px}.live{font-size:9px}.brand{font-size:14px}main{margin:26px auto 42px}.player-top{font-size:11px}.controls{gap:6px;padding:9px}.control{padding:9px 10px}.volume{width:65px}.status{font-size:10px}}
+
+/* Interfaz inspirada en plataformas de TV de paga: navegación superior, morado y azul, paneles limpios */
+:root{--bg:#080b18;--panel:#11172b;--panel2:#171f3a;--blue:#5b45ef;--cyan:#19b8ff;--red:#f04468;--muted:#a4acc4;--white:#f8f9ff}
+body{background:radial-gradient(ellipse at 10% 0%,#29205f 0,transparent 35%),radial-gradient(ellipse at 90% 10%,#102e63 0,transparent 35%),#080b18}
+header{height:72px;background:#090d1feF;border-bottom:1px solid #8b82ff35;box-shadow:0 8px 30px #0005}
+.mark{clip-path:none;border-radius:12px;background:linear-gradient(135deg,#754cff,#168bff);box-shadow:0 5px 22px #654cff66}
+.brand small{color:#a9a1ff;letter-spacing:2px}
+.live{background:#171b35;padding:9px 13px;border-radius:22px;border:1px solid #ffffff18}
+main{width:min(1380px,95vw);margin:28px auto 50px}
+.eyebrow{color:#a79aff;letter-spacing:2px}
+.headline{margin:10px 0 20px}.headline h1{font-size:clamp(28px,4vw,43px);letter-spacing:-1.5px}.headline h1 span{background:linear-gradient(90deg,#9a83ff,#37baff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.layout{grid-template-columns:minmax(0,1.8fr) minmax(300px,.8fr);gap:16px}
+.player-shell,.catalog,.info{border-radius:13px;border-color:#ffffff20;box-shadow:0 18px 55px #0005}
+.player-top{background:linear-gradient(90deg,#171b3b,#101b35);min-height:54px}
+.channel-badge{background:linear-gradient(135deg,#704cff,#257fff);border-radius:7px}
+.screen{background:radial-gradient(ellipse at center,#20285a,#05070d 72%)}
+.big-logo{font-size:clamp(38px,7vw,66px);text-shadow:0 8px 35px #795dff88}.big-logo span{color:#8f83ff}
+.controls{background:#10152b}.control{background:#202747;border-radius:7px}.control:hover{background:#3d3b83}.control.primary{background:linear-gradient(120deg,#704cff,#167bff)}
+.info{background:linear-gradient(120deg,#171a3a,#101a30)}
+.catalog{background:#10162b}.catalog-head{background:linear-gradient(120deg,#191d3d,#111b31)}
+.search{background:#090f21;border-color:#ffffff25}.search:focus{border-color:#8170ff}
+.tab{background:#1a2140;border-radius:7px}.tab.active{background:linear-gradient(120deg,#6847ed,#176fe3);border-color:#8875ff}
+.channel-item{border-radius:8px}.channel-item:hover{background:#1d2949}.channel-item.selected{background:#252452;border-color:#7763ff}
+.tag{background:#30276a;color:#d1c8ff}.tag.spanish{background:#243b59;color:#a9ddff}.tag.telemundo{background:#51233d;color:#ffd1e4;font-size:9px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}}
+
+/* Pantalla de inicio tipo decodificador de TV de paga */
+.home-screen{width:min(1180px,96vw);margin:18px auto 34px;background:#11121c;border:1px solid #333544;border-radius:16px;overflow:hidden;box-shadow:0 24px 80px #0009}
+.home-top{height:54px;background:linear-gradient(90deg,#242632,#171923);display:flex;align-items:center;gap:18px;padding:0 26px;color:#c6c7d2;font-size:12px}
+.home-brand{font-weight:900;letter-spacing:-.4px;margin-right:auto;color:#f3f4f8}.home-brand small{font-size:9px;color:#888b9b;margin-left:5px}
+.home-top .top-icon{font-size:16px;color:#bfc3d3}.home-clock{text-align:right;line-height:1.35;font-size:12px}
+.home-feature{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:18px 24px 12px;background:#191b27}
+.feature-tile{height:142px;border:0;position:relative;overflow:hidden;color:#fff;text-align:left;padding:14px;cursor:pointer;background:linear-gradient(135deg,#37385c,#14182d);display:flex;flex-direction:column;justify-content:space-between}
+.feature-tile:nth-child(2){background:linear-gradient(135deg,#a56a25,#182a55 70%,#101426)}
+.feature-tile:nth-child(3){background:linear-gradient(135deg,#235f74,#d18b49 55%,#25294c)}
+.feature-tile strong{font-size:18px;letter-spacing:-.5px;text-shadow:0 2px 8px #000}.feature-tile span{font-size:10px;color:#fff;background:#0008;padding:5px 7px;align-self:flex-start}
+.feature-tile b{font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.home-apps{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;padding:0 24px 20px;background:#191b27}
+.app-tile{height:70px;border:0;background:#080a12;color:white;cursor:pointer;font-weight:900;font-size:14px;display:grid;place-items:center;text-align:center;transition:.15s}
+.app-tile:hover,.feature-tile:hover{filter:brightness(1.25);outline:2px solid #55baff;outline-offset:-2px}
+.app-tile:nth-child(2){color:#8ab5ff;font-family:Georgia,serif;font-style:italic}.app-tile:nth-child(3){color:#b7a4ff}.app-tile:nth-child(4){color:#f3d36a}.app-tile:nth-child(5){color:#f08ba8}.app-tile:nth-child(6){color:#78d5d0}
+.home-nav{height:62px;background:#20222d;display:flex;justify-content:center;align-items:stretch;gap:0;border-top:1px solid #ffffff15}
+.home-nav button{min-width:145px;border:0;background:transparent;color:#bfc2cf;font-size:10px;font-weight:800;cursor:pointer}
+.home-nav button.active,.home-nav button:hover{background:#20b9ef;color:#fff}
+.home-note{padding:12px 24px;background:#171923;color:#858a9d;font-size:10px}
+#tvPage{display:none}#tvPage.active{display:block}body:not(.watching) footer{display:none}
+.tv-toolbar{width:min(1380px,95vw);margin:18px auto 0;display:flex;align-items:center;gap:10px}
+.tv-toolbar button{border:1px solid #ffffff25;background:#171d35;color:#fff;padding:9px 13px;border-radius:8px;cursor:pointer;font-weight:700}
+@media(max-width:700px){.home-feature{grid-template-columns:1fr;padding:12px}.feature-tile{height:100px}.home-apps{grid-template-columns:repeat(3,1fr);padding:0 12px 14px}.home-top{padding:0 13px}.home-nav button{min-width:0;flex:1;font-size:9px}.home-nav{height:54px}.tv-toolbar{margin-top:12px}}
+
+
+/* Guía electrónica y navegación estilo decodificador */
+.tv-actions{display:flex;gap:8px;flex-wrap:wrap;margin:14px auto;width:min(1380px,95vw)}
+.tv-actions button,.guide-toolbar button{border:1px solid #ffffff24;background:#171d35;color:#fff;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}
+.tv-actions button:hover,.guide-toolbar button:hover{background:#34306d;border-color:#8c7cff}
+.guide-modal{position:fixed;inset:0;z-index:30;background:#070b16f2;backdrop-filter:blur(12px);display:none;color:#fff;padding:clamp(10px,2vw,28px);overflow:auto}
+.guide-modal.open{display:block}
+.guide-wrap{max-width:1450px;margin:auto;background:#10172b;border:1px solid #ffffff25;border-radius:16px;overflow:hidden;box-shadow:0 25px 90px #000b}
+.guide-head{display:flex;align-items:center;gap:14px;padding:17px 20px;background:linear-gradient(90deg,#24204f,#142b50);flex-wrap:wrap}
+.guide-head h2{font-size:20px;margin:0}.guide-head small{color:#b8c4e5}
+.guide-toolbar{display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap}
+.guide-body{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:420px}
+.guide-list{overflow:auto;padding:12px}
+.guide-grid{min-width:680px}
+.guide-times{display:grid;grid-template-columns:190px repeat(4,minmax(125px,1fr));position:sticky;top:0;background:#121d36;z-index:2;border-bottom:1px solid #ffffff20}
+.guide-times div{padding:12px 9px;color:#b9c8e7;font-size:11px;font-weight:800;border-right:1px solid #ffffff12}
+.guide-row{display:grid;grid-template-columns:190px repeat(4,minmax(125px,1fr));border-bottom:1px solid #ffffff14;min-height:67px}
+.guide-channel{display:flex;align-items:center;gap:8px;padding:8px;background:#141e36;border-right:1px solid #ffffff18;cursor:pointer;min-width:0}
+.guide-channel img{width:40px;height:32px;object-fit:contain;background:#fff;border-radius:5px;padding:2px}
+.guide-channel strong{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guide-channel small{font-size:10px;color:#9aaaca}
+.guide-program{padding:9px;background:#17223b;border-right:1px solid #ffffff12;display:flex;flex-direction:column;justify-content:center;gap:5px;color:#e6ebfa;font-size:11px;cursor:pointer}
+.guide-program:hover,.guide-channel:hover{background:#252b59}
+.guide-program small{color:#91a5cd;font-size:10px}
+.guide-side{padding:18px;background:#0c1325;border-left:1px solid #ffffff18}
+.guide-side h3{margin:0 0 10px;font-size:15px}.guide-side p{font-size:12px;line-height:1.6;color:#aab8d4}
+.guide-search{width:100%;padding:11px;border-radius:8px;border:1px solid #ffffff28;background:#080e1e;color:white;margin:10px 0}
+.guide-empty{padding:18px;color:#aebbd5;font-size:12px}
+.quick-menu{position:fixed;z-index:40;right:18px;top:85px;width:min(330px,calc(100vw - 36px));background:#111a30;border:1px solid #ffffff30;border-radius:14px;padding:12px;box-shadow:0 20px 60px #000b;display:none}
+.quick-menu.open{display:block}.quick-menu button{width:100%;padding:13px;text-align:left;background:transparent;border:0;border-radius:8px;color:white;cursor:pointer;font-weight:700}
+.quick-menu button:hover{background:#262c59}
+.fav-btn{border:0;background:transparent;color:#aab7d3;font-size:18px;cursor:pointer;padding:3px}.fav-btn.active{color:#ff6688}
+.channel-number{font-size:10px;color:#a99cff;font-weight:900;min-width:25px}
+.remote-hint{font-size:10px;color:#8293b7;padding:10px 18px;border-top:1px solid #ffffff14}
+@media(max-width:850px){.guide-body{grid-template-columns:1fr}.guide-side{border-left:0;border-top:1px solid #ffffff18}.guide-modal{padding:5px}.guide-head{padding:13px}.guide-toolbar{margin-left:0}.guide-times,.guide-row{grid-template-columns:145px repeat(4,minmax(110px,1fr))}.guide-channel{gap:5px}.guide-channel img{width:30px}}
+
+
+/* Rediseño visual del portal de TV: dashboard de decodificador premium */
+.home-screen{width:min(1320px,97vw);margin:18px auto 36px;background:#10131d;border:1px solid #343a49;border-radius:15px;overflow:hidden;box-shadow:0 28px 90px #000b,0 1px 0 #ffffff12 inset;color:#f7f8fc}
+.home-top{height:62px;background:linear-gradient(180deg,#242936,#191e2a);border-bottom:1px solid #ffffff13;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,3vw,42px);gap:20px}
+.home-brand{display:flex;align-items:center;gap:11px;margin:0;color:#fff;font-size:14px;font-weight:900;letter-spacing:.2px}
+.brand-mark{display:grid;place-items:center;width:27px;height:27px;border-radius:7px;background:linear-gradient(145deg,#2cc7ee,#1766bd);font-size:12px;box-shadow:0 4px 16px #16b9ed44}
+.home-brand small{display:block;font-size:8px;letter-spacing:1.8px;color:#aab5c9;margin-top:4px;font-weight:700}
+.home-top-actions{display:flex;align-items:center;gap:19px}.home-top .top-icon{width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#d6deed;font-size:20px;cursor:pointer}.home-top .top-icon:hover{background:#ffffff18}
+.home-clock{text-align:right;line-height:1.35;font-size:11px;color:#f4f6fb}.home-clock span{font-size:10px;color:#9da9bf}
+.profile-dot{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#6c62c9,#2c8ebd);font-size:10px;font-weight:900;border:2px solid #ffffff30}
+.home-content{padding:27px clamp(18px,3vw,42px) 28px;background:radial-gradient(ellipse at 83% 0%,#263a5b44,transparent 36%),linear-gradient(180deg,#151b29,#111621 68%,#10131d)}
+.home-greeting{display:flex;justify-content:space-between;align-items:end;gap:18px;margin:0 0 20px}
+.home-kicker{display:block;color:#6bc8e7;font-size:9px;font-weight:900;letter-spacing:2px;margin-bottom:7px}
+.home-greeting h1{font-size:clamp(24px,3vw,34px);letter-spacing:-1px;margin:0;font-weight:800;color:#fff}
+.home-greeting p{font-size:12px;color:#9eacc2;margin:7px 0 0}
+.weather-chip{border:1px solid #ffffff1c;border-radius:30px;padding:8px 12px;color:#63d7a5;font-size:9px;white-space:nowrap;background:#ffffff08}.weather-chip span{color:#c1cbdc;margin-left:5px;font-weight:800;letter-spacing:.8px}
+.hero-feature{display:grid;grid-template-columns:1.05fr .95fr;position:relative;width:100%;min-height:270px;border:1px solid #ffffff25;border-radius:13px;overflow:hidden;text-align:left;color:white;cursor:pointer;padding:0;background:linear-gradient(112deg,#101d3a 0%,#172c53 48%,#273d63 100%);box-shadow:0 14px 34px #0005;isolation:isolate}
+.hero-feature:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#0a1429 0%,#10203c 43%,#12213a99 65%,transparent 100%);z-index:-1}
+.hero-feature:hover{border-color:#5dc8f0;box-shadow:0 18px 44px #0008,0 0 0 1px #5dc8f044}
+.hero-copy{padding:27px 30px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;z-index:2}
+.hero-label{font-size:9px;font-weight:900;letter-spacing:1.6px;color:#a9d9ef}.hero-label i{display:inline-block;width:7px;height:7px;background:#fa455e;border-radius:50%;box-shadow:0 0 12px #ff4967;margin-right:7px}
+.hero-title{font-size:clamp(38px,6vw,65px);font-weight:1000;letter-spacing:-3px;line-height:1;margin:17px 0 10px;text-shadow:0 7px 25px #0008}.hero-title em{font-style:normal;color:#59c6eb}
+.hero-copy p{max-width:390px;color:#c3d1e5;font-size:12px;line-height:1.6;margin:0 0 15px}
+.hero-meta{display:flex;align-items:center;gap:9px;color:#b8c7db;font-size:9px;font-weight:800;letter-spacing:.7px}.hero-meta>span:not(:first-child){border-left:1px solid #ffffff44;padding-left:9px}
+.live-pill{color:#fff;background:#d72e49;border-radius:3px;padding:5px 8px;font-size:8px}
+.hero-cta{display:inline-flex;align-items:center;gap:13px;margin-top:20px;padding:11px 17px;border-radius:5px;background:linear-gradient(90deg,#20bce8,#167ac8);font-size:10px;font-weight:900;letter-spacing:1px;box-shadow:0 7px 18px #0799cf44}
+.hero-cta b{font-size:10px}
+.hero-art{position:relative;overflow:hidden;background:radial-gradient(ellipse at 70% 42%,#3b9ec3 0,#215d86 20%,transparent 55%),linear-gradient(135deg,#14294a,#1b4770 55%,#13223e);min-height:270px}
+.hero-art:before{content:"";position:absolute;width:440px;height:440px;border:1px solid #a9e9ff55;border-radius:50%;right:-60px;top:-85px;box-shadow:0 0 0 22px #7ad9ff0a,0 0 0 55px #7ad9ff08,0 0 90px #43c4ef55}
+.hero-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#132542 0%,transparent 35%),linear-gradient(0deg,#091529aa,transparent 50%)}
+.art-orbit{position:absolute;border:1px solid #9be7ff66;border-radius:50%;transform:rotate(-25deg);z-index:1}.orbit-one{width:460px;height:170px;right:-45px;top:55px}.orbit-two{width:410px;height:130px;right:-15px;top:78px;transform:rotate(22deg)}
+.art-sun{position:absolute;width:155px;height:155px;right:18%;top:22%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e4fcff,#6cd4ef 35%,#2484b5 72%,#145078);box-shadow:0 0 80px #45c8ef99;z-index:0}
+.art-bars{position:absolute;bottom:-20px;right:0;width:100%;height:48%;background:linear-gradient(150deg,transparent 25%,#081a36aa 25% 28%,transparent 28% 35%,#07152dcc 35% 100%);z-index:1}
+.hero-watermark{position:absolute;right:17%;top:1%;font-size:clamp(180px,25vw,300px);font-weight:1000;line-height:1;color:#ffffff16;text-shadow:0 10px 40px #0004;z-index:1}
+.art-caption{position:absolute;right:8%;bottom:17%;z-index:3;font-size:19px;line-height:.9;letter-spacing:5px;color:#e8f9ff;text-align:right;text-shadow:0 3px 15px #001}.art-caption strong{font-size:32px;color:#6bd8f5;letter-spacing:2px}
+.hero-side-label{position:absolute;right:14px;top:14px;z-index:4;background:#ffffff1a;border:1px solid #ffffff30;padding:6px 9px;border-radius:3px;font-size:8px;letter-spacing:1px;font-weight:900}
+.section-heading{display:flex;align-items:end;justify-content:space-between;gap:15px;margin:26px 0 12px}.section-heading h2{font-size:18px;margin:0;color:#f5f7fb;letter-spacing:-.3px}.section-heading .home-kicker{margin-bottom:5px}
+.text-action{border:0;background:transparent;color:#6cc9e8;font-size:10px;font-weight:800;cursor:pointer;padding:7px}.text-action:hover{color:white}
+.quick-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+.quick-card{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 15px;border:1px solid #ffffff19;border-radius:8px;background:linear-gradient(110deg,#202b40,#182234);color:#fff;cursor:pointer;min-width:0;transition:.16s}
+.quick-card:hover{transform:translateY(-2px);border-color:#58c4e7;background:linear-gradient(110deg,#263d58,#1a2c43)}
+.quick-icon{width:38px;height:38px;flex:0 0 38px;border-radius:8px;display:grid;place-items:center;background:#22b8df22;color:#67d8f1;font-size:20px}
+.quick-card>span:nth-child(2){display:flex;flex-direction:column;gap:5px;min-width:0}.quick-card strong{font-size:11px}.quick-card small{font-size:9px;color:#9eacc2}.quick-card>b{margin-left:auto;color:#7dd7f1;font-size:22px}
+.quick-guide .quick-icon{background:#8e7cf322;color:#b4a4ff}.quick-fav .quick-icon{background:#f05b8522;color:#ff83a1}
+.channel-heading{margin-top:27px}.section-note{color:#7f8da6;font-size:9px}
+.popular-row{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.popular-channel{position:relative;min-height:110px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:4px;padding:12px;border-radius:8px;border:1px solid #ffffff1c;background:linear-gradient(145deg,#27344c,#131d30);color:white;text-align:left;cursor:pointer;overflow:hidden;transition:.16s}
+.popular-channel:before{content:"";position:absolute;width:110px;height:110px;border-radius:50%;right:-28px;top:-45px;background:#4dc5e722;filter:blur(1px)}
+.popular-channel:hover{transform:translateY(-3px);border-color:#5cc9ed}
+.station-logo{position:absolute;right:13px;top:11px;width:34px;height:34px;border-radius:7px;background:#f4f6fa;color:#1b2d48;display:grid;place-items:center;font-size:22px;font-weight:1000;box-shadow:0 3px 12px #0004}
+.popular-channel strong{font-size:11px;z-index:1}.popular-channel small{font-size:9px;color:#aab7ca;z-index:1}.popular-channel>b{position:absolute;right:13px;bottom:13px;color:#6bd4ef;font-size:10px}
+.popular-channel.az7{background:linear-gradient(140deg,#253b65,#17243e 65%,#142034)}.popular-channel.az7 .station-logo{color:#137eb5}
+.popular-channel.canal5{background:linear-gradient(140deg,#533b46,#25253a 70%,#1b2034)}.popular-channel.canal5 .station-logo{color:#e34a55}
+.popular-channel.estrellas{background:linear-gradient(140deg,#443b62,#25253e 70%,#1b2034)}.popular-channel.estrellas .station-logo{color:#9a76c9}
+.popular-channel.telemundo{background:linear-gradient(140deg,#543b51,#29263c 70%,#1b2034)}.popular-channel.telemundo .station-logo{color:#a73566}
+.popular-channel.news{background:linear-gradient(140deg,#29495a,#1c2b40 70%,#1b2034)}.popular-channel.news .station-logo{color:#237ba4}
+.home-nav{height:65px;background:#1b202c;border-top:1px solid #ffffff16;display:flex;justify-content:center;align-items:stretch;gap:0;padding:0 12px}
+.home-nav button{min-width:130px;border:0;border-bottom:3px solid transparent;background:transparent;color:#aeb8c9;font-size:9px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.home-nav button span{font-size:16px;color:#7f91aa}.home-nav button.active,.home-nav button:hover{background:#ffffff08;color:#fff;border-bottom-color:#21b9e7}.home-nav button.active span,.home-nav button:hover span{color:#53d0f2}
+.home-note{padding:12px clamp(18px,3vw,42px);background:#151923;color:#78869c;font-size:9px;display:flex;justify-content:space-between;gap:10px}.home-note>span:first-child{color:#b3bfd1;font-weight:900;letter-spacing:1px}
+@media(max-width:850px){.hero-feature{min-height:235px}.hero-art{min-height:235px}.quick-cards{grid-template-columns:1fr}.popular-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.home-content{padding:20px 14px}.home-greeting{align-items:flex-start}.weather-chip{display:none}.hero-feature{grid-template-columns:1fr;min-height:310px}.hero-copy{padding:23px}.hero-art{position:absolute;inset:0 0 0 35%;opacity:.55}.hero-feature:before{background:linear-gradient(90deg,#0a1429 0%,#10203cee 55%,#12213a66 100%)}.hero-copy{z-index:3}.hero-side-label{display:none}.popular-row{grid-template-columns:repeat(2,1fr)}.home-top{padding:0 13px}.home-top-actions{gap:7px}.home-nav{height:58px;padding:0}.home-nav button{min-width:0;flex:1;font-size:8px;gap:3px;flex-direction:column}.home-nav button span{font-size:14px}.note-right{display:none}.section-heading h2{font-size:16px}}
+
+
+/* Acceso de cuenta izzi TV Pocoyito */
+.auth-gate{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(ellipse at 18% 15%,#164c77 0,transparent 38%),radial-gradient(ellipse at 85% 80%,#32245f 0,transparent 35%),#070b15;overflow:auto}
+.auth-gate[hidden]{display:none}
+.auth-panel{width:min(460px,100%);padding:clamp(24px,5vw,42px);border:1px solid #ffffff24;border-radius:20px;background:linear-gradient(145deg,#172238f5,#101629f5);box-shadow:0 35px 110px #000b,0 1px 0 #ffffff15 inset;color:#fff}
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:34px}.auth-brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(135deg,#23c6eb,#3468d9);font-weight:900;box-shadow:0 7px 22px #14bde955}
+.auth-brand strong{font-size:16px;letter-spacing:.6px}.auth-brand strong span{color:#69d8f5}.auth-brand small{display:block;color:#8298bb;font-size:8px;letter-spacing:1.2px;margin-top:5px}
+.auth-kicker{font-size:9px;letter-spacing:2px;color:#6ed4f3;font-weight:900}.auth-welcome h1{font-size:clamp(27px,6vw,36px);letter-spacing:-1.2px;margin:9px 0}.auth-welcome p{font-size:12px;line-height:1.7;color:#aebdd5;margin:0 0 22px}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;border-radius:9px;background:#0b1222;margin:20px 0}
+.auth-tabs button{border:0;border-radius:6px;padding:11px 5px;background:transparent;color:#91a4c2;font-size:9px;font-weight:900;letter-spacing:.5px;cursor:pointer}
+.auth-tabs button.active{background:#243c60;color:#fff;box-shadow:0 3px 12px #0005}
+.auth-form{display:flex;flex-direction:column;gap:9px}.auth-form label{font-size:10px;color:#c9d5e8;font-weight:700;margin-top:5px}
+.auth-form input{width:100%;padding:13px 14px;border:1px solid #344763;border-radius:8px;background:#0b1323;color:#fff;font-size:13px;outline:none}
+.auth-form input:focus{border-color:#38c7ed;box-shadow:0 0 0 3px #38c7ed22}.auth-form input::placeholder{color:#687b99}
+.auth-submit{margin-top:10px;padding:14px 16px;border:0;border-radius:8px;background:linear-gradient(90deg,#18bde7,#2879dc);color:#fff;font-size:11px;font-weight:900;letter-spacing:1px;cursor:pointer;box-shadow:0 8px 22px #168bd344}
+.auth-submit span{float:right;font-size:18px;line-height:10px}.auth-submit:disabled{opacity:.6;cursor:wait}
+.auth-message{min-height:35px;margin:4px 0 0;color:#91a5c4;font-size:10px;line-height:1.55}.auth-message.error{color:#ff9da8}.auth-message.success{color:#83e3b5}
+.auth-foot{display:flex;justify-content:space-between;gap:12px;margin-top:24px;padding-top:14px;border-top:1px solid #ffffff16;color:#627796;font-size:7px;letter-spacing:1px}
+.auth-logout{border:1px solid #ffffff2b;background:#ffffff0a;color:#cbd7e9;border-radius:6px;padding:7px 10px;font-size:9px;font-weight:800;cursor:pointer}
+.auth-logout:hover{background:#ffffff18}
+@media(max-width:520px){.auth-panel{padding:24px 20px}.auth-foot{font-size:6px}.home-top-actions{gap:5px}}
+
+
+.google-auth-box{display:flex;flex-direction:column;gap:13px;margin-top:25px}
+.google-intro{font-size:12px;line-height:1.65;color:#aebdd5;margin:0 0 5px}
+.google-signin{width:100%;display:flex;align-items:center;justify-content:center;gap:13px;padding:14px 18px;border:1px solid #d7deea;border-radius:9px;background:#fff;color:#263247;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 5px 18px #0003;transition:.15s}
+.google-signin:hover{background:#f2f6fc;transform:translateY(-1px)}
+.google-signin:disabled{opacity:.6;cursor:wait;transform:none}
+.google-signin svg{width:20px;height:20px;flex:0 0 20px}
+.google-privacy{font-size:9px;line-height:1.5;color:#7185a5;text-align:center;margin-top:3px}
+
+
+/* Experiencia premium y centro de Liga MX */
+.home-screen{background:linear-gradient(145deg,#11182a,#101321 55%,#15112b);border-color:#ffffff25}
+.home-top{background:linear-gradient(90deg,#161d35,#10182b)}
+.hero-feature{border:1px solid #ffffff22;box-shadow:0 18px 45px #0005}
+.home-kicker{color:#75d8ff}
+.liga-section{margin:0 24px 28px;padding:25px;background:linear-gradient(135deg,#121b31,#0d1426);border:1px solid #ffffff1b;border-radius:17px;box-shadow:0 20px 55px #0005}
+.liga-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:19px}.liga-heading h2{font-size:clamp(25px,4vw,38px);margin:7px 0;color:#fff;letter-spacing:-1px}.liga-heading h2 em{font-style:normal;color:#ff526b;font-size:.48em;vertical-align:middle;letter-spacing:1px}.liga-heading p{margin:0;color:#9eacc8;font-size:13px}.liga-live-pill{font-size:9px;font-weight:900;letter-spacing:1px;color:#a8f6d0;background:#123b35;padding:10px 13px;border-radius:30px;border:1px solid #2a806d;white-space:nowrap}.liga-live-pill i{display:inline-block;width:7px;height:7px;background:#39e49a;border-radius:50%;margin-right:7px;box-shadow:0 0 12px #39e49a}.liga-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:13px}.liga-filter{background:#1a2540;color:#c5d0e7;border:1px solid #ffffff18;border-radius:8px;padding:8px 12px;font-size:10px;font-weight:800;cursor:pointer}.liga-filter.active{background:linear-gradient(120deg,#684cff,#176fe3);color:white}.liga-toolbar #ligaUpdated{margin-left:auto;color:#8191ae;font-size:10px}.liga-matches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.liga-match{background:linear-gradient(145deg,#1a2540,#131c30);border:1px solid #ffffff18;border-radius:12px;padding:14px;min-width:0;transition:.2s}.liga-match:hover{transform:translateY(-3px);border-color:#5478ff;box-shadow:0 10px 28px #0005}.liga-match-top{display:flex;justify-content:space-between;align-items:center;color:#9eacc5;font-size:9px;margin-bottom:14px}.liga-state{font-weight:900;letter-spacing:.7px;color:#9bb6ff}.liga-state.live{color:#ff6d7d}.liga-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}.liga-team{text-align:center;min-width:0}.liga-team img{width:37px;height:37px;object-fit:contain;display:block;margin:0 auto 7px}.liga-team b{font-size:10px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.liga-score{font-size:22px;font-weight:1000;letter-spacing:1px;color:#fff;white-space:nowrap}.liga-score small{font-size:11px;color:#8292af;margin:0 3px}.liga-match-foot{text-align:center;color:#8392ae;font-size:9px;margin-top:12px;border-top:1px solid #ffffff12;padding-top:9px}.liga-empty,.liga-loading{grid-column:1/-1;text-align:center;padding:28px;color:#aab7d0;background:#111b30;border:1px solid #ffffff14;border-radius:12px;font-size:12px}.liga-spinner{display:inline-block;width:15px;height:15px;border:2px solid #ffffff30;border-top-color:#63cfff;border-radius:50%;vertical-align:middle;margin-right:9px;animation:spin .8s linear infinite}.liga-bottom{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:14px}.liga-table-card,.liga-info-card{background:#111b30;border:1px solid #ffffff16;border-radius:12px;padding:15px;min-width:0}.liga-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.liga-card-head h3,.liga-info-card h3{font-size:14px;margin:0}.liga-card-head span,.liga-info-card small{font-size:9px;color:#8495b4}.liga-standings{overflow:auto}.liga-standings table{width:100%;border-collapse:collapse;font-size:10px;white-space:nowrap}.liga-standings th{text-align:left;color:#8094b9;font-weight:700;padding:8px 6px;border-bottom:1px solid #ffffff18}.liga-standings td{padding:8px 6px;border-bottom:1px solid #ffffff0d;color:#dbe4f6}.liga-standings tr:first-child td{color:#9ee9d0}.liga-info-card{background:radial-gradient(circle at 90% 0%,#30336a,#111b30 65%)}.liga-ball{font-size:28px;margin-bottom:9px}.liga-info-card p{color:#aab7d0;font-size:11px;line-height:1.6}.liga-info-card small{display:block;line-height:1.5}@media(max-width:900px){.liga-matches{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.liga-section{margin:0 10px 18px;padding:15px}.liga-heading{display:block}.liga-live-pill{display:inline-block;margin-top:13px}.liga-matches{grid-template-columns:1fr}.liga-bottom{grid-template-columns:1fr}.liga-toolbar #ligaUpdated{width:100%;margin:5px 0 0}.home-nav button{padding:0 2px}}
+
+
+/* izzi TV Pocoyito · rediseño inspirado en su navegación de mosaicos y guía */
+:root{--izzi-cyan:#20c4df;--izzi-orange:#ff9a36;--izzi-magenta:#df4b9d;--izzi-yellow:#f5d24b}
+body{background:#101018;color:#f7f6fb}
+.home-screen{width:min(1500px,98vw);background:#11111b;border:1px solid #ffffff1c;border-radius:12px;box-shadow:0 28px 90px #000b}
+.home-top{height:66px;background:#171722;border-bottom:1px solid #ffffff18}
+.brand-mark,.mark{background:linear-gradient(135deg,var(--izzi-cyan),#247dbb);border-radius:7px;box-shadow:none}
+.home-brand{font-size:15px;letter-spacing:.1px}.home-brand small{color:#b5a9ca;letter-spacing:1.5px}
+.home-content{background:linear-gradient(180deg,#171724,#11111b 72%);padding:clamp(18px,3vw,38px)}
+.home-kicker{color:#a99bc9}.home-greeting h1{font-size:clamp(25px,3vw,36px);letter-spacing:-.8px}
+.hero-feature{min-height:310px;border-radius:8px;background:linear-gradient(110deg,#38245d,#34215a 48%,#1a4261);border:1px solid #ffffff28}
+.hero-feature:before{background:linear-gradient(90deg,#201634 0%,#34204f 48%,#173a58aa 78%,transparent)}
+.hero-title{font-size:clamp(42px,6vw,68px)}.hero-title em{color:#30c7e7}
+.hero-cta{background:linear-gradient(90deg,#14b8d7,#247ac0);border-radius:4px}
+.hero-art{background:radial-gradient(ellipse at 72% 43%,#5e9cc6 0,#47336e 34%,transparent 65%),linear-gradient(135deg,#392354,#1a4562)}
+.hero-channel-logo{position:absolute;z-index:4;right:18%;top:50%;transform:translate(50%,-50%);width:clamp(86px,14vw,150px);height:clamp(70px,11vw,116px);display:grid;place-items:center;background:#fff;border-radius:12px;padding:12px;box-shadow:0 15px 55px #0008}
+.hero-channel-logo img{width:100%;height:100%;object-fit:contain}
+.quick-card{background:#22212f;border:1px solid #ffffff18;border-radius:7px}.quick-card:hover{background:#2b2940;border-color:#8268b6}
+.quick-icon{background:#ffffff10;color:#55d1e8}
+.popular-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.popular-channel{min-height:132px;background:linear-gradient(145deg,#282638,#1c1b29);border:1px solid #ffffff1b;border-radius:8px;display:grid;grid-template-columns:68px 1fr 20px;grid-template-rows:1fr auto;align-items:center;gap:5px 12px;padding:14px;text-align:left}
+.popular-channel:hover{border-color:#4ac8e3;background:#2c2a40}
+.popular-channel .station-logo{grid-row:1/3;width:68px;height:68px;border-radius:8px;background:#fff;display:grid;place-items:center;color:#33224d;font-size:23px;font-weight:900;overflow:hidden}
+.popular-channel .station-logo img{width:100%;height:100%;object-fit:contain;padding:7px}
+.popular-channel strong{font-size:13px;align-self:end}.popular-channel small{font-size:10px;color:#b4aec3;align-self:start}
+.popular-channel>b{grid-column:3;grid-row:1/3;color:#43c9e3}
+.quick-card,.popular-channel{box-shadow:0 8px 24px #0003}
+.home-nav{background:#171722;border-top:1px solid #ffffff1c;height:64px}
+.home-nav button{min-width:120px;color:#bcb6c9;border-bottom:3px solid transparent}
+.home-nav button.active,.home-nav button:hover{background:#ffffff08;color:#fff;border-bottom-color:#22c5e2}
+.home-note{background:#151520;color:#a29bb1}
+#siteHeader{background:#151520;border-bottom-color:#ffffff1c}
+.player-shell,.catalog,.info,.guide-wrap{border-radius:8px}.catalog{background:#151520}.catalog-head{background:#201d2d}
+.channel-item{gap:12px;min-height:60px;padding:8px 10px;border-bottom:1px solid #ffffff0c;border-radius:5px}
+.channel-item:hover{background:#252337}.channel-item.selected{background:#30254b;border-color:#8064b8}
+.channel-logo-slot,.logo{width:54px;height:44px;flex:0 0 54px;background:#fff;border-radius:6px;display:grid;place-items:center;overflow:hidden;padding:4px}
+.channel-logo-slot img,.logo img{width:100%;height:100%;object-fit:contain}
+.logo-fallback{background:linear-gradient(145deg,#3a2d58,#1d526c);color:#fff;font-size:12px;font-weight:900}
+.ch-name{font-size:13px}.ch-meta{font-size:10px;color:#a9a3b6}
+.channel-number{font-size:10px;min-width:25px;color:#b5a2d7}
+.guide-channel{gap:9px;min-height:68px}
+.guide-logo{width:46px;height:38px;flex:0 0 46px;border-radius:5px;background:#fff;padding:4px;display:grid;place-items:center;overflow:hidden}
+.guide-logo img{width:100%;height:100%;object-fit:contain}
+.guide-logo.logo-fallback{background:linear-gradient(145deg,#3a2d58,#1d526c);color:#fff;font-size:11px;font-weight:900}
+.guide-channel-text{min-width:0;display:flex;flex-direction:column;gap:4px}
+.guide-channel-text strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guide-channel-text small{font-size:9px;color:#aaa2b8}
+.guide-head{background:linear-gradient(90deg,#34214f,#183b54)}.guide-times{background:#272337}.guide-program{background:#211f30}
+.guide-program:hover,.guide-channel:hover{background:#302847}
+.channel-badge{display:flex;align-items:center;justify-content:center;min-width:62px;min-height:35px;background:#fff;border-radius:5px;padding:3px}
+.channel-badge .logo{width:54px;height:30px;min-width:0;flex:auto;padding:2px}
+.tv-toolbar button,.tv-actions button,.guide-toolbar button{background:#252337}
+@media(max-width:900px){.popular-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+ .home-screen{width:100%;border-radius:0}.home-content{padding:16px 12px 20px}
+ .hero-feature{min-height:260px;grid-template-columns:1fr}
+ .hero-channel-logo{right:22%;top:58%;width:88px;height:72px;opacity:.94}
+ .popular-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .popular-channel{min-height:106px;grid-template-columns:48px 1fr 12px;padding:9px;gap:4px 8px}
+ .popular-channel .station-logo{width:48px;height:48px}
+ .popular-channel strong{font-size:11px}.popular-channel small{font-size:9px}
+ .channel-item{min-height:58px;gap:8px;padding:7px}
+ .channel-logo-slot,.logo{width:48px;height:40px;flex-basis:48px}
+ .guide-channel{gap:6px}.guide-logo{width:37px;height:32px;flex-basis:37px}
+ .guide-channel-text strong{max-width:95px}
+ .home-nav button{min-width:0;flex:1;font-size:8px}
+}
+
+
+/* IZTV3: Interfaz original de televisión premium; no oficial */
+#siteHeader{display:none}
+:root{--bg:#090910;--panel:#14131e;--panel2:#1b1a29;--blue:#8c55ff;--cyan:#b98aff;--red:#f74666;--muted:#a5a1b7;--white:#f9f7ff}
+html{scroll-behavior:smooth}body{background:#08080e;color:#f9f7ff;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:-.1px}
+button,input,select{font:inherit}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #cbb2ff;outline-offset:3px}button{transition:background .2s,border-color .2s,transform .2s}
+#siteHeader{height:68px;background:#10101b;border-color:#ffffff12;padding:0 28px}#siteHeader .brand{font-size:17px}#siteHeader .mark{background:#7f4cff;clip-path:none;border-radius:12px}#siteHeader .brand small{color:#b4a6db}
+.home-screen{width:100%;max-width:none;min-height:100vh;margin:0;background:#0b0a12;border:0;border-radius:0;box-shadow:none;overflow:visible;display:block;position:relative}
+.home-stage{margin-left:88px;min-height:100vh;overflow:hidden;background:radial-gradient(ellipse at 40% 0%,#2b1b4629,transparent 40%),#0b0a12}
+.home-nav{width:88px;height:100vh;position:fixed;z-index:25;top:0;left:0;background:#101019;border-right:1px solid #ffffff13;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:20px 9px 14px}
+.home-nav .rail-logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(140deg,#b56dff,#6431d6);display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:30px;box-shadow:0 8px 24px #7233ed55;color:white}
+.rail-logo span{font-size:42px;font-weight:1000;font-style:italic;line-height:1;transform:translateY(-4px)}.rail-logo i{position:absolute;bottom:8px;right:9px;width:8px;height:8px;background:#fff;border-radius:50%}
+.home-nav button{width:68px;min-width:0;min-height:67px;border:0;border-radius:14px;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:#8d8a9f;font-size:11px;font-weight:700;letter-spacing:0;cursor:pointer}
+.home-nav button .nav-icon{font-size:24px;line-height:1;color:inherit}.home-nav button small{font-size:10px;font-weight:650}.home-nav button.active,.home-nav button:hover{background:#6f43b52c;color:#d2b9ff}.home-nav button.active:before{content:"";position:absolute;left:0;width:3px;height:28px;border-radius:0 5px 5px 0;background:#b477ff}.rail-spacer{flex:1}
+.home-top{height:90px;background:transparent;border:0;display:flex;align-items:center;padding:0 clamp(24px,4vw,65px);gap:24px;color:#c6c1d7}
+.home-brand{display:flex;align-items:center;gap:12px;font-size:22px;letter-spacing:-1px;font-weight:850;color:white;margin-right:auto}.home-brand .brand-mark{display:none}.home-brand strong{color:#be89ff}.home-brand b{font-weight:650;color:#c5bdd5;font-size:18px}.home-brand small{display:block;font-size:9px;font-weight:650;color:#7d778f;letter-spacing:2.1px;margin:3px 0 0}
+.home-top-actions{display:flex;align-items:center;gap:14px}.signal-chip{display:flex;align-items:center;gap:8px;border:1px solid #ffffff17;background:#ffffff05;color:#b5b1c5;border-radius:25px;padding:9px 13px;font-size:10px;letter-spacing:1px;font-weight:750}.signal-chip i,.weather-chip i{width:7px;height:7px;background:#49dca5;border-radius:50%;box-shadow:0 0 10px #49dca599}.top-icon{width:38px;height:38px;border-radius:50%;border:1px solid #ffffff16;background:#ffffff09;color:#f4efff;font-size:22px;cursor:pointer}.top-icon:hover{background:#65418e}.home-clock{line-height:1.2;text-align:right}.home-clock strong{font-size:16px;color:#fff}.home-clock span{display:block;font-size:10px;color:#8e889f;margin-top:4px}.profile-dot{width:39px;height:39px;border:2px solid #9a61eb;background:linear-gradient(145deg,#593487,#251a3e);color:#fff;font-size:17px;border-radius:50%;display:grid;place-items:center;font-weight:900}
+.home-content{padding:20px clamp(24px,4vw,65px) 60px;background:none;max-width:1800px;margin:auto}.home-greeting{display:flex;align-items:center;justify-content:space-between;margin:0 0 24px;gap:18px}.home-kicker{color:#a98ce0;font-size:10px;letter-spacing:2px;font-weight:800;margin:0 0 8px}.home-greeting h1{font-size:clamp(27px,3.1vw,40px);font-weight:850;letter-spacing:-1.6px;color:#f9f7ff}.weather-chip{display:flex;align-items:center;gap:9px;border:0;background:none;font-size:10px;color:#807c93;letter-spacing:.6px;padding:0}
+.featured-layout{display:grid;grid-template-columns:minmax(0,2.4fr) minmax(255px,.85fr);gap:18px;min-height:400px}
+.hero-feature{position:relative;min-height:400px;display:flex;align-items:center;text-align:left;overflow:hidden;border-radius:19px;border:1px solid #b07bff32;padding:40px clamp(25px,3.6vw,57px);background:linear-gradient(105deg,#221432 1%,#27143e 45%,#160f28 100%);color:white;cursor:pointer;isolation:isolate}
+.hero-feature:hover{transform:translateY(-2px);border-color:#a76cfd99}.hero-feature:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 70% 30%,#b443e948,transparent 40%),radial-gradient(ellipse at 10% 100%,#4c208855,transparent 65%);z-index:-1}.hero-feature:after{content:"";position:absolute;right:-120px;bottom:-220px;width:520px;height:520px;border-radius:50%;border:80px solid #c88dff0b;box-shadow:0 0 0 70px #b566f909;z-index:-1}.hero-glow{position:absolute;right:19%;top:-40%;width:300px;height:500px;transform:rotate(35deg);background:linear-gradient(90deg,transparent,#d582ff13,transparent);filter:blur(15px);pointer-events:none}.hero-ribbon{position:absolute;right:26px;top:24px;background:#f33c6b;padding:7px 12px;border-radius:5px;font-size:9px;font-weight:900;letter-spacing:1.7px;box-shadow:0 8px 24px #ff205933}
+.hero-copy{width:60%;position:relative;z-index:2}.hero-label{display:flex;align-items:center;gap:9px;font-size:10px;color:#e2b7ff;font-weight:850;letter-spacing:2px}.hero-label i{width:7px;height:7px;border-radius:50%;background:#fc5476;box-shadow:0 0 12px #fc5476}.hero-title{font-size:clamp(34px,4.15vw,66px);font-weight:900;letter-spacing:-2.8px;line-height:1.03;margin:18px 0 17px;text-transform:none;text-shadow:none}.hero-title em{color:#d6aaff;font-style:normal}.hero-copy p{font-size:13px;color:#c4b5d4;line-height:1.7;max-width:440px;margin:0 0 19px}.hero-meta{display:flex;align-items:center;gap:14px;color:#a99dbb;font-size:9px;font-weight:750;letter-spacing:1px}.live-pill{display:flex;align-items:center;gap:6px;background:#f8436c23;border:1px solid #f8436c55;color:#ff9bb0;padding:6px 9px;border-radius:5px;font-size:9px}.live-pill i{width:6px;height:6px;border-radius:50%;background:#ff537a}.hero-cta{display:inline-flex;align-items:center;gap:13px;margin-top:25px;background:#fff;color:#20142f;padding:13px 20px;border-radius:9px;font-size:11px;font-weight:900;letter-spacing:.5px;box-shadow:0 10px 28px #0004}.hero-cta b{font-size:13px;color:#7544d0}
+.hero-art{position:absolute;inset:0 0 0 55%;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}.art-glass{position:relative;width:min(86%,370px);aspect-ratio:1.13;border:2px solid #d7a9ff6a;border-radius:24px;transform:perspective(750px) rotateY(-15deg) rotateZ(-5deg);box-shadow:20px 22px 60px #090314b0,0 0 70px #b957ff39,inset 0 0 65px #9d59ff40;background:linear-gradient(145deg,#8b44b333,#0d0b21bb);padding:13px}.art-inner{height:100%;border-radius:15px;background:radial-gradient(circle at 45% 45%,#ac5fff99,#432163a8 45%,#170c2b 90%);display:grid;place-items:center;position:relative;overflow:hidden}.art-inner:before{content:"";position:absolute;width:150%;height:42px;background:#ffffff1c;transform:rotate(-25deg);top:20%}.hero-watermark{font-size:clamp(90px,12vw,170px);font-weight:1000;letter-spacing:-16px;font-style:italic;color:#f8e6ff;text-shadow:0 0 45px #ffffff70}.hero-signal{position:absolute;bottom:15px;right:17px;font-size:9px;font-weight:900;letter-spacing:2px;color:#fff}.hero-channel-mark{position:absolute;bottom:23px;right:29px;display:flex;align-items:center;gap:8px;color:#d6b4ee;font-size:10px;font-weight:850;letter-spacing:1px}.hero-channel-mark .channel-logo-slot{width:32px;height:27px;display:grid;place-items:center}.hero-channel-mark .logo{width:34px;height:28px}
+.feature-aside{background:linear-gradient(145deg,#191522,#12111b);border:1px solid #ffffff12;border-radius:19px;padding:20px;display:flex;flex-direction:column;gap:9px}.aside-label{font-size:10px;color:#8c849f;letter-spacing:1.7px;font-weight:850;margin:4px 0 8px}.feature-shortcut{display:flex;align-items:center;gap:13px;background:#ffffff06;border:1px solid #ffffff0d;border-radius:11px;color:white;text-align:left;padding:15px 12px;cursor:pointer}.feature-shortcut:hover{background:#8a56ff20;border-color:#9a6cfb66}.feature-shortcut .shortcut-icon{display:grid;place-items:center;flex:0 0 39px;height:39px;border-radius:10px;background:#7c52c525;color:#c8a3ff;font-size:21px}.feature-shortcut .live-icon{background:#f24a7025;color:#ff8ca6}.feature-shortcut>span:nth-child(2){flex:1}.feature-shortcut strong{display:block;font-size:12px;font-weight:800}.feature-shortcut small{display:block;font-size:10px;color:#8c879f;margin-top:4px}.feature-shortcut>b{font-size:16px;color:#7e7794}.aside-tip{display:flex;gap:11px;margin-top:auto;background:linear-gradient(125deg,#50316d77,#24203277);border-radius:11px;padding:13px;color:#cab3e4}.aside-tip>span{font-size:24px;color:#c78cff}.aside-tip strong{font-size:11px}.aside-tip p{font-size:10px;line-height:1.5;color:#aa9cbd;margin:4px 0 0}
+.section-heading{margin:39px 0 17px;display:flex;align-items:end;justify-content:space-between;gap:12px}.section-heading h2{font-size:22px;font-weight:850;letter-spacing:-.6px;margin:0}.heading-dot{font-size:9px;font-weight:850;color:#ff8aa7;letter-spacing:1px;margin-left:9px;vertical-align:middle}.text-action{background:transparent;border:0;color:#bba0e7;font-size:11px;font-weight:800;cursor:pointer}.text-action:hover{color:white}.section-note{font-size:11px;color:#807a90}
+.popular-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px;overflow:visible;padding:0}.popular-channel{height:172px;min-height:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:16px;border-radius:13px;background:linear-gradient(140deg,#211c31,#151420);border:1px solid #ffffff16;position:relative;overflow:hidden;color:white;cursor:pointer}.popular-channel:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 95% 5%,#ae7bff1b,transparent 65%)}.popular-channel:hover{transform:translateY(-4px);border-color:#a875ff}.popular-channel.az7{background:linear-gradient(145deg,#172d45,#121824)}.popular-channel.canal5{background:linear-gradient(145deg,#35203d,#1b1726)}.popular-channel.estrellas{background:linear-gradient(145deg,#30203e,#1b1726)}.popular-channel.telemundo{background:linear-gradient(145deg,#402334,#1b1726)}.popular-channel.news{background:linear-gradient(145deg,#1a2c39,#151824)}
+.popular-channel .station-logo{position:relative;top:auto;right:auto;width:100%;height:81px;min-height:81px;border-radius:10px;background:#ffffff0d;box-shadow:none;display:flex;align-items:center;justify-content:center;gap:5px;flex-direction:column;color:#fff;border:1px solid #ffffff0e;overflow:hidden;padding:8px}
+.station-logo>b{font-size:11px;font-weight:900;letter-spacing:2px}.station-logo>strong{font-size:29px;line-height:1;font-weight:1000;letter-spacing:-1px}.popular-channel.estrellas .station-logo>strong,.popular-channel.telemundo .station-logo>strong{font-size:17px;letter-spacing:0}.popular-channel.news .station-logo>strong{font-size:25px}.popular-meta{display:flex;flex-direction:column;gap:4px;z-index:1}.popular-meta strong{font-size:12px}.popular-meta small{font-size:10px;color:#9993aa}.popular-play{position:absolute;bottom:18px;right:16px;width:27px;height:27px;border:1px solid #ffffff26;border-radius:50%;display:grid;place-items:center;font-size:10px;color:#ddd1f2}
+.popular-channel .station-logo.logo{background:#ffffffec;padding:8px;border-color:transparent}.popular-channel .station-logo.logo img{width:100%;height:100%;object-fit:contain}.popular-channel .station-logo.logo-fallback{background:#ffffff0d;color:#fff;font-size:16px}.popular-channel .station-logo.logo-fallback .fallback-wordmark{font-size:17px}
+.genre-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:13px}.genre-tile{min-height:119px;border-radius:13px;border:1px solid #ffffff15;background:linear-gradient(145deg,#211d2d,#171520);color:#fff;display:flex;flex-direction:column;align-items:flex-start;text-align:left;justify-content:flex-end;position:relative;padding:15px;cursor:pointer;overflow:hidden}.genre-tile:hover{transform:translateY(-3px);border-color:#aa7bf5}.genre-glyph{position:absolute;top:10px;right:16px;font-size:42px;color:#bb84ff55}.genre-tile strong{font-size:13px}.genre-tile small{font-size:10px;color:#9890a6;margin-top:5px}.genre-tile>b{position:absolute;right:14px;bottom:14px;color:#9f8cb8;font-size:16px}.genre-tile:nth-child(2){background:linear-gradient(140deg,#252440,#161522)}.genre-tile:nth-child(3){background:linear-gradient(140deg,#392237,#1b1522)}.genre-tile:nth-child(4){background:linear-gradient(140deg,#1c3039,#131c22)}.genre-tile:nth-child(5){background:linear-gradient(140deg,#343048,#1b1927)}
+.guide-promo{position:relative;margin-top:37px;min-height:185px;border:1px solid #ffffff14;border-radius:16px;background:linear-gradient(105deg,#251b36,#181520 70%);padding:30px;display:flex;align-items:center;justify-content:space-between;gap:20px;overflow:hidden}.guide-promo>div:first-child{position:relative;z-index:2}.guide-promo h2{font-size:22px;margin:0 0 7px;letter-spacing:-.6px}.guide-promo p{font-size:12px;color:#a69ab6;margin:0}.guide-promo button{position:relative;z-index:2;border:1px solid #b583e2;background:#7d4bbb;color:#fff;padding:13px 17px;border-radius:9px;font-size:10px;font-weight:850;cursor:pointer;white-space:nowrap}.guide-promo-grid{position:absolute;right:-70px;bottom:-110px;transform:rotate(-15deg);display:grid;grid-template-columns:repeat(3,120px);gap:9px;opacity:.22}.guide-promo-grid i{height:64px;border-radius:7px;background:#ae82e7}
+.liga-section{background:transparent;border:0;border-top:1px solid #ffffff12;margin:10px clamp(24px,4vw,65px) 0;padding:40px 0 50px}.liga-heading h2{color:white}.liga-live-pill{background:#221b32;border-color:#ffffff18}.liga-filter.active{background:#7f4bc2;color:white}.liga-match,.liga-table-card,.liga-info-card{background:#181522;border:1px solid #ffffff12}.home-note{background:#0b0a12;border-top:1px solid #ffffff12;color:#756f85;padding:22px clamp(24px,4vw,65px);font-size:11px}.home-note span{color:#b39acb}
+/* Reproductor y guía tipo decodificador */
+body.watching{background:#0b0a12}#tvPage.active{display:block;min-height:100vh;background:radial-gradient(ellipse at 15% -20%,#36214d,transparent 45%),#0b0a12}.tv-toolbar{width:min(1480px,94vw);margin:20px auto 0}.tv-toolbar button{background:#201a2c;border:1px solid #ffffff20;border-radius:10px}.tv-actions{width:min(1480px,94vw);gap:9px}.tv-actions button,.guide-toolbar button{background:#1e1929;border:1px solid #ffffff19;color:#d7cee4;border-radius:9px}.tv-actions button:hover,.guide-toolbar button:hover{background:#6f43a9}.tv-actions span{display:none}main{width:min(1480px,94vw);margin:22px auto 65px}.eyebrow{color:#b68bec}.headline h1{font-size:clamp(30px,3.7vw,50px)}.headline h1 span{color:#b88cf0}.layout{grid-template-columns:minmax(0,1.7fr) minmax(310px,.82fr);gap:19px}.player-shell{border-radius:15px;background:#0b0b12;border:1px solid #ffffff1b;box-shadow:0 20px 70px #0008}.player-top{background:#191522;border-color:#ffffff12;padding:12px 17px}.channel-badge{background:#2c2340;border-radius:7px;padding:5px;min-width:48px;min-height:38px}.quality{color:#9b8eaa}.screen{background:radial-gradient(circle at center,#301b44,#090810 70%)}.big-logo{font-size:clamp(35px,5vw,70px);letter-spacing:-3px;color:#f8efff}.big-logo span{color:#b57cff}.controls{background:#14111c;border-color:#ffffff13}.control{background:#2b213b;border-radius:9px}.control:hover{background:#4d3474}.control.primary{background:#8251c6}.volume{accent-color:#ad7cf6}.info{background:#181421;border-color:#ffffff12}.catalog{background:#16131f;border-color:#ffffff1a;border-radius:15px}.catalog-head{background:#1d1928}.catalog-head h2{font-size:17px}.search{background:#0d0c15;color:#fff;border:1px solid #ffffff20;border-radius:9px}.tabs{background:#1d1928}.tab.active{background:#7946bc;color:white}.channel-item{background:transparent;border-bottom:1px solid #ffffff0e;min-height:70px;padding:11px 13px}.channel-item:hover,.channel-item.selected{background:#7442b527}.channel-item.selected{border-left:3px solid #b886f8}.logo,.guide-logo{width:60px;height:45px;flex:0 0 60px;background:#fff;border-radius:9px;padding:5px;display:grid;place-items:center;overflow:hidden}.logo img,.guide-logo img{width:100%;height:100%;object-fit:contain}.logo.logo-fallback,.guide-logo.logo-fallback{background:#322544;color:#e4d1ff;border:1px solid #ffffff13}.fallback-wordmark{display:block;font-size:11px;line-height:1.1;text-align:center;font-weight:950;letter-spacing:-.3px;word-break:break-word}.ch-name{font-size:12px}.ch-meta{color:#8e839c}.channel-number{color:#a58ebc}.tag{background:#3a2c4c;color:#cbb2f0}.tag.spanish{background:#35293c;color:#dfafca}.guide-modal{background:#07070be8}.guide-wrap{background:#15121d;border:1px solid #ffffff1e;border-radius:16px}.guide-head{background:#241b32;border-color:#ffffff15}.guide-times{background:#241d30}.guide-program{background:#1d1826}.guide-program:hover,.guide-channel:hover{background:#38284b}.guide-side{background:#1b1626}.guide-channel{background:#1b1725}.quick-menu{background:#211a2e;border:1px solid #ffffff1d}
+@media(max-width:1170px){.featured-layout{grid-template-columns:1fr}.feature-aside{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.feature-aside .aside-label,.feature-aside .aside-tip{display:none}.hero-feature{min-height:370px}.popular-row{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media(max-width:830px){.home-stage{margin-left:0;padding-bottom:68px}.home-nav{width:100%;height:65px;top:auto;bottom:0;left:0;right:0;flex-direction:row;align-items:center;justify-content:space-around;padding:5px 7px;background:#14111df2;border-right:0;border-top:1px solid #ffffff22;backdrop-filter:blur(15px)}.home-nav .rail-logo,.home-nav .rail-spacer,.home-nav button[data-home-tab="ajustes"]{display:none}.home-nav button{width:auto;min-width:0;flex:1;min-height:54px;border-radius:8px;gap:3px;padding:5px 2px}.home-nav button .nav-icon{font-size:19px}.home-nav button small{font-size:9px}.home-nav button.active:before{left:auto;top:0;height:3px;width:23px;border-radius:0 0 4px 4px}.home-top{height:70px;padding:0 19px}.home-brand{font-size:18px}.home-brand b{font-size:15px}.home-brand small{font-size:8px;letter-spacing:1px}.signal-chip,.home-clock,.home-top-actions .top-icon:nth-of-type(2){display:none}.home-top-actions{gap:8px}.home-content{padding:14px 19px 45px}.home-greeting h1{font-size:29px}.weather-chip{display:none}.hero-feature{min-height:345px;padding:27px}.hero-copy{width:65%}.hero-title{font-size:clamp(31px,5.6vw,48px)}.hero-art{left:55%}.hero-ribbon{top:14px;right:14px}.popular-row{grid-template-columns:repeat(5,minmax(150px,1fr));overflow-x:auto;padding:0 0 10px;scroll-snap-type:x mandatory}.popular-channel{scroll-snap-align:start}.genre-row{grid-template-columns:repeat(5,minmax(145px,1fr));overflow-x:auto;padding-bottom:10px}.genre-tile{scroll-snap-align:start}.liga-section{margin:0 19px;padding:35px 0}.layout{grid-template-columns:1fr}}
+@media(max-width:560px){.home-top{padding:0 15px}.home-brand{font-size:17px}.home-brand b{font-size:13px}.home-content{padding:12px 14px 38px}.home-greeting{margin-bottom:17px}.home-greeting h1{font-size:26px}.featured-layout{gap:11px}.hero-feature{min-height:400px;align-items:flex-start;padding:27px 20px}.hero-copy{width:100%}.hero-label{font-size:9px}.hero-title{font-size:36px;max-width:310px;margin:16px 0 10px}.hero-copy p{max-width:300px;font-size:11px;line-height:1.6}.hero-art{inset:47% -10% -10% 35%;opacity:.5}.art-glass{width:180px}.hero-watermark{font-size:95px;letter-spacing:-8px}.hero-channel-mark{display:none}.hero-meta{gap:7px;flex-wrap:wrap}.hero-cta{margin-top:17px;padding:12px 16px}.hero-ribbon{font-size:8px}.feature-aside{grid-template-columns:1fr;gap:6px;padding:10px}.feature-shortcut{padding:11px}.feature-shortcut .shortcut-icon{height:34px;flex-basis:34px}.feature-shortcut strong{font-size:12px}.feature-shortcut small{font-size:9px}.section-heading{margin-top:30px}.section-heading h2{font-size:20px}.heading-dot{font-size:8px}.section-note{display:none}.popular-row{grid-template-columns:repeat(5,153px);gap:9px}.popular-channel{height:160px;padding:12px}.popular-channel .station-logo{height:74px;min-height:74px}.genre-row{grid-template-columns:repeat(5,145px);gap:9px}.guide-promo{margin-top:24px;padding:22px;display:block}.guide-promo h2{font-size:19px}.guide-promo button{margin-top:16px}.home-note{padding:18px 14px}.note-right{display:none}#siteHeader{padding:0 14px}.tv-actions{gap:5px}.tv-actions button{font-size:11px;padding:8px}.tv-toolbar{margin-top:12px}main{margin-top:15px}.headline p{display:none}.headline h1{font-size:34px}.controls{gap:7px}.status{font-size:9px}.catalog-head{padding:13px}.guide-wrap{width:98vw;max-height:94vh}.guide-side{display:none}}
+
+
+.load-more{display:block;width:calc(100% - 22px);margin:11px;background:#2e2043;color:#e6d3ff;border:1px solid #b284ed55;border-radius:9px;padding:13px;font-weight:800;cursor:pointer}.load-more:hover{background:#4e2e77}.home-nav button[data-home-action]{min-width:0}.popular-channel .station-logo.channel-logo-slot{width:100%;height:81px;flex:0 0 81px}.hero-channel-mark .channel-logo-slot.logo{flex:0 0 34px}.logo-fallback .fallback-wordmark{color:inherit}.popular-channel .logo-fallback .fallback-wordmark{font-size:15px}.popular-channel .station-logo.logo-fallback{display:flex;align-items:center;justify-content:center}.hero-channel-mark .logo-fallback .fallback-wordmark{font-size:8px}.genre-tile:hover .genre-glyph{color:#e6cbff}.home-nav button{position:relative}
+
+/* ===== TV de paga: OSD inspirado en decodificadores ===== */
+#tvPage.active{min-height:100vh;background:#03050b;padding-bottom:36px}
+#tvPage .tv-toolbar{width:min(1500px,96vw);margin:12px auto 8px;display:flex;justify-content:space-between;align-items:center}
+#tvPage .tv-toolbar button{color:#fff;padding:9px 14px;cursor:pointer}
+#tvPage .tv-actions{width:min(1500px,96vw);margin:0 auto 12px}
+#tvPage main{width:min(1500px,96vw);margin:0 auto}
+#tvPage .eyebrow,#tvPage .headline,#tvPage .info{display:none}
+#tvPage .layout{display:block}
+#tvPage .layout>div{width:100%}
+#tvPage .catalog{display:none}
+#tvPage .player-shell{border:0;border-radius:0;background:#000;box-shadow:none;overflow:visible}
+#tvPage .player-top{display:none}
+#tvPage .screen{width:100%;aspect-ratio:16/9;max-height:calc(100vh - 175px);min-height:340px;background:#000;overflow:hidden}
+#tvPage .screen video{width:100%;height:100%;object-fit:contain;background:#000}
+#tvPage .screen .overlay{z-index:2}
+#tvPage .controls{justify-content:center;background:#080d20;border:1px solid #172f72;border-radius:0 0 12px 12px;padding:9px 12px}
+#tvPage .controls .control{background:#102b70;border:1px solid #3c6dff;color:white}
+#tvPage .controls .control.primary{background:#194be0}
+#tvPage .controls .status{color:#c5d6ff}
+.tv-osd{position:absolute;z-index:4;left:2.5%;right:2.5%;bottom:3.2%;padding:0 15px 12px;color:#fff;opacity:1;pointer-events:none;filter:drop-shadow(0 5px 14px #0009)}
+.osd-topline{height:7px;border-radius:9px 9px 0 0;background:linear-gradient(90deg,#b64cff,#4e8cff 55%,#15d8ef);margin:0 12px -1px;position:relative}
+.osd-topline:after{content:"";position:absolute;right:0;top:-2px;width:38%;height:4px;border-radius:5px;background:#12d9ee;box-shadow:0 0 10px #12d9ee}
+.osd-live{position:absolute;left:14px;top:-26px;background:#102f8f;padding:5px 11px;border-radius:7px 7px 0 0;font-size:10px;font-weight:900;letter-spacing:1.3px}
+.osd-live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ff365d;margin-right:6px;box-shadow:0 0 8px #ff365d}
+.osd-clock{position:absolute;right:14px;top:-37px;font-size:clamp(18px,3vw,34px);font-weight:900;text-shadow:0 2px 8px #000}
+.osd-main{display:grid;grid-template-columns:clamp(74px,12vw,145px) clamp(95px,15vw,175px) minmax(180px,1fr) minmax(170px,23%);gap:12px;align-items:center;padding:12px 13px 8px;background:linear-gradient(110deg,#092f9d 0%,#103eb6 55%,#0b2e8d 100%);border:1px solid #244fc7;border-radius:0 14px 14px 14px;box-shadow:0 12px 28px #0009}
+.osd-number{height:clamp(60px,8vw,100px);display:grid;place-items:center;background:linear-gradient(145deg,#df58e9,#ad3ed2);font-size:clamp(22px,4vw,42px);font-weight:1000;letter-spacing:1px;border:1px solid #e8a1ff;border-radius:2px}
+.osd-station{height:clamp(58px,7vw,88px);display:grid;place-items:center;background:#173e9c;border-radius:8px;padding:7px;overflow:hidden}
+.osd-station img{width:100%;height:100%;object-fit:contain;background:#fff;border-radius:4px;padding:4px}
+.osd-logo-fallback{font-size:clamp(13px,2vw,22px);font-weight:1000;text-align:center;line-height:1.05}
+.osd-program{min-width:0;align-self:center}
+.osd-program>strong{display:block;font-size:clamp(14px,2.2vw,27px);font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.osd-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}.osd-tags span{font-size:clamp(9px,1.1vw,12px);font-weight:800;padding:4px 9px;background:#2b70d2;border-radius:20px}
+.osd-load{height:5px;background:#071d5c;border-radius:8px;overflow:hidden}.osd-load i{display:block;width:8%;height:100%;background:#18d6ef;box-shadow:0 0 9px #18d6ef;transition:width .3s}
+.osd-program small{display:block;font-size:clamp(9px,1vw,12px);font-weight:800;margin-top:5px;color:#e6f7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osd-schedule{min-width:0;display:flex;flex-direction:column;gap:5px;font-size:clamp(9px,1vw,12px);font-weight:800;overflow:hidden}
+.osd-schedule>strong{font-size:clamp(13px,1.7vw,22px);text-align:right}
+.osd-schedule b,.osd-schedule span,.osd-schedule small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osd-schedule b{font-size:clamp(10px,1.2vw,14px)}.osd-rule{height:3px;background:#20c9ef;border-radius:4px}.osd-schedule small{color:#c6dcff}
+.osd-bottom{display:flex;justify-content:center;align-items:center;gap:clamp(4px,1vw,13px);flex-wrap:wrap;padding:8px 8px 0;font-size:clamp(8px,.95vw,12px);font-weight:900;text-shadow:0 2px 4px #00164e}
+.osd-bottom i{font-style:normal;color:#8bdfff}
+/* Películas y series a la carta */
+#vodPage{display:none;min-height:100vh;background:radial-gradient(ellipse at 72% 0%,#28214c 0,transparent 42%),#090911;color:#f7f6ff;padding:0 0 50px}
+#vodPage.active{display:block}
+.vod-top{height:70px;display:flex;align-items:center;gap:22px;padding:0 clamp(16px,5vw,72px);border-bottom:1px solid #ffffff18;background:#090911e8;position:sticky;top:0;z-index:7;backdrop-filter:blur(14px)}
+.vod-top button{background:#201a2e;border:1px solid #ffffff20;color:white;border-radius:9px;padding:9px 13px;cursor:pointer}.vod-brand{font-weight:1000;letter-spacing:1px;font-size:17px}.vod-brand b{color:#b68aff}.vod-profile{margin-left:auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#8b55d7,#264fbd);font-weight:900}
+.vod-hero{width:min(1350px,94vw);margin:26px auto 30px;min-height:260px;border:1px solid #ffffff19;border-radius:20px;overflow:hidden;padding:clamp(22px,4vw,48px);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(100deg,#181427 0%,#292047 58%,#10192f 100%);position:relative}
+.vod-kicker,.vod-section-head small{font-size:10px;letter-spacing:2px;color:#c39bff;font-weight:900}.vod-hero h1{font-size:clamp(32px,5vw,58px);line-height:1.02;letter-spacing:-2px;margin:12px 0}.vod-hero h1 em{color:#bd91ff;font-style:normal}.vod-hero p{color:#c5bfd5;font-size:14px}.vod-hero-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}.vod-hero-actions button{background:#8352cb;color:white;border:0;border-radius:9px;padding:12px 16px;font-weight:900;cursor:pointer}.vod-hero-actions button+button{background:#28233a;border:1px solid #ffffff26}.vod-hero-art{width:230px;height:180px;flex:0 0 230px;border-radius:18px;background:radial-gradient(circle at 50% 35%,#a878e8,#49347d 48%,#14152a 75%);display:flex;align-items:center;justify-content:center;flex-direction:column;box-shadow:0 20px 55px #0008;transform:rotate(4deg);margin-right:4vw}.vod-hero-art span{font-size:27px;font-weight:1000;letter-spacing:-1px}.vod-hero-art b{font-size:52px;color:#d9b8ff;line-height:.8}.vod-hero-art small{letter-spacing:4px;font-weight:900;margin-top:12px}
+.vod-toolbar{width:min(1350px,94vw);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.vod-tabs{display:flex;gap:8px}.vod-tab{border:1px solid #ffffff1c;background:#191626;color:#c9c3d8;padding:10px 17px;border-radius:24px;font-weight:900;cursor:pointer}.vod-tab.active{background:#7444b5;color:white;border-color:#a777e5}.vod-search-wrap{display:flex;align-items:center;gap:8px;background:#171421;border:1px solid #ffffff20;border-radius:10px;padding:0 12px;color:#bda2e8}.vod-search-wrap input{width:min(340px,58vw);background:transparent;border:0;outline:0;color:white;padding:12px 0;font-size:13px}
+.vod-section-head{width:min(1350px,94vw);margin:28px auto 14px;display:flex;justify-content:space-between;align-items:end;gap:10px}.vod-section-head h2{font-size:24px;margin:5px 0 0}.vod-section-head>span{font-size:11px;color:#9d93b0}.vod-grid{width:min(1350px,94vw);margin:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:18px}.vod-card{background:#171421;border:1px solid #ffffff16;border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;color:white;padding:0;transition:transform .2s,border-color .2s}.vod-card:hover{transform:translateY(-4px);border-color:#9564d4}.vod-poster{width:100%;aspect-ratio:2/3;display:grid;place-items:center;background:linear-gradient(145deg,#2a2440,#11111b);overflow:hidden}.vod-poster img{width:100%;height:100%;object-fit:cover}.vod-poster span{font-size:42px;color:#b18be4;font-weight:1000}.vod-card-copy{padding:10px 11px 13px}.vod-card-copy strong{display:block;font-size:12px;line-height:1.35;max-height:34px;overflow:hidden}.vod-card-copy small{display:block;color:#9e95b0;margin-top:5px;font-size:10px}.vod-loading,.vod-empty{grid-column:1/-1;padding:45px 12px;text-align:center;color:#aaa0bc}.vod-loading i{display:block;width:24px;height:24px;border:3px solid #ffffff30;border-top-color:#bb8aff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}.vod-foot{width:min(1350px,94vw);margin:25px auto;color:#81798f;font-size:10px;line-height:1.6}
+.vod-player{display:none;position:fixed;inset:0;background:#030308;z-index:30;padding:15px;flex-direction:column}.vod-player.active{display:flex}.vod-player-head{height:54px;display:flex;align-items:center;gap:18px;color:white}.vod-player-head button{background:#241b32;color:white;border:1px solid #ffffff20;border-radius:8px;padding:9px 12px}.vod-player-head strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vod-player video{width:100%;height:calc(100vh - 115px);object-fit:contain;background:#000}.vod-player p{font-size:11px;color:#aaa0bc}
+@media(max-width:760px){.osd-main{grid-template-columns:64px 75px minmax(0,1fr);gap:7px;padding:8px}.osd-number{height:55px;font-size:20px}.osd-station{height:52px;padding:4px}.osd-schedule{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:4px 8px}.osd-schedule>strong{text-align:left}.osd-schedule .osd-rule{grid-column:1/-1}.osd-schedule small{display:none}.osd-program>strong{font-size:13px}.osd-bottom{justify-content:flex-start;font-size:8px;gap:4px}.tv-osd{left:1%;right:1%;bottom:2%;padding:0 5px 5px}.osd-clock{top:-28px}.osd-live{top:-22px}.vod-hero{min-height:240px}.vod-hero-art{width:105px;height:105px;flex-basis:105px;margin:0 0 0 8px}.vod-hero-art span{font-size:14px}.vod-hero-art b{font-size:32px}.vod-hero-art small{font-size:7px;letter-spacing:2px}.vod-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.vod-section-head h2{font-size:19px}}
+@media(max-width:420px){.osd-main{grid-template-columns:56px 1fr;}.osd-station{display:none}.osd-number{height:48px}.osd-program{grid-column:2}.osd-schedule{grid-column:1/-1}.vod-hero-art{display:none}}
+
+
+/* OSD del decodificador: se oculta cinco segundos después de sintonizar */
+.tv-osd{transition:opacity .35s ease,transform .35s ease}
+.tv-osd.osd-hidden{opacity:0;transform:translateY(18px)}
+
+
+/* Ajustes finales de instalación y pantallas móviles */
+html{min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{padding-bottom:env(safe-area-inset-bottom)}
+button,a,input,select{touch-action:manipulation}
+@media(max-width:700px){
+ header{padding-left:14px;padding-right:14px}
+ #tvPage .screen{min-height:220px;max-height:calc(100svh - 205px)}
+ #tvPage .tv-osd{left:2%;right:2%;bottom:2%;padding:0 8px 7px}
+ #tvPage .osd-main{gap:7px}
+ #tvPage .osd-number{min-width:60px}
+ #tvPage .osd-bottom{overflow:hidden;white-space:nowrap}
+ #tvPage .controls{gap:6px;padding:9px 8px}
+ #tvPage .volume{width:62px}
+}
+
+
+/* Pantalla completa real: el reproductor ocupa todo el viewport */
+.player-shell:fullscreen,
+.player-shell:-webkit-full-screen{
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100vh!important;height:100dvh!important;
+  max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  display:flex!important;flex-direction:column!important;
+  overflow:hidden!important;background:#000!important;box-shadow:none!important;
+}
+.player-shell:fullscreen .screen,
+.player-shell:-webkit-full-screen .screen{
+  flex:1 1 auto!important;width:100%!important;height:auto!important;
+  min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
+  overflow:hidden!important;background:#000!important;
+}
+.player-shell:fullscreen .screen video,
+.player-shell:-webkit-full-screen .screen video{
+  display:block!important;width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;object-fit:contain!important;
+}
+.player-shell:fullscreen .screen .overlay,
+.player-shell:-webkit-full-screen .screen .overlay{inset:0!important}
+.player-shell:fullscreen .controls,
+.player-shell:-webkit-full-screen .controls{
+  flex:0 0 auto!important;width:100%!important;min-height:54px!important;
+  margin:0!important;padding:9px 12px!important;
+  display:flex!important;align-items:center!important;gap:8px!important;
+  background:rgba(5,8,22,.96)!important;border:0!important;border-top:1px solid #ffffff22!important;
+  border-radius:0!important;z-index:20!important;
+}
+.player-shell:fullscreen .tv-osd,
+.player-shell:-webkit-full-screen .tv-osd{
+  left:2.5%!important;right:2.5%!important;bottom:calc(3.2% + 54px)!important;
+}
+.player-shell:fullscreen .controls .spacer,
+.player-shell:-webkit-full-screen .controls .spacer{flex:1 1 auto!important}
+@media(max-width:700px){
+ .player-shell:fullscreen .controls,
+ .player-shell:-webkit-full-screen .controls{min-height:48px!important;padding:6px!important;gap:5px!important}
+ .player-shell:fullscreen .tv-osd,
+ .player-shell:-webkit-full-screen .tv-osd{left:1.5%!important;right:1.5%!important;bottom:calc(2% + 48px)!important;padding-left:6px!important;padding-right:6px!important}
+}
+
+
+/* Android TV / control remoto: foco visible y objetivos grandes */
+body.android-tv button,body.android-tv a,body.android-tv input,body.android-tv select{
+  scroll-margin:100px;
+}
+body.android-tv :focus-visible{
+  outline:4px solid #42d9ff!important;
+  outline-offset:4px!important;
+  box-shadow:0 0 0 7px #42d9ff35!important;
+}
+body.android-tv button,body.android-tv .control,body.android-tv .tab{
+  min-height:48px;
+}
+body.android-tv .home-nav button,body.android-tv .vod-card,body.android-tv .channel-item{
+  transition:transform .16s ease,outline .16s ease;
+}
+body.android-tv button:focus-visible,body.android-tv a:focus-visible{
+  transform:scale(1.035);
+}
+
+</style></head>
+<body>
+
+<header id="siteHeader"><div class="brand"><div class="mark">P</div><div>izzi TV POCOYITO<small>TU ENTRETENIMIENTO, SIEMPRE</small></div></div><div class="live"><i class="dot"></i> TV EN DIRECTO</div></header>
+
+<section class="home-screen" id="homeScreen">
+  <nav class="home-nav" aria-label="Navegación principal">
+    <div class="rail-logo" title="izzi TV Pocoyito"><span>p</span><i></i></div>
+    <button type="button" data-home-tab="inicio" class="active" title="Inicio"><span class="nav-icon">⌂</span><small>Inicio</small></button>
+    <button type="button" data-open-tv title="Televisión"><span class="nav-icon">▣</span><small>En vivo</small></button>
+    <button type="button" data-open-vod="movies" title="Películas"><span class="nav-icon">▤</span><small>Películas</small></button>
+    <button type="button" data-open-vod="series" title="Series"><span class="nav-icon">▥</span><small>Series</small></button>
+    <button type="button" data-home-action="guide" title="Guía"><span class="nav-icon">▦</span><small>Guía</small></button>
+    <button type="button" data-home-tab="ligamx" title="Liga MX"><span class="nav-icon">⚽</span><small>Deportes</small></button>
+    <button type="button" data-home-action="favorites" title="Favoritos"><span class="nav-icon">♡</span><small>Favoritos</small></button>
+    <div class="rail-spacer"></div>
+    <button type="button" data-home-tab="ajustes" title="Configuración"><span class="nav-icon">⚙</span><small>Ajustes</small></button>
+  </nav>
+  <div class="home-stage">
+    <div class="home-top">
+      <div class="home-brand"><span class="brand-mark">p</span><span>izzi <strong>TV</strong> <b>Pocoyito</b><small>UNA NUEVA FORMA DE VER TV</small></span></div>
+      <div class="home-top-actions">
+        <span class="signal-chip"><i></i> TV POR INTERNET</span>
+        <button class="top-icon" id="homeSearchBtn" aria-label="Buscar canales">⌕</button>
+        <button class="top-icon" id="homeHelpBtn" aria-label="Ayuda">?</button>
+        <div class="home-clock"><strong id="homeClock">--:--</strong><span id="homeDate">Hoy</span></div>
+        <div class="profile-dot" aria-label="Perfil Pocoyito">P</div>
+      </div>
+    </div>
+    <div class="home-content">
+      <div class="home-greeting"><div><span class="home-kicker">BIENVENIDO A TU TELEVISIÓN</span><h1>Hola, ¿qué vamos a ver?</h1></div><span class="weather-chip"><i></i> TU ENTRETENIMIENTO, EN UN SOLO LUGAR</span></div>
+      <div class="featured-layout">
+        <button class="hero-feature" id="heroAzteca" data-open-tv>
+          <div class="hero-glow"></div><div class="hero-ribbon">EN DIRECTO</div>
+          <div class="hero-copy"><div class="hero-label"><i></i> TU EXPERIENCIA DE TV</div><h2 class="hero-title">La tele que te gusta,<br><em>cuando tú quieras.</em></h2><p>Canales de México, deportes, noticias y entretenimiento en vivo. Todo en un solo lugar.</p><div class="hero-meta"><span class="live-pill"><i></i> TV EN VIVO</span><span>CANAL DESTACADO: AZTECA 7</span></div><span class="hero-cta"><b>▶</b> COMENZAR A VER</span></div>
+          <div class="hero-art" aria-hidden="true"><div class="art-glass"><div class="art-inner"><span class="hero-watermark">TV</span><span class="hero-signal">● LIVE</span></div></div><div class="hero-channel-mark"><span class="channel-logo-slot" data-hero-logo="azteca"></span><span>AZTECA 7</span></div></div>
+        </button>
+        <div class="feature-aside"><div class="aside-label">ACCESOS DIRECTOS</div>
+          <button class="feature-shortcut" data-home-action="live"><span class="shortcut-icon live-icon">▶</span><span><strong>Ver televisión</strong><small>Canales disponibles</small></span><b>↗</b></button>
+          <button class="feature-shortcut" data-home-action="guide"><span class="shortcut-icon">▦</span><span><strong>Guía de TV</strong><small>Explora los horarios</small></span><b>↗</b></button>
+          <button class="feature-shortcut" data-open-vod="movies"><span class="shortcut-icon">▤</span><span><strong>Películas y series</strong><small>Catálogo a la carta</small></span><b>↗</b></button>
+          <button class="feature-shortcut" data-home-action="favorites"><span class="shortcut-icon">♡</span><span><strong>Mis favoritos</strong><small>Lo que más ves</small></span><b>↗</b></button>
+          <div class="aside-tip"><span>✦</span><div><strong>Tu TV, a tu estilo</strong><p>Guarda canales y cambia de señal con un clic.</p></div></div>
+        </div>
+      </div>
+      <div class="section-heading channel-heading"><div><span class="home-kicker">EN LA PARRILLA</span><h2>Canales destacados <span class="heading-dot">● EN VIVO</span></h2></div><button class="text-action" id="allChannelsBtn">Explorar todos <b>→</b></button></div>
+      <div class="popular-row">
+        <button class="popular-channel az7" data-home-channel="azteca"><span class="station-logo channel-logo-slot" data-brand="AZTECA 7"><b>AZTECA</b><strong>7</strong></span><span class="popular-meta"><strong>Azteca 7</strong><small>Entretenimiento</small></span><span class="popular-play">▶</span></button>
+        <button class="popular-channel canal5" data-home-channel="canal5"><span class="station-logo channel-logo-slot" data-brand="CANAL 5"><b>CANAL</b><strong>5</strong></span><span class="popular-meta"><strong>Canal 5</strong><small>Series y diversión</small></span><span class="popular-play">▶</span></button>
+        <button class="popular-channel estrellas" data-home-channel="estrellas"><span class="station-logo channel-logo-slot" data-brand="LAS ESTRELLAS"><b>LAS</b><strong>ESTRELLAS</strong></span><span class="popular-meta"><strong>Las Estrellas</strong><small>Entretenimiento</small></span><span class="popular-play">▶</span></button>
+        <button class="popular-channel telemundo" data-home-channel="telemundo"><span class="station-logo channel-logo-slot" data-brand="TELEMUNDO"><b>TELE</b><strong>MUNDO</strong></span><span class="popular-meta"><strong>Telemundo</strong><small>En español</small></span><span class="popular-play">▶</span></button>
+        <button class="popular-channel news" data-home-channel="news"><span class="station-logo channel-logo-slot" data-brand="NOTICIAS"><b>NOTICIAS</b><strong>24/7</strong></span><span class="popular-meta"><strong>Noticias</strong><small>Información</small></span><span class="popular-play">▶</span></button>
+      </div>
+      <div class="section-heading explore-heading"><div><span class="home-kicker">DESCUBRE ALGO NUEVO</span><h2>Explora por categoría</h2></div><span class="section-note">Encuentra algo para cada momento</span></div>
+      <div class="genre-row">
+        <button class="genre-tile" data-genre="tv"><span class="genre-glyph">▣</span><strong>TV abierta</strong><small>Señales de México</small><b>↗</b></button>
+        <button class="genre-tile" data-genre="sports"><span class="genre-glyph">⚽</span><strong>Deportes</strong><small>La emoción en vivo</small><b>↗</b></button>
+        <button class="genre-tile" data-genre="movies"><span class="genre-glyph">▸</span><strong>Cine y series</strong><small>Para maratonear</small><b>↗</b></button>
+        <button class="genre-tile" data-genre="news"><span class="genre-glyph">◉</span><strong>Noticias</strong><small>Siempre al día</small><b>↗</b></button>
+        <button class="genre-tile" data-genre="kids"><span class="genre-glyph">✦</span><strong>Infantil</strong><small>Para los pequeños</small><b>↗</b></button>
+      </div>
+      <div class="guide-promo"><div><span class="home-kicker">GUÍA DE PROGRAMACIÓN</span><h2>Encuentra tu próximo canal favorito.</h2><p>Consulta la parrilla, guarda favoritos y sintoniza desde la guía.</p></div><button data-home-action="guide">ABRIR GUÍA <b>→</b></button><div class="guide-promo-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    </div>
+    <section class="liga-section" id="ligaMxSection">
+      <div class="liga-heading"><div><span class="home-kicker">EL FÚTBOL MEXICANO</span><h2>⚽ Liga MX <em>RESULTADOS</em></h2><p>Marcadores, próximos encuentros y tabla de posiciones.</p></div><div class="liga-live-pill"><i></i> DATOS EN LÍNEA</div></div>
+      <div class="liga-toolbar"><button class="liga-filter active" data-liga-filter="all">Todos</button><button class="liga-filter" data-liga-filter="live">En juego</button><button class="liga-filter" data-liga-filter="upcoming">Próximos</button><button class="liga-filter" data-liga-filter="completed">Finalizados</button><span id="ligaUpdated">Consultando marcadores…</span></div>
+      <div id="ligaMatches" class="liga-matches"><div class="liga-loading"><span class="liga-spinner"></span> Cargando partidos de Liga MX…</div></div>
+      <div class="liga-bottom"><div class="liga-table-card"><div class="liga-card-head"><h3>🏆 Tabla de posiciones</h3><span>Temporada actual</span></div><div id="ligaStandings" class="liga-standings"><p>Consultando clasificación…</p></div></div><div class="liga-info-card"><div class="liga-ball">⚽</div><h3>La pasión se vive aquí</h3><p>Revisa resultados y horarios de los equipos de México. Los marcadores se actualizan automáticamente cuando la fuente está disponible.</p><small>Los datos deportivos pueden tener retraso.</small></div></div>
+    </section>
+    <div class="home-note"><span>izzi TV Pocoyito</span> · Experiencia independiente de TV por internet <span class="note-right">No afiliada a izzi</span></div>
+  </div>
+</section>
+<div id="tvPage">
+  <div class="tv-toolbar"><button id="backHome">← Inicio</button><span style="color:#aebbd5;font-size:12px">Televisión · Guía de canales</span></div>
+
+<div class="tv-actions"><button id="openGuide">▦ GUÍA</button><button id="openQuick">☰ MENÚ</button><button id="showFavorites">♥ FAVORITOS</button><button id="channelUp">CH +</button><button id="channelDown">CH −</button><span style="color:#9eacd0;font-size:11px;align-self:center">Teclas: G guía · F favoritos · Esc salir · ↑↓←→ cambiar canal</span></div><main><div class="eyebrow">TELEVISIÓN · MÉXICO Y EL MUNDO HISPANO</div><div class="headline"><h1>Televisión <span>en vivo.</span></h1><p>Tu guía de canales mexicanos, en español y la familia Telemundo.</p></div>
+<div class="layout"><div><section class="player-shell"><div class="player-top"><div class="channel"><span class="channel-badge" id="currentBadge">EN VIVO</span><span id="currentName">Selecciona un canal</span></div><span class="quality">SEÑAL EN DIRECTO</span></div><div class="screen"><video id="video" playsinline controls></video>
+<div class="tv-osd" id="tvOsd">
+ <div class="osd-topline"><span class="osd-live"><i></i> EN VIVO</span><span class="osd-clock" id="osdClock">--:--</span></div>
+ <div class="osd-main"><div class="osd-number" id="osdNumber">----</div><div class="osd-station" id="osdStation"><span class="osd-logo-fallback">TV</span></div><div class="osd-program"><strong id="osdChannelName">Selecciona un canal</strong><div class="osd-tags"><span id="osdCountry">Televisión</span><span id="osdCategory">En directo</span></div><div class="osd-load"><i id="osdLoadBar"></i></div><small id="osdLoadText">Esperando señal…</small></div><div class="osd-schedule"><strong id="osdTime">--:--</strong><b id="osdNow">Ahora: información no disponible</b><div class="osd-rule"></div><span id="osdNext">Siguiente: información no disponible</span><small id="osdWindow">Guía EPG no disponible</small></div></div>
+ <div class="osd-bottom"><span>▲▼ Canal</span><i>·</i><span>A Info</span><i>·</i><span>B Anterior</span><i>·</i><span>X Guía rápida</span><i>·</i><span>Y Favorito</span><i>·</i><span>− Número</span><i>·</i><span>+ Menú</span><i>·</i><span>Stick: pantalla doble</span></div>
+</div><div class="overlay" id="overlay"><div class="spinner" id="spinner"></div><div class="big-logo">pocoyito <span>tv</span></div><p id="message">Cargando canales mexicanos y en español…</p></div></div><div class="controls"><button class="control primary" id="play">▶ Reproducir</button><button class="control" id="mute">♫</button><input class="volume" id="volume" type="range" min="0" max="1" step=".05" value="1" aria-label="Volumen"><span class="spacer"></span><span class="status" id="status">Cargando lista…</span><button class="control" id="fullscreen">⛶ Pantalla completa</button></div></section><section class="info"><h2 id="infoTitle">Televisión en español</h2><p>El catálogo combina la lista de México y la lista de idioma español de IPTV-org. Incluye un filtro dedicado a los canales identificados como Telemundo. Si una fuente de Canal 5 falla, el reproductor intenta automáticamente otras versiones disponibles del mismo canal. La disponibilidad depende de cada fuente; algunas pueden estar fuera de línea, geobloqueadas o no permitir reproducción en navegador.</p></section></div>
+<aside class="catalog"><div class="catalog-head"><h2>Canales disponibles</h2><p>Selecciona una señal para sintonizar.</p><input class="search" id="search" type="search" placeholder="Buscar canal…" autocomplete="off"></div><div class="tabs"><button class="tab active" data-filter="all">Todos</button><button class="tab" data-filter="mx">México</button><button class="tab" data-filter="spa">En español</button><button class="tab" data-filter="telemundo">Telemundo</button></div><div style="padding:10px 14px 0"><select id="categoryFilter" class="search" aria-label="Categoría"><option value="all">Todas las categorías</option><option value="tv">TV abierta</option><option value="news">Noticias</option><option value="entertainment">Entretenimiento</option><option value="sports">Deportes</option><option value="movies">Películas y series</option><option value="kids">Infantil</option><option value="music">Música</option></select></div><div class="count" id="count">Preparando catálogo…</div><div class="channels" id="channels"><div class="empty">Descargando listas de canales…</div></div></aside></div></main>
+</div>
+
+
+<section id="vodPage" aria-label="Películas y series">
+ <div class="vod-top"><button id="vodBack">← Inicio</button><div class="vod-brand">POCOYITO <b>ON DEMAND</b></div><div class="vod-profile">P</div></div>
+ <div class="vod-hero"><div><span class="vod-kicker">CINE · SERIES · ENTRETENIMIENTO</span><h1>Tu próxima historia<br><em>comienza aquí.</em></h1><p>Explora películas y series disponibles en Internet Archive.</p><div class="vod-hero-actions"><button id="vodBrowseMovies">▶ Explorar películas</button><button id="vodBrowseSeries">▣ Explorar series</button></div></div><div class="vod-hero-art"><span>POCOYITO</span><b>+</b><small>ON DEMAND</small></div></div>
+ <div class="vod-toolbar"><div class="vod-tabs"><button class="vod-tab active" data-vod-kind="movies">Películas</button><button class="vod-tab" data-vod-kind="series">Series</button></div><label class="vod-search-wrap">⌕ <input id="vodSearch" type="search" placeholder="Buscar películas o series..."></label></div>
+ <div class="vod-section-head"><div><small>CATÁLOGO A LA CARTA</small><h2 id="vodHeading">Películas para descubrir</h2></div><span id="vodStatus">Conectando con el catálogo…</span></div>
+ <div id="vodGrid" class="vod-grid"><div class="vod-loading"><i></i> Cargando títulos disponibles…</div></div>
+ <div class="vod-foot">Los títulos, imágenes y disponibilidad dependen de los metadatos y archivos publicados por Internet Archive. No todos los elementos incluyen un vídeo reproducible.</div>
+</section>
+<div id="vodPlayer" class="vod-player" aria-hidden="true"><div class="vod-player-head"><button id="vodPlayerBack">← Volver al catálogo</button><strong id="vodPlayerTitle">Reproduciendo</strong></div><video id="vodVideo" controls playsinline></video><p id="vodPlayerStatus">Preparando reproducción…</p></div>
+
+<section class="guide-modal" id="guideModal" aria-hidden="true">
+ <div class="guide-wrap">
+  <div class="guide-head">
+   <div><h2>▦ Guía de programación</h2><small>Canales en vertical · horarios en horizontal · datos EPG cuando estén disponibles</small></div>
+   <div class="guide-toolbar"><button id="guideAll">Todos</button><button id="guideFav">♥ Favoritos</button><button id="closeGuide">✕ Cerrar</button></div>
+  </div>
+  <div class="guide-body">
+   <div class="guide-list"><div class="guide-grid" id="guideGrid"></div></div>
+   <aside class="guide-side"><h3 id="guideInfoTitle">Información del canal</h3><p id="guideInfoText">Selecciona un canal para ver su información y sintonizarlo.</p><button id="guideTune" class="control primary" type="button" disabled>Sintonizar canal ▶</button><input class="guide-search" id="guideSearch" placeholder="Buscar en la guía…"><p>La programación detallada aparece cuando existe una fuente EPG para ese canal. Si no hay datos, se indica claramente y no se inventan nombres de programas.</p></aside>
+  </div>
+  <div class="remote-hint">Control: ↑ ↓ cambia canal · ← → navega horarios · Enter sintoniza · Esc cierra · Escribe el número de canal para sintonizarlo</div>
+ </div>
+</section>
+<div class="quick-menu" id="quickMenu">
+ <button data-quick="guide">▦ Abrir guía de programación</button>
+ <button data-quick="favorites">♥ Mis canales favoritos</button>
+ <button data-quick="search">⌕ Buscar canales</button>
+ <button data-quick="home">⌂ Volver al inicio</button>
+ <button data-quick="close">✕ Cerrar menú</button>
+</div>
+
+<footer>Reproductor independiente y no oficial. No está afiliado ni respaldado por TV Azteca o IPTV-org.<br>Las listas y señales son proporcionadas por IPTV-org y sus fuentes públicas. La disponibilidad puede cambiar.</footer>
+<script>
+const SOURCES=[{key:'mx',url:'https://iptv-org.github.io/iptv/countries/mx.m3u'},{key:'spa',url:'https://iptv-org.github.io/iptv/languages/spa.m3u'}];
+const video=document.getElementById('video'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),spinner=document.getElementById('spinner'),statusEl=document.getElementById('status'),listEl=document.getElementById('channels'),countEl=document.getElementById('count');
+let hls=null,allChannels=[],filter='all',selected=null,canal5Tried=new Set(),playbackToken=0;
+const LAST_CHANNEL_KEY='izziPocoyitoLastChannelV1';
+let ligaGames=[],ligaFilter='all',ligaBusy=false;
+function attr(line,key){const m=line.match(new RegExp('(?:^|\\s)'+key+'="([^"]*)"','i'));return m?m[1]:''}
+function parseM3U(text,source){const lines=text.split(/\r?\n/),out=[];for(let i=0;i<lines.length;i++){const line=lines[i].trim();if(!line.startsWith('#EXTINF'))continue;const comma=line.indexOf(',');const name=(comma>=0?line.slice(comma+1):attr(line,'tvg-name')).trim()||'Canal sin nombre';let url='';for(let j=i+1;j<lines.length;j++){const candidate=lines[j].trim();if(!candidate)continue;if(candidate.startsWith('#'))continue;url=candidate;break;}if(!url)continue;const id=attr(line,'tvg-id');const telemundo=/telemundo/i.test(name+' '+id+' '+(attr(line,'group-title')||''));out.push({id:id,name,logo:attr(line,'tvg-logo'),group:attr(line,'group-title')||'General',country:source==='mx',spanish:source==='spa',telemundo,url});}return out}
+function mergeChannels(mx,spa){const map=new Map();for(const c of [...mx,...spa]){const key=c.url;if(map.has(key)){const old=map.get(key);old.country ||= c.country;old.spanish ||= c.spanish;old.telemundo ||= c.telemundo;if(!old.logo)old.logo=c.logo;}else map.set(key,c);}return [...map.values()].sort((a,b)=>{if(a.country!==b.country)return a.country?-1:1;return a.name.localeCompare(b.name,'es');});}
+function categoryOf(c){const t=(c.name+' '+c.group).toLowerCase();if(/kids|niñ|infantil|cartoon|disney junior|nickelodeon/.test(t))return 'kids';if(/sport|deport|futbol|fútbol|espn|fox sports|tudn/.test(t))return 'sports';if(/news|noticia|cnn|milenio|foro tv|adn 40/.test(t))return 'news';if(/movie|cine|pel[ií]cula|film|hbo|cinemax|studio universal/.test(t))return 'movies';if(/music|m[uú]sica|mtv|telehit|bandamax/.test(t))return 'music';if(/entreten|series|comedy|universal|sony|warner/.test(t))return 'entertainment';if(c.country)return 'tv';return 'entertainment';}
+function visibleChannels(){const q=document.getElementById('search').value.trim().toLocaleLowerCase('es');const cat=document.getElementById('categoryFilter')?.value||'all';return allChannels.filter(c=>(filter==='all'||(filter==='mx'&&c.country)||(filter==='spa'&&c.spanish)||(filter==='telemundo'&&c.telemundo))&&(cat==='all'||categoryOf(c)===cat)&&(!q||c.name.toLocaleLowerCase('es').includes(q)||c.group.toLocaleLowerCase('es').includes(q)));}
+
+const logoIndex=new Map();
+let catalogLimit=180;
+function channelInitials(name){
+ const clean=String(name||'TV').replace(/\b(hd|fhd|4k|sd|méxico|mexico)\b/ig,'').trim();
+ const words=clean.split(/\s+/).filter(Boolean);
+ return (words.length>1?(words[0][0]+words[1][0]):clean.slice(0,3)).toUpperCase();
+}
+function channelWordmark(name){
+ return String(name||'TV').replace(/\s+(?:HD|FHD|4K|SD)\b/ig,'').trim().slice(0,24);
+}
+function logoKey(id){return String(id||'').split('@')[0].trim().toLowerCase();}
+function logoCandidates(c){
+ const urls=[]; const entry=logoIndex.get(logoKey(c.id));
+ if(entry) urls.push(...entry);
+ if(c.logo) urls.push(c.logo);
+ return [...new Set(urls.filter(url=>/^https:\/\//i.test(url)))];
+}
+function createChannelLogo(c,guide=false){
+ const wrap=document.createElement('span');
+ wrap.className=guide?'guide-logo':'logo';
+ wrap.title=c.name;
+ const fallback=()=>{
+  wrap.classList.add('logo-fallback');
+  wrap.replaceChildren();
+  const word=document.createElement('span');word.className='fallback-wordmark';
+  word.textContent=channelWordmark(c.name);wrap.appendChild(word);
+  wrap.setAttribute('aria-label','Nombre del canal: '+c.name);
+ };
+ const urls=logoCandidates(c);let index=0;
+ function next(){
+  if(index>=urls.length){fallback();return;}
+  const img=new Image();
+  img.alt='Logotipo de '+c.name;img.decoding='async';img.loading='eager';
+  img.referrerPolicy='no-referrer';
+  img.onload=()=>{wrap.classList.remove('logo-fallback');wrap.replaceChildren(img);};
+  img.onerror=next;
+  img.src=urls[index++];
+ }
+ // Mostrar siempre el nombre hasta que el logotipo real termine de cargar.
+ fallback();if(urls.length)next();
+ return wrap;
+}
+async function loadLogoIndex(){
+ try{
+  const r=await fetch('https://iptv-org.github.io/api/logos.json');
+  if(!r.ok)throw Error('Logo API no disponible');
+  const rows=await r.json();
+  for(const x of rows){
+   if(!x.channel||!x.url||!/^https:\/\//i.test(x.url))continue;
+   const k=logoKey(x.channel);if(!logoIndex.has(k))logoIndex.set(k,[]);
+   const a=logoIndex.get(k);
+   if(x.in_use===true)a.unshift(x.url);else a.push(x.url);
+  }
+  // Limitar intentos por canal y priorizar imágenes en uso.
+  for(const [k,a] of logoIndex)logoIndex.set(k,[...new Set(a)].slice(0,3));
+  if(allChannels.length){render();populateHomeChannelLogos();}
+ }catch(e){console.info('Logos adicionales no disponibles:',e.message);}
+}
+function findChannelByTerms(terms){const rx=new RegExp(terms,'i');return allChannels.find(c=>rx.test(c.name+' '+c.id));}
+function populateHomeChannelLogos(){
+ const mappings=[['azteca','azteca\\s*7|azteca7'],['canal5','canal\\s*5|canal5'],['estrellas','las\\s*estrellas|canal\\s*de\\s*las\\s*estrellas'],['telemundo','telemundo'],['news','foro\\s*tv|milenio|adn\\s*40|cnn\\s*español']];
+ mappings.forEach(([key,terms])=>{
+  const c=findChannelByTerms(terms);
+  const slot=document.querySelector('[data-home-channel="'+key+'"] .channel-logo-slot');
+  if(c&&slot){const logo=createChannelLogo(c);logo.classList.add('station-logo');logo.classList.add('channel-logo-slot');slot.replaceWith(logo);}
+ });
+ const hero=findChannelByTerms('azteca\\s*7|azteca7');
+ const slot=document.querySelector('[data-hero-logo="azteca"]');
+ if(hero&&slot){const logo=createChannelLogo(hero);logo.dataset.heroLogo='azteca';logo.classList.add('channel-logo-slot');slot.replaceWith(logo);}
+}
+function render(){const items=visibleChannels();countEl.textContent=`${items.length.toLocaleString('es-MX')} canales · mostrando ${Math.min(items.length,catalogLimit)}`;if(!items.length){listEl.innerHTML='<div class="empty">No se encontraron canales con esa búsqueda.</div>';return;}listEl.innerHTML='';const frag=document.createDocumentFragment();for(const c of items.slice(0,catalogLimit)){const b=document.createElement('button');b.className='channel-item'+(selected&&selected.url===c.url?' selected':'');b.type='button';b.innerHTML=`<span class="channel-logo-slot"></span><span class="ch-text"><span class="ch-name">${escapeHtml(c.name)}</span><span class="ch-meta">${escapeHtml(c.group)}</span></span>${c.country?'<span class="tag">MX</span>':''}${c.spanish?'<span class="tag spanish">ES</span>':''}${c.telemundo?'<span class="tag telemundo">TELEMUNDO</span>':''}`;b.querySelector('.channel-logo-slot').replaceWith(createChannelLogo(c));b.addEventListener('click',()=>playChannel(c));
+const fav=document.createElement('span');fav.className='fav-btn'+(isFavorite(c)?' active':'');fav.setAttribute('role','button');fav.setAttribute('tabindex','0');fav.textContent=isFavorite(c)?'♥':'♡';fav.title='Agregar o quitar de favoritos';fav.addEventListener('click',e=>{e.stopPropagation();toggleFavorite(c);render();});fav.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();toggleFavorite(c);render();}});b.appendChild(fav);
+const num=document.createElement('span');num.className='channel-number';num.textContent=String(allChannels.indexOf(c)+1);b.insertBefore(num,b.firstChild);
+frag.appendChild(b);}listEl.appendChild(frag);if(items.length>catalogLimit){const more=document.createElement('button');more.className='load-more';more.textContent='Mostrar más canales ('+(items.length-catalogLimit)+' restantes)';more.onclick=()=>{catalogLimit+=180;render();};listEl.appendChild(more);}}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function setStatus(t){statusEl.textContent=t;}
+function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAttribute('src');video.load();}
+function playChannel(c,autoStart=false,isFallback=false){
+  if(!isFallback)canal5Tried.clear();
+  const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
+  selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);}catch(e){}cleanup();
+  const badge=document.getElementById('currentBadge');
+  if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
+  document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();
+  const fail=()=>{if(token!==playbackToken)return;const isC5=/canal\s*5/i.test(c.name)||/canal5/i.test(c.id);if(isC5){const next=allChannels.find(x=>x.country&&/canal\s*5/i.test(x.name)&&!canal5Tried.has(x.url));if(next){message.textContent='Esta fuente no respondió. Probando otra señal de Canal 5…';setStatus('PROBANDO ALTERNATIVA');setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},350);return;}}spinner.style.display='none';message.textContent=isC5?'Las dos fuentes de Canal 5 de IPTV-org no están entregando una señal reproducible. No hay otra fuente pública disponible en esta lista.':'No se pudo reproducir esta señal. Puede estar fuera de línea, geobloqueada o bloquear la reproducción web. Prueba otro canal.';overlay.classList.remove('hidden');setStatus('ERROR DE SEÑAL');};
+
+  let firstFrameTimer=setTimeout(()=>{if(token===playbackToken && video.readyState<2)fail();},18000);
+  const clearFrameTimer=()=>clearTimeout(firstFrameTimer);
+  video.addEventListener('playing',clearFrameTimer,{once:true});
+  video.addEventListener('loadeddata',clearFrameTimer,{once:true});
+
+  if(window.Hls&&Hls.isSupported()){hls=new Hls({enableWorker:true,manifestLoadingTimeOut:12000,fragLoadingTimeOut:15000,manifestLoadingMaxRetry:1,fragLoadingMaxRetry:1});hls.loadSource(c.url);hls.attachMedia(video);hls.on(Hls.Events.MANIFEST_PARSED,async()=>{if(token!==playbackToken)return;message.textContent=autoStart?'Iniciando '+c.name+'…':'Señal lista. Pulsa reproducir.';spinner.style.display='none';setStatus('LISTO');if(autoStart){video.muted=true;document.getElementById('mute').textContent='×';try{await video.play();message.textContent=c.name+' está reproduciéndose. Activa el sonido cuando quieras.';}catch(e){message.textContent=c.name+' está listo. Pulsa Reproducir para iniciar.';}}});hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal)fail();});}
+  else if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=c.url;video.addEventListener('loadedmetadata',async()=>{if(token!==playbackToken)return;spinner.style.display='none';message.textContent='Señal lista.';setStatus('LISTO');if(autoStart){video.muted=true;try{await video.play();}catch(e){message.textContent=c.name+' está listo. Pulsa Reproducir para iniciar.';}}},{once:true});video.addEventListener('error',fail,{once:true});}
+  else{spinner.style.display='none';message.textContent='Tu navegador no admite HLS. Prueba Chrome o Edge actualizado.';setStatus('NO COMPATIBLE');}
+}
+async function loadCatalog(){try{message.textContent='Descargando listas oficiales de IPTV-org…';const responses=await Promise.allSettled(SOURCES.map(async s=>{const r=await fetch(s.url,{cache:'no-store'});if(!r.ok)throw Error('No se pudo cargar la lista '+s.key);return parseM3U(await r.text(),s.key);}));allChannels=mergeChannels(responses[0].status==='fulfilled'?responses[0].value:[],responses[1].status==='fulfilled'?responses[1].value:[]);if(!allChannels.length)throw Error('Las listas no devolvieron canales.');render();populateHomeChannelLogos();setStatus('CATÁLOGO LISTO');spinner.style.display='none';message.textContent='Catálogo listo. Al entrar a TV en vivo se sintonizará el último canal que viste o uno al azar.';document.getElementById('currentName').textContent='Canales disponibles';if(document.getElementById('tvPage').classList.contains('active')&&!selected)startInitialChannel();}catch(e){listEl.innerHTML='<div class="empty">No se pudo descargar el catálogo. Comprueba tu conexión e inténtalo de nuevo.</div>';countEl.textContent='Error al cargar';spinner.style.display='none';message.textContent=e.message;setStatus('SIN CATÁLOGO');}}
+video.addEventListener('playing',()=>{overlay.classList.add('hidden');setStatus('EN VIVO');document.getElementById('play').textContent='Ⅱ Pausar'});video.addEventListener('pause',()=>{document.getElementById('play').textContent='▶ Reproducir';if(!video.ended)setStatus('EN PAUSA')});video.addEventListener('waiting',()=>{if(!video.paused){overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Cargando señal…';setStatus('CARGANDO')}});
+document.getElementById('play').onclick=async()=>{if(video.paused){try{await video.play()}catch(e){overlay.classList.remove('hidden');message.textContent='Selecciona un canal y vuelve a intentar.'}}else video.pause()};document.getElementById('mute').onclick=()=>{video.muted=!video.muted;document.getElementById('mute').textContent=video.muted?'×':'♫';if(!video.muted)video.volume=Number(document.getElementById('volume').value)||1};document.getElementById('volume').oninput=e=>video.volume=Number(e.target.value);const fullscreenButton=document.getElementById('fullscreen');
+const playerShell=document.querySelector('.player-shell');
+function syncFullscreenButton(){
+ const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+ if(fullscreenButton)fullscreenButton.textContent=active?'⤢ Salir de pantalla completa':'⛶ Pantalla completa';
+}
+fullscreenButton.onclick=async()=>{
+ try{
+  const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  if(active){
+   if(document.exitFullscreen)await document.exitFullscreen();
+   else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
+  }else if(playerShell.requestFullscreen){
+   await playerShell.requestFullscreen();
+  }else if(playerShell.webkitRequestFullscreen){
+   playerShell.webkitRequestFullscreen();
+  }else if(video.requestFullscreen){
+   await video.requestFullscreen();
+  }
+ }catch(err){
+  const status=document.getElementById('status');
+  if(status)status.textContent='El navegador no permitió la pantalla completa';
+ }
+};
+document.addEventListener('fullscreenchange',syncFullscreenButton);
+document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.getElementById('search').addEventListener('input',render);document.getElementById('categoryFilter').addEventListener('change',render);document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render();}));
+function getInitialChannel(){
+ if(!allChannels.length)return null;
+ try{
+  const last=localStorage.getItem(LAST_CHANNEL_KEY);
+  if(last){const found=allChannels.find(c=>c.url===last);if(found)return found;}
+ }catch(e){}
+ return allChannels[Math.floor(Math.random()*allChannels.length)];
+}
+function startInitialChannel(){
+ if(selected||!allChannels.length)return;
+ const channel=getInitialChannel();
+ if(channel)playChannel(channel,true);
+}
+function openTV(){
+ document.getElementById('homeScreen').style.display='none';
+ document.getElementById('tvPage').classList.add('active');document.body.classList.add('watching');document.getElementById('siteHeader').style.display='flex';
+ window.scrollTo({top:0,behavior:'smooth'});
+ startInitialChannel();
+ if(!allChannels.length){message.textContent='Conectando con el catálogo de canales…';setStatus('CARGANDO CANALES');}
+}
+document.querySelectorAll('[data-open-tv]').forEach(el=>el.addEventListener('click',openTV));
+document.querySelectorAll('[data-home-tab]').forEach(el=>el.addEventListener('click',()=>{const tab=el.dataset.homeTab;if(tab==='ajustes'){alert('izzi TV Pocoyito es de acceso libre. Tus favoritos se guardan en este navegador.');return;}if(tab==='inicio'){document.getElementById('homeScreen').scrollIntoView({behavior:'smooth'});return;}if(tab==='ligamx'){document.getElementById('ligaMxSection').scrollIntoView({behavior:'smooth',block:'start'});loadLigaMx();return;}if(tab==='apps'||tab==='ondemand'||tab==='beneficios'){alert('Esta sección estará disponible próximamente.');}}));
+document.getElementById('backHome').addEventListener('click',()=>{
+ document.getElementById('tvPage').classList.remove('active');document.body.classList.remove('watching');document.getElementById('siteHeader').style.display='none';
+ document.getElementById('homeScreen').style.display='block';
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+function updateHomeClock(){
+ const now=new Date();
+ document.getElementById('homeClock').textContent=now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false})+' hrs';
+ document.getElementById('homeDate').textContent=now.toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'});
+}
+updateHomeClock();setInterval(updateHomeClock,30000);
+
+
+// Favoritos persistentes y guía de canales
+const FAV_KEY='tvPocoyitoFavoritesV1';
+function getFavorites(){try{return JSON.parse(localStorage.getItem(FAV_KEY)||'[]')}catch(e){return []}}
+function isFavorite(c){return getFavorites().includes(c.url)}
+function toggleFavorite(c){let f=getFavorites();f=isFavorite(c)?f.filter(x=>x!==c.url):[...f,c.url];localStorage.setItem(FAV_KEY,JSON.stringify(f));}
+let guideOnlyFav=false,guideIndex=0,typedDigits='',digitTimer=null;
+function channelNumber(c){return allChannels.indexOf(c)+1}
+function guideChannels(){const q=(document.getElementById('guideSearch').value||'').trim().toLowerCase();return allChannels.filter(c=>(!guideOnlyFav||isFavorite(c))&&(!q||c.name.toLowerCase().includes(q)||c.group.toLowerCase().includes(q))).slice(0,120)}
+function openGuide(favs=false){guideOnlyFav=favs;document.getElementById('guideModal').classList.add('open');document.getElementById('guideModal').setAttribute('aria-hidden','false');document.getElementById('quickMenu').classList.remove('open');renderGuide();document.getElementById('guideSearch').focus();}
+function closeGuide(){document.getElementById('guideModal').classList.remove('open');document.getElementById('guideModal').setAttribute('aria-hidden','true')}
+function renderGuide(){
+ const grid=document.getElementById('guideGrid'),items=guideChannels(),now=new Date();
+ const times=[0,30,60,90].map(n=>new Date(now.getTime()+n*60000));
+ const fmt=d=>d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});
+ grid.innerHTML='<div class="guide-times"><div>CANAL</div>'+times.map(t=>'<div>'+fmt(t)+'</div>').join('')+'</div>';
+ if(!items.length){grid.innerHTML+='<div class="guide-empty">No hay canales en esta vista. Añade favoritos o cambia el filtro.</div>';return;}
+ const frag=document.createDocumentFragment();
+ items.forEach(c=>{
+  const row=document.createElement('div');row.className='guide-row';
+  const ch=document.createElement('button');ch.className='guide-channel';ch.type='button';
+  ch.innerHTML='<span class="channel-number">'+channelNumber(c)+'</span><span class="guide-logo-slot"></span><span class="guide-channel-text"><strong>'+escapeHtml(c.name)+'</strong><small>'+escapeHtml(c.group)+'</small></span>';
+  ch.querySelector('.guide-logo-slot').replaceWith(createChannelLogo(c,true));
+  ch.addEventListener('click',()=>{document.getElementById('guideInfoTitle').textContent=c.name;document.getElementById('guideInfoText').textContent='Canal '+channelNumber(c)+' · '+c.group+' · '+(c.country?'México':'Español')+'. Pulsa Sintonizar para reproducir esta señal.';selectedGuideChannel=c;document.getElementById('guideTune').disabled=false;});
+  row.appendChild(ch);
+  times.forEach((t,i)=>{const cell=document.createElement('button');cell.type='button';cell.className='guide-program';cell.innerHTML='<strong>Programación no disponible</strong><small>'+fmt(t)+' · Sin datos EPG</small>';cell.title='No hay una guía EPG publicada para este canal';cell.addEventListener('click',()=>{selectedGuideChannel=c;document.getElementById('guideInfoTitle').textContent=c.name;document.getElementById('guideInfoText').textContent='No se recibió información EPG para este horario. Puedes sintonizar el canal en vivo.';});row.appendChild(cell);});
+  frag.appendChild(row);
+ });
+ grid.appendChild(frag);
+}
+let selectedGuideChannel=null;
+document.getElementById('openGuide').onclick=()=>openGuide(false);
+document.getElementById('closeGuide').onclick=closeGuide;
+document.getElementById('guideAll').onclick=()=>{guideOnlyFav=false;renderGuide()};
+document.getElementById('guideFav').onclick=()=>{guideOnlyFav=true;renderGuide()};
+document.getElementById('guideSearch').addEventListener('input',renderGuide);
+document.getElementById('guideTune').onclick=()=>{if(selectedGuideChannel){playChannel(selectedGuideChannel);closeGuide();}};
+document.getElementById('openQuick').onclick=()=>document.getElementById('quickMenu').classList.toggle('open');
+document.getElementById('showFavorites').onclick=()=>{filter='all';document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));render();openGuide(true)};
+document.getElementById('quickMenu').addEventListener('click',e=>{const b=e.target.closest('[data-quick]');if(!b)return;const a=b.dataset.quick;if(a==='guide')openGuide();if(a==='favorites')openGuide(true);if(a==='search'){document.getElementById('quickMenu').classList.remove('open');document.getElementById('search').focus()}if(a==='home'){closeGuide();document.getElementById('backHome').click()}if(a==='close')document.getElementById('quickMenu').classList.remove('open')});
+function tuneByIndex(i){if(!allChannels.length)return;const idx=(i+allChannels.length)%allChannels.length;playChannel(allChannels[idx],true);}
+function currentIndex(){return selected?Math.max(0,allChannels.indexOf(selected)):0}
+document.getElementById('channelUp').onclick=()=>tuneByIndex(currentIndex()+1);
+document.getElementById('channelDown').onclick=()=>tuneByIndex(currentIndex()-1);
+document.addEventListener('keydown',e=>{
+ const guideOpen=document.getElementById('guideModal').classList.contains('open');
+ if(e.key==='Escape'){if(guideOpen)closeGuide();document.getElementById('quickMenu').classList.remove('open');return;}
+ if(e.key.toLowerCase()==='g'&&!guideOpen){openGuide();return;}
+ if(e.key.toLowerCase()==='f'&&!guideOpen){openGuide(true);return;}
+ if(guideOpen&&e.key==='Enter'&&selectedGuideChannel){playChannel(selectedGuideChannel);closeGuide();return;}
+ if(guideOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();guideIndex=Math.max(0,Math.min(guideChannels().length-1,guideIndex+(e.key==='ArrowDown'?1:-1)));const row=document.querySelectorAll('.guide-row')[guideIndex];row?.scrollIntoView({block:'nearest'});return;}
+ if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowUp'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}
+ if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowDown'){e.preventDefault();tuneByIndex(currentIndex()-1);return;}
+ if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowRight'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}
+ if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowLeft'){e.preventDefault();tuneByIndex(currentIndex()-1);return;}
+ if(/^\d$/.test(e.key)&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){typedDigits+=e.key;clearTimeout(digitTimer);digitTimer=setTimeout(()=>{const n=Number(typedDigits);if(n>0&&allChannels[n-1])playChannel(allChannels[n-1]);typedDigits='';},900);}
+});
+
+
+// Acciones funcionales de la pantalla de inicio
+document.getElementById('homeSearchBtn')?.addEventListener('click',()=>{openTV();setTimeout(()=>document.getElementById('search')?.focus(),250);});
+document.getElementById('homeHelpBtn')?.addEventListener('click',()=>alert('izzi TV Pocoyito: usa Televisión para abrir la guía, busca canales por nombre o número y guarda tus favoritos con el corazón.'));
+document.getElementById('allChannelsBtn')?.addEventListener('click',openTV);
+document.querySelectorAll('[data-home-action]').forEach(el=>el.addEventListener('click',()=>{const a=el.dataset.homeAction;if(a==='live')openTV();if(a==='guide')openGuide(false);if(a==='favorites')openGuide(true);}));
+document.querySelectorAll('[data-home-channel]').forEach(el=>el.addEventListener('click',()=>{
+ const key=el.dataset.homeChannel;openTV();
+ const q=key==='azteca'?'azteca 7':key==='canal5'?'canal 5':key==='estrellas'?'las estrellas':key==='telemundo'?'telemundo':'noticias';
+ const search=document.getElementById('search');if(search){search.value=q;render();const first=visibleChannels()[0];if(first)playChannel(first,true);}
+}));
+
+
+document.querySelectorAll('[data-genre]').forEach(el=>el.addEventListener('click',()=>{openTV();const cat=document.getElementById('categoryFilter');if(cat){cat.value=el.dataset.genre;catalogLimit=180;render();}}));
+// Cuando la lista es larga, buscar siempre sobre todo el catálogo.
+document.getElementById('search')?.addEventListener('input',()=>{catalogLimit=180;});
+document.getElementById('categoryFilter')?.addEventListener('change',()=>{catalogLimit=180;});
+
+
+// ===== Guía EPG XMLTV de México: programa actual y siguiente =====
+const EPG_URL='https://iptv-epg.org/files/epg-mx.xml';
+const epgByChannel=new Map();let epgReady=false;
+function parseXmltvDate(raw){const m=String(raw||'').match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})\s*([+-]\d{4})?/);if(!m)return NaN;const utc=Date.UTC(+m[1],+m[2]-1,+m[3],+m[4],+m[5],+m[6]);const off=m[7]?((m[7][0]==='-'?-1:1)*(+m[7].slice(1,3)*60 + +m[7].slice(3,5))):0;return utc-off*60000;}
+function xmlText(node,tag){return node.getElementsByTagName(tag)[0]?.textContent?.trim()||'';}
+async function loadEpg(){try{const r=await fetch(EPG_URL,{cache:'no-store'});if(!r.ok)throw Error('EPG no disponible');const xml=new DOMParser().parseFromString(await r.text(),'application/xml');if(xml.querySelector('parsererror'))throw Error('EPG XML inválido');const nodes=xml.getElementsByTagName('programme');for(const n of nodes){const id=(n.getAttribute('channel')||'').toLowerCase();if(!id)continue;const item={start:parseXmltvDate(n.getAttribute('start')),stop:parseXmltvDate(n.getAttribute('stop')),title:xmlText(n,'title'),desc:xmlText(n,'desc')};if(!Number.isFinite(item.start)||!Number.isFinite(item.stop)||!item.title)continue;if(!epgByChannel.has(id))epgByChannel.set(id,[]);epgByChannel.get(id).push(item);}for(const arr of epgByChannel.values())arr.sort((a,b)=>a.start-b.start);epgReady=true;if(selected)osdSetChannel(selected);const msg=document.getElementById('osdWindow');if(msg)msg.textContent='Guía EPG México · actualizada desde el catálogo';}catch(e){const msg=document.getElementById('osdWindow');if(msg)msg.textContent='Guía EPG temporalmente no disponible';}}
+function currentEpg(c){if(!c)return null;const ids=[c.id,logoKey(c.id)].filter(Boolean).map(x=>x.toLowerCase());const list=ids.map(id=>epgByChannel.get(id)).find(Boolean)||[];const now=Date.now();const i=list.findIndex(x=>x.start<=now&&x.stop>now);return i>=0?{current:list[i],next:list[i+1]||null}: {current:null,next:list.find(x=>x.start>now)||null};}
+function updateOsdEpg(){if(!selected)return;const data=currentEpg(selected),cur=data.current,nxt=data.next;const nowEl=document.getElementById('osdNow'),nextEl=document.getElementById('osdNext'),win=document.getElementById('osdWindow'),bar=document.getElementById('osdLoadBar');if(cur){nowEl.textContent='Ahora: '+cur.title;const fmt=d=>new Date(d).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});win.textContent=fmt(cur.start)+' – '+fmt(cur.stop)+(cur.desc?' · '+cur.desc:'');const pct=Math.max(0,Math.min(100,(Date.now()-cur.start)/(cur.stop-cur.start)*100));bar.style.width=pct.toFixed(1)+'%';}else{nowEl.textContent='Ahora: información no disponible';win.textContent='No hay programa EPG para este canal en este momento';bar.style.width='8%';}nextEl.textContent=nxt?'Después: '+nxt.title:'Después: programación no disponible';}
+
+// ===== OSD del decodificador: datos del canal y controles =====
+function osdSetChannel(c){
+ const n=Math.max(1,allChannels.indexOf(c)+1);const num=document.getElementById('osdNumber');if(num)num.textContent=String(n).padStart(4,'0');
+ const name=document.getElementById('osdChannelName');if(name)name.textContent=c.name;
+ const country=document.getElementById('osdCountry');if(country)country.textContent=c.country?'México':(c.spanish?'En español':'Internacional');
+ const cat=document.getElementById('osdCategory');if(cat)cat.textContent=({sports:'Deportes',news:'Noticias',movies:'Cine',kids:'Infantil',music:'Música',entertainment:'Series'}[categoryOf(c)]||'Televisión');
+ const station=document.getElementById('osdStation');if(station){station.replaceChildren();const logo=createChannelLogo(c);const im=logo.querySelector('img');if(im){const copy=im.cloneNode(true);copy.className='';station.appendChild(copy);}else{const f=document.createElement('span');f.className='osd-logo-fallback';f.textContent=channelWordmark(c.name);station.appendChild(f);}}
+ const now=document.getElementById('osdNow');if(now)now.textContent='Ahora: '+c.name+' · En directo';
+ const next=document.getElementById('osdNext');if(next)next.textContent='Después: programación no disponible';
+ const win=document.getElementById('osdWindow');if(win)win.textContent=epgReady?'Consultando programación del canal…':'Cargando guía EPG de México…';
+ updateOsdEpg();
+ const load=document.getElementById('osdLoadText');if(load)load.textContent='Conectando con la señal…';
+ const bar=document.getElementById('osdLoadBar');if(bar)bar.style.width='8%';
+}
+function updateOsdClock(){const d=new Date();const el=document.getElementById('osdClock');if(el)el.textContent=d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});const t=document.getElementById('osdTime');if(t)t.textContent=el?.textContent||'--:--';}
+updateOsdClock();setInterval(updateOsdClock,1000);
+video.addEventListener('playing',()=>{const t=document.getElementById('osdLoadText');if(t)t.textContent='Señal en directo · Reproduciendo';const b=document.getElementById('osdLoadBar');if(b)b.style.width='100%';});
+video.addEventListener('waiting',()=>{const t=document.getElementById('osdLoadText');if(t)t.textContent='Cargando… la red puede ser inestable';const b=document.getElementById('osdLoadBar');if(b)b.style.width='15%';});
+let osdHideTimer=null;
+function showChannelOsd(){
+ const osd=document.getElementById('tvOsd');
+ if(!osd)return;
+ osd.classList.remove('osd-hidden');
+ if(osdHideTimer)clearTimeout(osdHideTimer);
+ osdHideTimer=setTimeout(()=>{osd.classList.add('osd-hidden');},5000);
+}
+const originalPlayChannel=playChannel;
+playChannel=function(c,autoStart=false,isFallback=false){
+ originalPlayChannel(c,autoStart,isFallback);
+ osdSetChannel(c);
+ showChannelOsd();
+};
+
+// ===== Cine y series a la carta: catálogo público de Internet Archive =====
+let vodKind='movies',vodQuery='',vodBusy=false,vodCache={movies:[],series:[]},vodSearchTimer=null;
+const vodGrid=document.getElementById('vodGrid'),vodStatus=document.getElementById('vodStatus');
+function vodEscape(x){return escapeHtml(String(x??''));}
+function vodPoster(id){return 'https://archive.org/services/img/'+encodeURIComponent(id);}
+function vodSetKind(kind){vodKind=kind;document.querySelectorAll('[data-vod-kind]').forEach(b=>b.classList.toggle('active',b.dataset.vodKind===kind));document.getElementById('vodHeading').textContent=kind==='movies'?'Películas para descubrir':'Series y televisión';document.getElementById('vodSearch').placeholder=kind==='movies'?'Buscar películas…':'Buscar series…';loadVod();}
+function openVod(kind='movies'){document.getElementById('homeScreen').style.display='none';document.getElementById('tvPage').classList.remove('active');document.body.classList.remove('watching');document.getElementById('siteHeader').style.display='none';document.getElementById('vodPage').classList.add('active');document.getElementById('vodPlayer').classList.remove('active');window.scrollTo({top:0,behavior:'smooth'});vodSetKind(kind);}
+function closeVod(){document.getElementById('vodPage').classList.remove('active');document.getElementById('vodPlayer').classList.remove('active');document.getElementById('homeScreen').style.display='block';window.scrollTo({top:0,behavior:'smooth'});const v=document.getElementById('vodVideo');v.pause();v.removeAttribute('src');v.load();}
+async function loadVod(){if(vodBusy)return;const q=document.getElementById('vodSearch').value.trim();vodQuery=q;if(vodCache[vodKind].length&&!q){renderVod(vodCache[vodKind]);return;}vodBusy=true;vodGrid.innerHTML='<div class="vod-loading"><i></i> Buscando en Internet Archive…</div>';vodStatus.textContent='Consultando catálogo';
+ try{let query=vodKind==='movies'?'mediatype:movies AND (subject:film OR subject:cinema OR subject:feature_films)':'mediatype:movies AND (subject:television OR subject:tv OR subject:series OR title:series)';if(q)query+=' AND (title:"'+q.replace(/["\\]/g,' ')+'" OR description:"'+q.replace(/["\\]/g,' ')+'")';const params=new URLSearchParams({q:query,'fl[]':'identifier,title,year,description,creator,mediatype','rows':'48','page':'1','output':'json','sort[]':'downloads desc'});const res=await fetch('https://archive.org/advancedsearch.php?'+params.toString(),{cache:'no-store'});if(!res.ok)throw Error('El catálogo no respondió');const data=await res.json();const docs=data.response?.docs||[];const items=docs.filter(x=>x.identifier&&x.title);if(!q)vodCache[vodKind]=items;renderVod(items);vodStatus.textContent=items.length+' títulos encontrados';}
+ catch(e){vodGrid.innerHTML='<div class="vod-empty">No se pudo conectar con Internet Archive. Comprueba tu conexión e inténtalo de nuevo.</div>';vodStatus.textContent='Catálogo temporalmente no disponible';}
+ finally{vodBusy=false;}}
+function renderVod(items){if(!items.length){vodGrid.innerHTML='<div class="vod-empty">No encontramos títulos con esa búsqueda. Prueba otro nombre.</div>';return;}vodGrid.innerHTML=items.map(x=>`<button class="vod-card" data-vod-id="${vodEscape(x.identifier)}" data-vod-title="${vodEscape(x.title)}"><span class="vod-poster"><img loading="lazy" src="${vodEscape(vodPoster(x.identifier))}" alt="" onerror="this.remove();this.parentElement.innerHTML='<span>▶</span>'"></span><span class="vod-card-copy"><strong>${vodEscape(x.title)}</strong><small>${vodEscape(x.year||'Año no indicado')} · ${vodKind==='movies'?'Película':'Serie / TV'}</small></span></button>`).join('');vodGrid.querySelectorAll('[data-vod-id]').forEach(b=>b.addEventListener('click',()=>playVod(b.dataset.vodId,b.dataset.vodTitle)));}
+async function playVod(id,title){const panel=document.getElementById('vodPlayer'),v=document.getElementById('vodVideo');document.getElementById('vodPlayerTitle').textContent=title;document.getElementById('vodPlayerStatus').textContent='Consultando archivos de vídeo…';panel.classList.add('active');panel.setAttribute('aria-hidden','false');try{const r=await fetch('https://archive.org/metadata/'+encodeURIComponent(id),{cache:'no-store'});if(!r.ok)throw Error('No hay metadatos disponibles');const m=await r.json();const files=(m.files||[]).filter(f=>f.name&&/\.(mp4|m4v|webm|ogv)$/i.test(f.name)&&!f.name.includes('__ia_thumb'));files.sort((a,b)=>{const rank=f=>/512|480|360|medium/i.test(f.name)?1:0;return rank(a)-rank(b)||(Number(b.height||0)-Number(a.height||0));});if(!files.length)throw Error('Este título no tiene un archivo de vídeo compatible publicado.');const file=files[0];const url='https://archive.org/download/'+encodeURIComponent(id)+'/'+file.name.split('/').map(encodeURIComponent).join('/');v.src=url;v.load();await v.play().catch(()=>{});document.getElementById('vodPlayerStatus').textContent='Fuente: Internet Archive · '+file.name;}catch(e){document.getElementById('vodPlayerStatus').textContent=e.message;}}
+document.getElementById('vodBack').onclick=closeVod;document.getElementById('vodPlayerBack').onclick=()=>{const v=document.getElementById('vodVideo');v.pause();v.removeAttribute('src');v.load();document.getElementById('vodPlayer').classList.remove('active');};
+document.querySelectorAll('[data-open-vod]').forEach(b=>b.addEventListener('click',()=>openVod(b.dataset.openVod)));
+document.querySelectorAll('[data-vod-kind]').forEach(b=>b.addEventListener('click',()=>vodSetKind(b.dataset.vodKind)));
+document.getElementById('vodBrowseMovies').onclick=()=>vodSetKind('movies');document.getElementById('vodBrowseSeries').onclick=()=>vodSetKind('series');
+document.getElementById('vodSearch').addEventListener('input',()=>{clearTimeout(vodSearchTimer);vodSearchTimer=setTimeout(()=>{vodCache[vodKind]=[];loadVod();},500);});
+
+// Acceso libre: no requiere cuenta ni configuración de Supabase.
+loadCatalog();
+loadEpg();
+setInterval(loadEpg,900000);
+setInterval(updateOsdEpg,60000);
+loadLogoIndex();
+loadLigaMx();
+setInterval(loadLigaMx,60000);
+
+// Centro de marcadores Liga MX (ESPN scoreboard público; se actualiza cada minuto).
+
+const LIGA_SCORE_URL='https://site.api.espn.com/apis/site/v2/sports/soccer/mex.1/scoreboard';
+const LIGA_STANDINGS_URL='https://site.api.espn.com/apis/v2/sports/soccer/mex.1/standings';
+function ligaStatus(g){const s=g.status?.type||{};const state=(s.state||'').toLowerCase();if(state==='in')return {label:g.status?.displayClock?`EN VIVO · ${g.status.displayClock}`:'EN VIVO',kind:'live'};if(state==='post')return {label:'FINAL',kind:'completed'};return {label:g.date?new Date(g.date).toLocaleString('es-MX',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'PRÓXIMO',kind:'upcoming'};}
+function ligaTeam(t){const team=t?.team||{};return {name:team.shortDisplayName||team.displayName||'Equipo',logo:team.logo||team.logos?.[0]?.href||''};}
+function renderLiga(){const root=document.getElementById('ligaMatches');if(!root)return;let games=[...ligaGames];if(ligaFilter!=='all')games=games.filter(g=>ligaStatus(g).kind===ligaFilter);games.sort((a,b)=>new Date(a.date)-new Date(b.date));if(!games.length){root.innerHTML='<div class="liga-empty">No hay partidos '+(ligaFilter==='live'?'en juego':ligaFilter==='upcoming'?'próximos':'registrados')+' en este momento. Vuelve a consultar más tarde.</div>';return;}root.innerHTML=games.map(g=>{const c=g.competitions?.[0]||{},home=ligaTeam(c.competitors?.find(t=>t.homeAway==='home')),away=ligaTeam(c.competitors?.find(t=>t.homeAway==='away')),hs=c.competitors?.find(t=>t.homeAway==='home')?.score??'–',as=c.competitors?.find(t=>t.homeAway==='away')?.score??'–',st=ligaStatus(g);return `<article class="liga-match"><div class="liga-match-top"><span>${escapeHtml(g.season?.name||'LIGA MX')}</span><span class="liga-state ${st.kind==='live'?'live':''}">${escapeHtml(st.label)}</span></div><div class="liga-teams"><div class="liga-team">${home.logo?`<img src="${escapeHtml(home.logo)}" loading="lazy" alt="">`:''}<b>${escapeHtml(home.name)}</b></div><div class="liga-score">${escapeHtml(hs)}<small>–</small>${escapeHtml(as)}</div><div class="liga-team">${away.logo?`<img src="${escapeHtml(away.logo)}" loading="lazy" alt="">`:''}<b>${escapeHtml(away.name)}</b></div></div><div class="liga-match-foot">${escapeHtml(c.venue?.fullName||'Liga MX · México')}</div></article>`;}).join('');}
+async function loadLigaMx(){if(ligaBusy)return;ligaBusy=true;const root=document.getElementById('ligaMatches');try{const [sr, tr]=await Promise.all([fetch(LIGA_SCORE_URL,{cache:'no-store'}),fetch(LIGA_STANDINGS_URL,{cache:'no-store'})]);if(!sr.ok)throw Error('Marcadores temporalmente no disponibles');const data=await sr.json();ligaGames=data.events||[];renderLiga();const upd=document.getElementById('ligaUpdated');if(upd)upd.textContent='Actualizado: '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});if(tr.ok){const standings=await tr.json();renderLigaStandings(standings);} }catch(e){if(root&&!ligaGames.length)root.innerHTML='<div class="liga-empty">No se pudo conectar con el proveedor de marcadores. Reintenta en un momento. La señal de TV sigue disponible.</div>';const u=document.getElementById('ligaUpdated');if(u)u.textContent='Sin conexión con datos deportivos';}finally{ligaBusy=false;}}
+function renderLigaStandings(data){const box=document.getElementById('ligaStandings');if(!box)return;let entries=[];const children=data.children||[];for(const c of children){for(const group of c.standings?.entries||[])entries.push(group);}if(!entries.length){const s=data.standings?.entries||data.children?.[0]?.standings?.entries||[];entries=s;}if(!entries.length){box.innerHTML='<p>La tabla no está disponible en este momento.</p>';return;}const rows=entries.map((e,i)=>{const team=e.team?.displayName||e.team?.name||'Equipo';const stats=e.stats||[];const get=(...names)=>{const z=stats.find(x=>names.includes(x.name)||names.includes(x.abbreviation));return z?.displayValue??z?.value??'—';};return `<tr><td>${i+1}</td><td>${escapeHtml(team)}</td><td>${get('gamesPlayed','gp')}</td><td>${get('wins','w')}</td><td>${get('ties','d')}</td><td>${get('losses','l')}</td><td><b>${get('points','pts')}</b></td></tr>`;}).join('');box.innerHTML=`<table><thead><tr><th>#</th><th>Equipo</th><th>JJ</th><th>G</th><th>E</th><th>P</th><th>PTS</th></tr></thead><tbody>${rows}</tbody></table>`;}
+document.querySelectorAll('[data-liga-filter]').forEach(b=>b.addEventListener('click',()=>{ligaFilter=b.dataset.ligaFilter;document.querySelectorAll('[data-liga-filter]').forEach(x=>x.classList.toggle('active',x===b));renderLiga();}));
+
+if(/Android TV|AFT|BRAVIA|SHIELD|GoogleTV/i.test(navigator.userAgent)){document.body.classList.add('android-tv');}
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
+</script></body></html>

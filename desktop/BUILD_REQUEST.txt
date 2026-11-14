@@ -1,0 +1,1 @@
+Build request: Windows NSIS installer for izzi TV Pocoyito. Triggered by ChatGPT at user request.

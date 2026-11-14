@@ -9,7 +9,8 @@
     "start": "electron .",
     "prestart": "node scripts/sync-web.js",
     "dist": "electron-builder",
-    "prepack": "node scripts/sync-web.js"
+    "prepack": "node scripts/sync-web.js",
+    "predist": "node scripts/sync-web.js"
   },
   "devDependencies": {
     "electron": "^34.2.0",

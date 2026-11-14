@@ -1,0 +1,52 @@
+{
+  "name": "izzi-tv-pocoyito-desktop",
+  "version": "1.0.0",
+  "description": "izzi TV Pocoyito para Windows, macOS y Linux",
+  "main": "main.js",
+  "author": "DJCHAMBA",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "prestart": "node scripts/sync-web.js",
+    "dist": "electron-builder",
+    "prepack": "node scripts/sync-web.js"
+  },
+  "devDependencies": {
+    "electron": "^34.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.djchamba.izzitvpocoyito",
+    "productName": "izzi TV Pocoyito",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "package.json",
+      "web/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "izzi-tv-pocoyito-setup-${version}.${ext}"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ]
+    }
+  }
+}

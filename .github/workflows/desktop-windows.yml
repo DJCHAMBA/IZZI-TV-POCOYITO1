@@ -1,0 +1,34 @@
+name: Windows App Installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'index.html', '.github/workflows/desktop-windows.yml']
+permissions:
+  contents: read
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Sync shared web app into desktop bundle
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force desktop/web/icons | Out-Null
+          Copy-Item index.html desktop/web/index.html -Force
+          Copy-Item manifest.webmanifest desktop/web/manifest.webmanifest -Force
+          Copy-Item service-worker.js desktop/web/service-worker.js -Force
+          Copy-Item icons/icon.svg desktop/web/icons/icon.svg -Force
+      - name: Install dependencies
+        working-directory: desktop
+        run: npm install
+      - name: Build Windows installer
+        working-directory: desktop
+        run: npm run dist -- --win nsis
+      - uses: actions/upload-artifact@v4
+        with:
+          name: izzi-tv-pocoyito-windows-installer
+          path: desktop/dist/*.exe
+          if-no-files-found: error

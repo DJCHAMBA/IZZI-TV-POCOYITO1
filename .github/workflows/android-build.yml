@@ -1,0 +1,33 @@
+name: Android APK (Phone + Android TV)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['android/**', 'index.html', '.github/workflows/android-build.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      - name: Sync shared web app into Android assets
+        run: |
+          mkdir -p android/app/src/main/assets/icons
+          cp index.html android/app/src/main/assets/index.html
+          cp manifest.webmanifest android/app/src/main/assets/manifest.webmanifest
+          cp service-worker.js android/app/src/main/assets/service-worker.js
+          cp icons/icon.svg android/app/src/main/assets/icons/icon.svg
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: izzi-tv-pocoyito-android-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

@@ -1,0 +1,7 @@
+{
+  "id":"./","name":"izzi TV Pocoyito","short_name":"Pocoyito TV",
+  "description":"Televisión en vivo, guía, películas y series.","lang":"es-MX",
+  "start_url":"./","scope":"./","display":"standalone","orientation":"any",
+  "background_color":"#080b16","theme_color":"#080b16","categories":["entertainment","video"],
+  "icons":[{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"}]
+}

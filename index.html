@@ -459,6 +459,74 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
   transform:scale(1.035);
 }
 
+
+/* Guía premium tipo televisión de paga: video en vivo + parrilla EPG */
+.guide-modal{position:fixed;inset:0;z-index:50;background:#05060bf5;backdrop-filter:blur(10px);display:none;color:#f7f8fc;padding:0;overflow:hidden}
+.guide-modal.open{display:block}
+.guide-wrap{width:100%;height:100%;max-width:none;margin:0;background:#090a10;border:0;border-radius:0;overflow:hidden;display:flex;flex-direction:column;box-shadow:none}
+.guide-head{flex:0 0 58px;display:flex;align-items:center;gap:16px;padding:8px clamp(12px,2vw,28px);background:linear-gradient(90deg,#11121b,#171827);border-bottom:1px solid #ffffff17;flex-wrap:nowrap}
+.guide-brand{display:flex;align-items:center;gap:10px;min-width:0}.guide-brand-mark{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#804bff,#4e2db6);font-weight:1000;font-size:19px}.guide-brand h2{font-size:16px;margin:0;letter-spacing:-.3px}.guide-brand small{display:block;color:#a8a9bd;font-size:10px;margin-top:3px}
+.guide-toolbar{display:flex;gap:7px;align-items:center;margin-left:auto;flex-wrap:nowrap}.guide-toolbar button{border:1px solid #ffffff20;background:#202131;color:#f4f4fa;border-radius:7px;padding:9px 12px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+.guide-feature{flex:0 0 clamp(190px,25vh,270px);min-height:170px;display:grid;grid-template-columns:minmax(280px,34%) minmax(0,1fr);background:linear-gradient(110deg,#171827,#0d101b 72%);border-bottom:1px solid #ffffff1c;overflow:hidden}
+.guide-preview{position:relative;min-width:0;min-height:0;background:#000;overflow:hidden;display:grid;place-items:center}
+.guide-preview-placeholder{color:#9da3b9;font-size:12px}
+.guide-preview .screen{width:100%;height:100%;min-height:0;aspect-ratio:auto!important;position:absolute;inset:0;background:#000;display:block}
+.guide-preview .screen video{width:100%;height:100%;object-fit:contain;background:#000}
+.guide-preview .screen .tv-osd{transform:scale(.82);transform-origin:bottom center;left:1%;right:1%;bottom:1%}
+.guide-preview .screen .overlay{background:#0009}
+.guide-preview .screen .big-logo{font-size:clamp(28px,4vw,48px)}
+.guide-feature-info{padding:clamp(14px,2vw,26px) clamp(18px,3vw,42px);display:flex;flex-direction:column;justify-content:center;min-width:0;overflow:hidden}
+.guide-live-pill{display:flex;align-items:center;gap:7px;color:#ff5475;font-size:10px;font-weight:900;letter-spacing:1.5px;margin-bottom:9px}
+.guide-live-pill i{width:7px;height:7px;border-radius:50%;background:#ff375c;box-shadow:0 0 10px #ff375c}
+.guide-feature-info h2{font-size:clamp(19px,2.5vw,29px);line-height:1.1;margin:0 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.guide-feature-meta{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:9px}.guide-feature-meta span{font-size:10px;font-weight:800;color:#e8e8f2;background:#343449;border:1px solid #ffffff12;border-radius:5px;padding:4px 8px}
+.guide-feature-info p{font-size:12px;color:#c3c5d2;line-height:1.45;margin:0 0 10px}
+.guide-feature-actions{display:flex;align-items:center;gap:10px;max-width:650px}.guide-feature-actions .control{white-space:nowrap}.guide-search{min-width:130px;max-width:280px;width:100%;padding:9px 12px;border-radius:7px;border:1px solid #ffffff26;background:#090b13;color:#fff;margin:0;font-size:11px}
+.guide-feature-info>small{color:#8f94a9;font-size:10px;margin-top:8px}
+.guide-body{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:164px minmax(0,1fr);overflow:hidden;background:#090a0e}
+.guide-rail{display:flex;flex-direction:column;gap:3px;padding:10px 7px;background:#111216;border-right:1px solid #ffffff18;overflow:auto}
+.guide-rail-item{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;padding:8px 10px;text-align:left;background:transparent;border:0;border-radius:5px;color:#c5c6d0;font-size:12px;font-weight:700;cursor:pointer}
+.guide-rail-item.active,.guide-rail-item:hover{background:#292a34;color:#fff}.guide-rail-item.active{box-shadow:inset 3px 0 #8c54ff}
+.guide-list{overflow:auto;min-width:0;overscroll-behavior:contain}
+.guide-grid{min-width:690px;background:#101114}
+.guide-times{display:grid;grid-template-columns:190px repeat(4,minmax(145px,1fr));position:sticky;top:0;background:#050507;z-index:4;border-bottom:1px solid #ffffff25}
+.guide-times div{padding:11px 10px;color:#e5e5eb;font-size:12px;font-weight:800;border-right:1px solid #ffffff13;text-align:center}
+.guide-times div:first-child{text-align:left}
+.guide-row{display:grid;grid-template-columns:190px repeat(4,minmax(145px,1fr));border-bottom:1px solid #000;min-height:48px}
+.guide-channel{display:flex;align-items:center;gap:9px;padding:6px 9px;background:#1c1d20;border:0;border-right:1px solid #050505;color:#f1f1f4;cursor:pointer;min-width:0;text-align:left}
+.guide-channel .channel-number{font-size:10px;color:#bdbdc7;min-width:26px}
+.guide-channel .guide-logo{flex:0 0 54px;width:54px;height:34px;background:#08090d;border-radius:3px;display:grid;place-items:center;overflow:hidden}
+.guide-channel .guide-logo img{width:100%;height:100%;object-fit:contain;background:#fff;padding:2px}
+.guide-channel .guide-logo .fallback-wordmark{font-size:8px;line-height:1.1;text-align:center;color:#fff;font-weight:900}
+.guide-channel strong{font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.guide-channel small{font-size:9px;color:#a6a7b0;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guide-program{padding:8px 10px;background:#242528;border:0;border-right:1px solid #080808;display:flex;flex-direction:column;justify-content:center;gap:3px;color:#e6e6eb;font-size:11px;cursor:pointer;min-width:0;text-align:left;overflow:hidden}
+.guide-program strong{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.guide-program small{color:#a5a5ae;font-size:9px;white-space:nowrap}
+.guide-program:hover,.guide-channel:hover{background:#36363d}
+.guide-program.active{background:#ececf0;color:#22232a;box-shadow:inset 0 0 0 1px #fff}.guide-program.active small{color:#555662}
+.guide-row.is-selected .guide-channel{background:#2c2542}
+.guide-empty{padding:18px;color:#aebbd5;font-size:12px}
+.remote-hint{flex:0 0 30px;font-size:10px;color:#9a9bad;padding:8px 14px;border-top:1px solid #ffffff14;background:#101117;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:850px){
+ .guide-head{flex-basis:54px;padding:6px 9px}.guide-brand-mark{width:30px;height:30px}.guide-brand h2{font-size:13px}.guide-brand small{font-size:8px}
+ .guide-toolbar{gap:4px}.guide-toolbar button{padding:8px 7px;font-size:9px}
+ .guide-feature{grid-template-columns:minmax(0,42%) minmax(0,1fr);flex-basis:210px}
+ .guide-feature-info{padding:10px}.guide-feature-info h2{font-size:16px}.guide-feature-info p{font-size:10px}.guide-feature-info>small{font-size:8px}
+ .guide-feature-actions{gap:5px;flex-wrap:wrap}.guide-feature-actions .control{padding:7px 9px;font-size:10px}.guide-search{max-width:100%;padding:7px;font-size:10px}
+ .guide-body{grid-template-columns:112px minmax(0,1fr)}.guide-rail-item{font-size:10px;gap:6px;padding:7px 6px;min-height:38px}
+ .guide-times,.guide-row{grid-template-columns:150px repeat(4,minmax(120px,1fr))}
+ .guide-channel{gap:5px;padding:5px}.guide-channel .guide-logo{flex-basis:38px;width:38px;height:28px}
+ .guide-channel strong{font-size:9px}.guide-channel small{font-size:8px}
+}
+@media(max-width:560px){
+ .guide-head{flex-basis:auto;min-height:54px;align-items:flex-start}.guide-toolbar{flex-wrap:wrap;justify-content:flex-end}.guide-toolbar button{font-size:8px;padding:6px}
+ .guide-feature{grid-template-columns:1fr;grid-template-rows:auto 1fr;flex-basis:clamp(300px,45vh,390px)}
+ .guide-preview{min-height:0;aspect-ratio:16/9}.guide-feature-info{padding:9px 12px;min-height:0}
+ .guide-live-pill{font-size:8px;margin-bottom:4px}.guide-feature-info h2{font-size:15px;margin-bottom:5px}.guide-feature-info p{display:none}.guide-feature-meta{margin-bottom:5px}
+ .guide-feature-info>small{display:none}.guide-body{grid-template-columns:90px minmax(0,1fr)}
+ .guide-rail-item{font-size:9px;gap:4px}.guide-rail-item span{overflow:hidden;text-overflow:ellipsis}
+ .remote-hint{font-size:8px}
+}
+
 </style></head>
 <body>
 
@@ -558,14 +626,30 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
 <section class="guide-modal" id="guideModal" aria-hidden="true">
  <div class="guide-wrap">
   <div class="guide-head">
-   <div><h2>▦ Guía de programación</h2><small>Canales en vertical · horarios en horizontal · datos EPG cuando estén disponibles</small></div>
-   <div class="guide-toolbar"><button id="guideAll">Todos</button><button id="guideFav">♥ Favoritos</button><button id="closeGuide">✕ Cerrar</button></div>
+   <div class="guide-brand"><span class="guide-brand-mark">P</span><div><h2>Guía de televisión</h2><small>izzi TV Pocoyito · En directo</small></div></div>
+   <div class="guide-toolbar"><button id="guideAll">Todos los canales</button><button id="guideFav">♥ Favoritos</button><button id="closeGuide">✕ Cerrar</button></div>
   </div>
+  <section class="guide-feature">
+   <div class="guide-preview" id="guidePreviewMount"><div class="guide-preview-placeholder">Preparando señal en vivo…</div></div>
+   <div class="guide-feature-info">
+    <div class="guide-live-pill"><i></i> EN VIVO</div>
+    <h2 id="guideInfoTitle">Selecciona un canal</h2>
+    <div class="guide-feature-meta"><span id="guideFeatureNumber">TV</span><span id="guideFeatureGroup">Televisión</span><span>En directo</span></div>
+    <p id="guideInfoText">El canal que selecciones se reproducirá aquí, sin salir de la guía.</p>
+    <div class="guide-feature-actions"><button id="guideTune" class="control primary" type="button" disabled>▶ Sintonizar</button><input class="guide-search" id="guideSearch" placeholder="Buscar canales…" aria-label="Buscar canales"></div>
+    <small id="guideFeatureStatus">La programación detallada aparece cuando existe información EPG del proveedor.</small>
+   </div>
+  </section>
   <div class="guide-body">
+   <nav class="guide-rail" aria-label="Filtros de guía">
+    <button class="guide-rail-item active" data-guide-mode="all">▦ <span>Todos los canales</span></button>
+    <button class="guide-rail-item" data-guide-mode="recommended">✦ <span>Recomendados</span></button>
+    <button class="guide-rail-item" data-guide-mode="favorites">♥ <span>Favoritos</span></button>
+    <button class="guide-rail-item" data-guide-mode="recent">◷ <span>Recientes</span></button>
+   </nav>
    <div class="guide-list"><div class="guide-grid" id="guideGrid"></div></div>
-   <aside class="guide-side"><h3 id="guideInfoTitle">Información del canal</h3><p id="guideInfoText">Selecciona un canal para ver su información y sintonizarlo.</p><button id="guideTune" class="control primary" type="button" disabled>Sintonizar canal ▶</button><input class="guide-search" id="guideSearch" placeholder="Buscar en la guía…"><p>La programación detallada aparece cuando existe una fuente EPG para ese canal. Si no hay datos, se indica claramente y no se inventan nombres de programas.</p></aside>
   </div>
-  <div class="remote-hint">Control: ↑ ↓ cambia canal · ← → navega horarios · Enter sintoniza · Esc cierra · Escribe el número de canal para sintonizarlo</div>
+  <div class="remote-hint">↑ ↓ Cambiar canal · ← → Navegar horarios · Enter sintonizar · Esc cerrar guía · Pulsa cualquier canal para verlo al instante</div>
  </div>
 </section>
 <div class="quick-menu" id="quickMenu">
@@ -669,7 +753,7 @@ function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAtt
 function playChannel(c,autoStart=false,isFallback=false){
   if(!isFallback)canal5Tried.clear();
   const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
-  selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);}catch(e){}cleanup();
+  selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);cleanup();
   const badge=document.getElementById('currentBadge');
   if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
   document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();
@@ -754,35 +838,108 @@ function isFavorite(c){return getFavorites().includes(c.url)}
 function toggleFavorite(c){let f=getFavorites();f=isFavorite(c)?f.filter(x=>x!==c.url):[...f,c.url];localStorage.setItem(FAV_KEY,JSON.stringify(f));}
 let guideOnlyFav=false,guideIndex=0,typedDigits='',digitTimer=null;
 function channelNumber(c){return allChannels.indexOf(c)+1}
-function guideChannels(){const q=(document.getElementById('guideSearch').value||'').trim().toLowerCase();return allChannels.filter(c=>(!guideOnlyFav||isFavorite(c))&&(!q||c.name.toLowerCase().includes(q)||c.group.toLowerCase().includes(q))).slice(0,120)}
-function openGuide(favs=false){guideOnlyFav=favs;document.getElementById('guideModal').classList.add('open');document.getElementById('guideModal').setAttribute('aria-hidden','false');document.getElementById('quickMenu').classList.remove('open');renderGuide();document.getElementById('guideSearch').focus();}
-function closeGuide(){document.getElementById('guideModal').classList.remove('open');document.getElementById('guideModal').setAttribute('aria-hidden','true')}
+let guideMode='all',guideScreenNode=null,guideScreenPlaceholder=null;
+function channelNumber(c){return allChannels.indexOf(c)+1}
+function guideChannels(){
+ const q=(document.getElementById('guideSearch').value||'').trim().toLowerCase();
+ let items=allChannels.filter(c=>(!guideOnlyFav||isFavorite(c))&&(!q||c.name.toLowerCase().includes(q)||c.group.toLowerCase().includes(q)));
+ if(guideMode==='favorites'||guideOnlyFav)items=items.filter(isFavorite);
+ if(guideMode==='recent'){
+  let last=[];try{const u=localStorage.getItem(LAST_CHANNEL_KEY);if(u)last=allChannels.filter(c=>c.url===u)}catch(e){}
+  items=[...last,...items.filter(c=>!last.some(x=>x.url===c.url))].slice(0,60);
+ }
+ if(guideMode==='recommended')items=items.filter(c=>c.country||c.logo).slice(0,80);
+ return items.slice(0,120);
+}
+function mountGuideVideo(){
+ const screen=document.querySelector('.player-shell .screen'),mount=document.getElementById('guidePreviewMount');
+ if(!screen||!mount||guideScreenNode)return;
+ guideScreenNode=screen;guideScreenPlaceholder=document.createComment('player-screen-position');
+ screen.parentNode.insertBefore(guideScreenPlaceholder,screen);
+ mount.replaceChildren();mount.appendChild(screen);
+}
+function restoreGuideVideo(){
+ if(guideScreenNode&&guideScreenPlaceholder?.parentNode){
+  guideScreenPlaceholder.parentNode.insertBefore(guideScreenNode,guideScreenPlaceholder);
+  guideScreenPlaceholder.remove();
+ }
+ guideScreenNode=null;guideScreenPlaceholder=null;
+}
+function updateGuideFeature(c){
+ if(!c)return;
+ selectedGuideChannel=c;
+ document.getElementById('guideInfoTitle').textContent=c.name;
+ document.getElementById('guideFeatureNumber').textContent='CH '+channelNumber(c);
+ document.getElementById('guideFeatureGroup').textContent=c.group||'Televisión';
+ document.getElementById('guideInfoText').textContent='Canal '+channelNumber(c)+' · '+c.group+' · '+(c.country?'México':'Español')+'. Señal en directo; la programación depende de los datos EPG disponibles.';
+ document.getElementById('guideTune').disabled=false;
+ document.getElementById('guideTune').textContent='▶ Sintonizar ahora';
+ document.getElementById('guideFeatureStatus').textContent='La señal se reproduce en esta ventana mientras consultas la guía.';
+}
+function tuneGuideChannel(c){
+ if(!c)return;
+ updateGuideFeature(c);
+ playChannel(c,true);
+ document.querySelectorAll('.guide-row').forEach(r=>r.classList.toggle('is-selected',r.dataset.url===c.url));
+ document.querySelectorAll('.guide-program').forEach(b=>b.classList.toggle('active',b.dataset.url===c.url));
+}
+function openGuide(favs=false){
+ guideOnlyFav=favs;guideMode=favs?'favorites':'all';
+ if(!document.getElementById('tvPage').classList.contains('active'))openTV();
+ if(!selected)startInitialChannel();
+ document.getElementById('guideModal').classList.add('open');
+ document.getElementById('guideModal').setAttribute('aria-hidden','false');
+ document.getElementById('quickMenu').classList.remove('open');
+ mountGuideVideo();
+ document.querySelectorAll('[data-guide-mode]').forEach(b=>b.classList.toggle('active',b.dataset.guideMode===guideMode));
+ renderGuide();
+ if(selected)updateGuideFeature(selected);
+ document.getElementById('guideSearch').focus();
+}
+function closeGuide(){
+ document.getElementById('guideModal').classList.remove('open');
+ document.getElementById('guideModal').setAttribute('aria-hidden','true');
+ restoreGuideVideo();
+}
 function renderGuide(){
  const grid=document.getElementById('guideGrid'),items=guideChannels(),now=new Date();
  const times=[0,30,60,90].map(n=>new Date(now.getTime()+n*60000));
- const fmt=d=>d.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit',hour12:false});
+ const fmt=d=>d.toLocaleTimeString('es-MX',{hour:'numeric',minute:'2-digit',hour12:true});
  grid.innerHTML='<div class="guide-times"><div>CANAL</div>'+times.map(t=>'<div>'+fmt(t)+'</div>').join('')+'</div>';
- if(!items.length){grid.innerHTML+='<div class="guide-empty">No hay canales en esta vista. Añade favoritos o cambia el filtro.</div>';return;}
+ if(!items.length){grid.innerHTML+='<div class="guide-empty">No hay canales en esta vista. Cambia de categoría o añade favoritos.</div>';return;}
  const frag=document.createDocumentFragment();
  items.forEach(c=>{
-  const row=document.createElement('div');row.className='guide-row';
+  const row=document.createElement('div');row.className='guide-row'+(selected&&selected.url===c.url?' is-selected':'');row.dataset.url=c.url;
   const ch=document.createElement('button');ch.className='guide-channel';ch.type='button';
   ch.innerHTML='<span class="channel-number">'+channelNumber(c)+'</span><span class="guide-logo-slot"></span><span class="guide-channel-text"><strong>'+escapeHtml(c.name)+'</strong><small>'+escapeHtml(c.group)+'</small></span>';
   ch.querySelector('.guide-logo-slot').replaceWith(createChannelLogo(c,true));
-  ch.addEventListener('click',()=>{document.getElementById('guideInfoTitle').textContent=c.name;document.getElementById('guideInfoText').textContent='Canal '+channelNumber(c)+' · '+c.group+' · '+(c.country?'México':'Español')+'. Pulsa Sintonizar para reproducir esta señal.';selectedGuideChannel=c;document.getElementById('guideTune').disabled=false;});
+  ch.addEventListener('click',()=>tuneGuideChannel(c));
   row.appendChild(ch);
-  times.forEach((t,i)=>{const cell=document.createElement('button');cell.type='button';cell.className='guide-program';cell.innerHTML='<strong>Programación no disponible</strong><small>'+fmt(t)+' · Sin datos EPG</small>';cell.title='No hay una guía EPG publicada para este canal';cell.addEventListener('click',()=>{selectedGuideChannel=c;document.getElementById('guideInfoTitle').textContent=c.name;document.getElementById('guideInfoText').textContent='No se recibió información EPG para este horario. Puedes sintonizar el canal en vivo.';});row.appendChild(cell);});
+  times.forEach((t,i)=>{
+   const cell=document.createElement('button');cell.type='button';cell.className='guide-program'+(selected&&selected.url===c.url?' active':'');cell.dataset.url=c.url;
+   cell.innerHTML='<strong>Programación no disponible</strong><small>'+fmt(t)+' · Sin datos EPG</small>';
+   cell.title='No hay datos EPG para este horario. Pulsa para ver '+c.name+' en directo.';
+   cell.addEventListener('click',()=>tuneGuideChannel(c));
+   row.appendChild(cell);
+  });
   frag.appendChild(row);
  });
  grid.appendChild(frag);
 }
 let selectedGuideChannel=null;
+document.querySelectorAll('[data-guide-mode]').forEach(b=>b.addEventListener('click',()=>{
+ guideMode=b.dataset.guideMode;guideOnlyFav=guideMode==='favorites';
+ document.querySelectorAll('[data-guide-mode]').forEach(x=>x.classList.toggle('active',x===b));
+ document.getElementById('guideFav').classList.toggle('active',guideOnlyFav);
+ renderGuide();
+}));
+
 document.getElementById('openGuide').onclick=()=>openGuide(false);
 document.getElementById('closeGuide').onclick=closeGuide;
-document.getElementById('guideAll').onclick=()=>{guideOnlyFav=false;renderGuide()};
-document.getElementById('guideFav').onclick=()=>{guideOnlyFav=true;renderGuide()};
+document.getElementById('guideAll').onclick=()=>{guideMode='all';guideOnlyFav=false;document.querySelectorAll('[data-guide-mode]').forEach(x=>x.classList.toggle('active',x.dataset.guideMode==='all'));renderGuide()};
+document.getElementById('guideFav').onclick=()=>{guideMode='favorites';guideOnlyFav=true;document.querySelectorAll('[data-guide-mode]').forEach(x=>x.classList.toggle('active',x.dataset.guideMode==='favorites'));renderGuide()};
 document.getElementById('guideSearch').addEventListener('input',renderGuide);
-document.getElementById('guideTune').onclick=()=>{if(selectedGuideChannel){playChannel(selectedGuideChannel);closeGuide();}};
+document.getElementById('guideTune').onclick=()=>{if(selectedGuideChannel)tuneGuideChannel(selectedGuideChannel);};
 document.getElementById('openQuick').onclick=()=>document.getElementById('quickMenu').classList.toggle('open');
 document.getElementById('showFavorites').onclick=()=>{filter='all';document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));render();openGuide(true)};
 document.getElementById('quickMenu').addEventListener('click',e=>{const b=e.target.closest('[data-quick]');if(!b)return;const a=b.dataset.quick;if(a==='guide')openGuide();if(a==='favorites')openGuide(true);if(a==='search'){document.getElementById('quickMenu').classList.remove('open');document.getElementById('search').focus()}if(a==='home'){closeGuide();document.getElementById('backHome').click()}if(a==='close')document.getElementById('quickMenu').classList.remove('open')});
@@ -795,8 +952,8 @@ document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){if(guideOpen)closeGuide();document.getElementById('quickMenu').classList.remove('open');return;}
  if(e.key.toLowerCase()==='g'&&!guideOpen){openGuide();return;}
  if(e.key.toLowerCase()==='f'&&!guideOpen){openGuide(true);return;}
- if(guideOpen&&e.key==='Enter'&&selectedGuideChannel){playChannel(selectedGuideChannel);closeGuide();return;}
- if(guideOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();guideIndex=Math.max(0,Math.min(guideChannels().length-1,guideIndex+(e.key==='ArrowDown'?1:-1)));const row=document.querySelectorAll('.guide-row')[guideIndex];row?.scrollIntoView({block:'nearest'});return;}
+ if(guideOpen&&e.key==='Enter'&&selectedGuideChannel){tuneGuideChannel(selectedGuideChannel);return;}
+ if(guideOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();guideIndex=Math.max(0,Math.min(guideChannels().length-1,guideIndex+(e.key==='ArrowDown'?1:-1)));const row=document.querySelectorAll('.guide-row')[guideIndex];row?.scrollIntoView({block:'nearest'});const c=guideChannels()[guideIndex];if(c)tuneGuideChannel(c);return;}
  if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowUp'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}
  if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowDown'){e.preventDefault();tuneByIndex(currentIndex()-1);return;}
  if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowRight'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}

@@ -77,27 +77,30 @@ class MainActivity : Activity() {
         window.decorView.systemUiVisibility = originalSystemUi
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        val jsKey = when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
-            KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
-            KeyEvent.KEYCODE_DPAD_LEFT -> "ArrowLeft"
-            KeyEvent.KEYCODE_DPAD_RIGHT -> "ArrowRight"
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> "Enter"
-            else -> null
-        }
-        if (jsKey != null) {
-            val isLiveScreen = webView.url?.contains("/assets/index.html") == true
-            if (isLiveScreen && keyCode in listOf(KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
-                    KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT)) {
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            val jsKey = when (event.keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
+                KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
+                KeyEvent.KEYCODE_DPAD_LEFT -> "ArrowLeft"
+                KeyEvent.KEYCODE_DPAD_RIGHT -> "ArrowRight"
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER -> "Enter"
+                KeyEvent.KEYCODE_BACK -> null
+                else -> null
+            }
+            if (jsKey != null) {
                 webView.evaluateJavascript(
-                    "if(document.getElementById('tvPage')?.classList.contains('active')){document.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',bubbles:true}));}",
+                    "window.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));",
                     null
                 )
                 return true
             }
-            return super.onKeyDown(keyCode, event)
         }
+        return super.dispatchKeyEvent(event)
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (customView != null) { exitCustomView(); return true }
             webView.evaluateJavascript(

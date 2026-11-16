@@ -91,7 +91,7 @@ class MainActivity : Activity() {
             }
             if (jsKey != null) {
                 webView.evaluateJavascript(
-                    "window.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));",
+                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));",
                     null
                 )
                 return true

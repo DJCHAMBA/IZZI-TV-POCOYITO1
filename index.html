@@ -579,15 +579,36 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
   flex:none!important;margin:0!important;padding:0!important;
   overflow:hidden!important;background:#000!important;
 }
+/* Fullscreen final: fill the entire display, crop embedded letterbox bars */
+.player-shell:fullscreen,
+.player-shell:-webkit-full-screen{
+  position:fixed!important;inset:0!important;
+  width:100vw!important;height:100vh!important;
+  max-width:none!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;background:#000!important;
+  display:block!important;
+}
+.player-shell:fullscreen .player-top,
+.player-shell:-webkit-full-screen .player-top{display:none!important}
+.player-shell:fullscreen .screen,
+.player-shell:-webkit-full-screen .screen{
+  position:absolute!important;inset:0!important;
+  width:100vw!important;height:100vh!important;
+  margin:0!important;padding:0!important;border:0!important;
+  aspect-ratio:auto!important;min-height:0!important;max-height:none!important;
+  overflow:hidden!important;background:#000!important;
+}
 .player-shell:fullscreen .screen video,
 .player-shell:-webkit-full-screen .screen video{
   position:absolute!important;inset:0!important;
   display:block!important;width:100%!important;height:100%!important;
-  min-width:0!important;min-height:0!important;
-  max-width:100%!important;max-height:100%!important;
-  object-fit:contain!important;object-position:center center!important;
-  transform:none!important;
+  min-width:100%!important;min-height:100%!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:cover!important;object-position:center center!important;
+  transform:scale(1.12)!important;transform-origin:center center!important;
 }
+
 .player-shell:fullscreen .controls,
 .player-shell:-webkit-full-screen .controls{
   position:absolute!important;left:0!important;right:0!important;bottom:0!important;

@@ -748,8 +748,6 @@ function logoCandidates(c){
  const urls=[];const id=logoKey(c.id);const entry=logoIndex.get(id);
  if(entry)urls.push(...entry);
  if(c.logo)urls.push(c.logo);
- const nameKey=String(c.name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
- if(nameKey){for(const [key,values] of logoIndex){if(key===nameKey||key.replace(/[^a-z0-9]/g,'')===nameKey)urls.push(...values);}}
  return [...new Set(urls.filter(url=>/^https:\/\//i.test(url)))].slice(0,5);
 }
 function createChannelLogo(c,guide=false){

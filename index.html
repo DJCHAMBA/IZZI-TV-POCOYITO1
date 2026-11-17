@@ -915,7 +915,7 @@ function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAtt
 function playChannel(c,autoStart=false,isFallback=false){
   if(!isFallback)canal5Tried.clear();
   const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
-  selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
+  selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
   const badge=document.getElementById('currentBadge');
   if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
   document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();

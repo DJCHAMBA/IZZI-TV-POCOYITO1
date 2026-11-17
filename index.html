@@ -624,14 +624,45 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
 
 /* Electron/PC: conservar la interacción del ratón y el foco visual discreto */
 html,body{pointer-events:auto!important}button,a,[role=button],input,select,.channel-item,.country-tile,.country-channel,.guide-channel,.guide-program,.vod-card,.popular-channel{pointer-events:auto;cursor:pointer}body:not(.android-tv) :focus-visible{outline:2px solid #9b72ee;outline-offset:2px;box-shadow:0 0 0 3px #9b72ee22}body:not(.android-tv) button:focus:not(:focus-visible){outline:none}
+
+/* Pantalla completa: usar todo el monitor sin deformar ni recortar el canal */
+.player-shell:fullscreen,.player-shell:-webkit-full-screen{
+ position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+ max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+ display:block!important;overflow:hidden!important;background:#000!important;box-shadow:none!important;
+}
+.player-shell:fullscreen .player-top,.player-shell:-webkit-full-screen .player-top{display:none!important}
+.player-shell:fullscreen .screen,.player-shell:-webkit-full-screen .screen{
+ position:absolute!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;
+ min-height:0!important;max-height:none!important;margin:0!important;padding:0!important;aspect-ratio:auto!important;
+ overflow:hidden!important;background:#000!important;display:block!important;
+}
+.player-shell:fullscreen .screen video,.player-shell:-webkit-full-screen .screen video{
+ position:absolute!important;inset:0!important;display:block!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ max-width:100%!important;max-height:100%!important;object-fit:contain!important;object-position:center!important;
+ transform:none!important;
+}
+.player-shell:fullscreen .controls,.player-shell:-webkit-full-screen .controls{
+ position:absolute!important;left:0!important;right:0!important;bottom:0!important;z-index:30!important;
+ display:flex!important;width:100%!important;min-height:54px!important;margin:0!important;padding:9px 12px!important;
+ background:rgba(5,8,22,.92)!important;border:0!important;border-top:1px solid #ffffff22!important;border-radius:0!important;
+}
+.player-shell:fullscreen .tv-osd,.player-shell:-webkit-full-screen .tv-osd{z-index:20!important;bottom:68px!important}
+.app-brand-logo{object-fit:contain;display:block}
+header .mark.app-brand-logo{width:42px;height:42px;border-radius:11px;clip-path:none;background:transparent;box-shadow:0 5px 22px #654cff55}
+.home-brand .brand-mark.app-brand-logo{width:36px;height:36px;border-radius:10px;background:transparent;box-shadow:0 4px 16px #654cff44}
+.home-nav .rail-logo{overflow:hidden}
+.home-nav .rail-logo img{width:100%;height:100%;object-fit:cover;border-radius:16px;display:block}
+.home-nav .rail-logo i{display:none}
 </style></head>
 <body>
 
-<header id="siteHeader"><div class="brand"><div class="mark">P</div><div>izzi TV POCOYITO<small>TU ENTRETENIMIENTO, SIEMPRE</small></div></div><div class="live"><i class="dot"></i> TV EN DIRECTO</div></header>
+<header id="siteHeader"><div class="brand"><img class="mark app-brand-logo" src="./icons/icon.svg" alt="Pocoyito TV"><div>izzi TV POCOYITO<small>TU ENTRETENIMIENTO, SIEMPRE</small></div></div><div class="live"><i class="dot"></i> TV EN DIRECTO</div></header>
 
 <section class="home-screen" id="homeScreen">
   <nav class="home-nav" aria-label="Navegación principal">
-    <div class="rail-logo" title="izzi TV Pocoyito"><span>p</span><i></i></div>
+    <div class="rail-logo" title="izzi TV Pocoyito"><img src="./icons/icon.svg" alt="Pocoyito TV"></div>
     <button type="button" data-home-tab="inicio" class="active" title="Inicio"><span class="nav-icon">⌂</span><small>Inicio</small></button>
     <button type="button" data-open-tv title="Televisión"><span class="nav-icon">▣</span><small>En vivo</small></button>
     <button type="button" data-home-action="categories" title="Categorías"><span class="nav-icon">🌎</span><small>Categorías</small></button>
@@ -645,7 +676,7 @@ html,body{pointer-events:auto!important}button,a,[role=button],input,select,.cha
   </nav>
   <div class="home-stage">
     <div class="home-top">
-      <div class="home-brand"><span class="brand-mark">p</span><span>izzi <strong>TV</strong> <b>Pocoyito</b><small>UNA NUEVA FORMA DE VER TV</small></span></div>
+      <div class="home-brand"><img class="brand-mark app-brand-logo" src="./icons/icon.svg" alt="Pocoyito TV"><span>izzi <strong>TV</strong> <b>Pocoyito</b><small>UNA NUEVA FORMA DE VER TV</small></span></div>
       <div class="home-top-actions">
         <span class="signal-chip"><i></i> TV POR INTERNET</span>
         <button class="top-icon" id="homeSearchBtn" aria-label="Buscar canales">⌕</button>

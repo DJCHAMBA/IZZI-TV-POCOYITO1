@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.WindowManager
+import android.content.pm.PackageManager
+import android.view.Gravity
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -21,23 +23,36 @@ class MainActivity : Activity() {
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var originalSystemUi = 0
+    private var isTvDevice = false
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(8, 11, 22)
         window.navigationBarColor = Color.rgb(8, 11, 22)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        isTvDevice = packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+        if (isTvDevice) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            enterImmersiveMode()
+        }
         assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
         webView = WebView(this).apply {
             setBackgroundColor(Color.rgb(8, 11, 22))
+            overScrollMode = View.OVER_SCROLL_NEVER
+            isVerticalScrollBarEnabled = false
+            isHorizontalScrollBarEnabled = false
+            setLayerType(View.LAYER_TYPE_HARDWARE, null)
             isFocusable = true
             isFocusableInTouchMode = true
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.databaseEnabled = true
+            settings.setSupportZoom(false)
+            settings.builtInZoomControls = false
+            settings.displayZoomControls = false
+            settings.loadsImagesAutomatically = true
             settings.mediaPlaybackRequiresUserGesture = false
             settings.cacheMode = WebSettings.LOAD_DEFAULT
             settings.allowFileAccess = false
@@ -54,10 +69,7 @@ class MainActivity : Activity() {
                     customView = view
                     customViewCallback = callback
                     originalSystemUi = window.decorView.systemUiVisibility
-                    window.decorView.systemUiVisibility = (
-                        View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    )
+                    enterImmersiveMode()
                     (webView.parent as? FrameLayout)?.addView(view, FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
                 }
@@ -69,12 +81,25 @@ class MainActivity : Activity() {
         webView.requestFocus()
     }
 
+    private fun enterImmersiveMode() {
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        )
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && (isTvDevice || customView != null)) enterImmersiveMode()
+    }
+
     private fun exitCustomView() {
         (customView?.parent as? FrameLayout)?.removeView(customView)
         customView = null
         customViewCallback?.onCustomViewHidden()
         customViewCallback = null
-        window.decorView.systemUiVisibility = originalSystemUi
+        if (isTvDevice) enterImmersiveMode() else window.decorView.systemUiVisibility = originalSystemUi
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -85,7 +110,8 @@ class MainActivity : Activity() {
                 KeyEvent.KEYCODE_DPAD_LEFT -> "ArrowLeft"
                 KeyEvent.KEYCODE_DPAD_RIGHT -> "ArrowRight"
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-                KeyEvent.KEYCODE_NUMPAD_ENTER -> "Enter"
+                KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A -> "Enter"
+                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> " "
                 KeyEvent.KEYCODE_BACK -> null
                 else -> null
             }

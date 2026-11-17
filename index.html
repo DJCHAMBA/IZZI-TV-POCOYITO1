@@ -527,6 +527,32 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
  .remote-hint{font-size:8px}
 }
 
+
+/* Reproductor VOD premium: controles propios, sin barra nativa del navegador */
+.vod-player{padding:clamp(12px,2vw,28px);gap:12px;background:radial-gradient(ellipse at 50% 0%,#18223c 0%,#080b13 52%,#03050a 100%)}
+.vod-player-head{height:auto;min-height:58px;flex:0 0 auto;gap:18px;border-bottom:1px solid #ffffff18;padding:0 2px 12px}
+.vod-player-head button{display:inline-flex;align-items:center;gap:8px;background:#151f34;border:1px solid #ffffff20;border-radius:10px;padding:11px 15px;font-weight:700;color:#eaf1ff;cursor:pointer;transition:.18s}
+.vod-player-head button:hover{background:#244a82;border-color:#4a9cff}
+.vod-player-head strong{font-size:clamp(15px,1.5vw,21px);font-weight:800;letter-spacing:-.35px}
+.vod-video-stage{position:relative;flex:1;min-height:0;width:min(100%,1500px);margin:0 auto;background:#000;border:1px solid #ffffff20;border-radius:16px;overflow:hidden;box-shadow:0 24px 90px #000b,0 0 45px #317bff12;display:flex;align-items:center;justify-content:center}
+.vod-video-stage video{width:100%;height:100%;max-height:calc(100vh - 185px);object-fit:contain;background:#000;outline:none}
+.vod-controls{position:absolute;left:0;right:0;bottom:0;padding:48px 22px 17px;background:linear-gradient(0deg,#05070df2 0%,#05070dc9 48%,transparent 100%);opacity:0;transform:translateY(7px);transition:opacity .22s,transform .22s}
+.vod-video-stage:hover .vod-controls,.vod-video-stage:focus-within .vod-controls,.vod-video-stage.controls-visible .vod-controls{opacity:1;transform:translateY(0)}
+.vod-progress-row{display:flex;align-items:center;gap:12px;color:#e1e9f8;font-size:11px;font-variant-numeric:tabular-nums;margin-bottom:9px}
+.vod-progress-row input{flex:1;min-width:0;accent-color:#4da1ff;height:4px;cursor:pointer}
+.vod-control-row{display:flex;align-items:center;gap:12px}
+.vod-control-row button,.vod-center-play button{width:40px;height:40px;border:1px solid #ffffff25;border-radius:50%;background:#ffffff14;color:#fff;font-size:17px;cursor:pointer;display:grid;place-items:center;transition:.18s}
+.vod-control-row button:hover,.vod-center-play button:hover{background:#2777dc;border-color:#65b2ff;transform:scale(1.05)}
+.vod-control-row input{width:90px;accent-color:#59a8ff;cursor:pointer}
+.vod-control-spacer{flex:1}
+.vod-playing-label{font-size:10px;letter-spacing:2px;color:#9fb4d6;font-weight:800;margin-right:8px}
+.vod-center-play{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .2s}
+.vod-center-play button{pointer-events:auto;width:68px;height:68px;font-size:25px;background:#0c1a30b8;border:1px solid #ffffff55;backdrop-filter:blur(12px)}
+.vod-video-stage.paused .vod-center-play{opacity:1}
+.vod-player p{width:min(100%,1500px);margin:0 auto;color:#9baac4;font-size:11px}
+.vod-video-stage:fullscreen{width:100vw;height:100vh;max-width:none;border:0;border-radius:0}
+.vod-video-stage:fullscreen video{max-height:100vh}
+@media(max-width:700px){.vod-controls{opacity:1;transform:none;padding:35px 12px 10px}.vod-control-row{gap:7px}.vod-control-row input{width:62px}.vod-playing-label{display:none}.vod-player-head{gap:10px}.vod-video-stage video{max-height:calc(100vh - 150px)}}
 </style></head>
 <body>
 
@@ -621,7 +647,21 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
  <div id="vodGrid" class="vod-grid"><div class="vod-loading"><i></i> Cargando títulos disponibles…</div></div>
  <div class="vod-foot">Los títulos, imágenes y disponibilidad dependen de los metadatos y archivos publicados por Internet Archive. No todos los elementos incluyen un vídeo reproducible.</div>
 </section>
-<div id="vodPlayer" class="vod-player" aria-hidden="true"><div class="vod-player-head"><button id="vodPlayerBack">← Volver al catálogo</button><strong id="vodPlayerTitle">Reproduciendo</strong></div><video id="vodVideo" controls playsinline></video><p id="vodPlayerStatus">Preparando reproducción…</p></div>
+<div id="vodPlayer" class="vod-player" aria-hidden="true"><div class="vod-player-head"><button id="vodPlayerBack">← Volver al catálogo</button><strong id="vodPlayerTitle">Reproduciendo</strong></div><div class="vod-video-stage" id="vodVideoStage">
+  <video id="vodVideo" playsinline preload="metadata"></video>
+  <div class="vod-controls" id="vodControls">
+    <div class="vod-progress-row"><span id="vodCurrentTime">00:00</span><input id="vodProgress" type="range" min="0" max="1000" value="0" aria-label="Progreso de reproducción"><span id="vodDuration">00:00</span></div>
+    <div class="vod-control-row">
+      <button type="button" id="vodPlayPause" aria-label="Reproducir o pausar">▶</button>
+      <button type="button" id="vodMute" aria-label="Silenciar">◖))</button>
+      <input id="vodVolume" type="range" min="0" max="1" step="0.05" value="1" aria-label="Volumen">
+      <span class="vod-control-spacer"></span>
+      <span class="vod-playing-label">POCOYITO · ON DEMAND</span>
+      <button type="button" id="vodFullscreen" aria-label="Pantalla completa">⛶</button>
+    </div>
+  </div>
+  <div class="vod-center-play" id="vodCenterPlay"><button type="button" aria-label="Reproducir">▶</button></div>
+</div><p id="vodPlayerStatus">Preparando reproducción…</p></div>
 
 <section class="guide-modal" id="guideModal" aria-hidden="true">
  <div class="guide-wrap">
@@ -1103,4 +1143,25 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   document.head.appendChild(style);
   window.addEventListener('load',()=>{setTimeout(()=>{const first=items()[0];if(first)focus(first);},350);});
 })();
-</script></body></html>
+</script>
+/* Controles accesibles del reproductor Pocoyito On Demand */
+(function(){
+ const v=document.getElementById('vodVideo'),stage=document.getElementById('vodVideoStage');
+ if(!v||!stage)return;
+ const play=document.getElementById('vodPlayPause'),center=document.getElementById('vodCenterPlay'),mute=document.getElementById('vodMute'),vol=document.getElementById('vodVolume'),progress=document.getElementById('vodProgress'),now=document.getElementById('vodCurrentTime'),duration=document.getElementById('vodDuration'),full=document.getElementById('vodFullscreen');
+ const fmt=t=>{if(!Number.isFinite(t))return '00:00';const n=Math.max(0,Math.floor(t));return String(Math.floor(n/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0');};
+ const paint=()=>{play.textContent=v.paused?'▶':'Ⅱ';center.style.display=v.paused?'grid':'none';stage.classList.toggle('paused',v.paused);now.textContent=fmt(v.currentTime);duration.textContent=fmt(v.duration);if(Number.isFinite(v.duration)&&v.duration>0&&!progress.matches(':active'))progress.value=String(Math.round(v.currentTime/v.duration*1000));mute.textContent=(v.muted||v.volume===0)?'×':'◖))';};
+ const toggle=()=>{if(v.paused)v.play().catch(()=>{});else v.pause();};
+ play.addEventListener('click',toggle);center.querySelector('button').addEventListener('click',toggle);v.addEventListener('click',toggle);
+ v.addEventListener('play',paint);v.addEventListener('pause',paint);v.addEventListener('timeupdate',paint);v.addEventListener('loadedmetadata',paint);v.addEventListener('volumechange',paint);
+ progress.addEventListener('input',()=>{if(Number.isFinite(v.duration))v.currentTime=(Number(progress.value)/1000)*v.duration;});
+ vol.addEventListener('input',()=>{v.volume=Number(vol.value);v.muted=v.volume===0;});
+ mute.addEventListener('click',()=>{v.muted=!v.muted;});
+ full.addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen?.();else stage.requestFullscreen?.();});
+ stage.addEventListener('mousemove',()=>{stage.classList.add('controls-visible');clearTimeout(stage._hideTimer);stage._hideTimer=setTimeout(()=>stage.classList.remove('controls-visible'),2400);});
+ stage.addEventListener('mouseleave',()=>stage.classList.remove('controls-visible'));
+ v.addEventListener('ended',paint);
+ const back=document.getElementById('vodPlayerBack');back.addEventListener('click',()=>{v.pause();paint();});
+ paint();
+})();
+</body></html>

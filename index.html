@@ -573,8 +573,8 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
 .player-shell:fullscreen .favorite-control,.player-shell:-webkit-full-screen .favorite-control{min-width:112px}.favorite-control.active{background:linear-gradient(120deg,#a52b69,#682d91)!important;border-color:#e36bb1!important;color:#fff!important}.player-shell:fullscreen .controls .control,.player-shell:-webkit-full-screen .controls .control{min-height:38px;padding:9px 13px;white-space:nowrap}.player-shell:fullscreen .controls .volume,.player-shell:-webkit-full-screen .controls .volume{width:clamp(75px,10vw,150px)}.player-shell:fullscreen .controls #mute,.player-shell:-webkit-full-screen .controls #mute{min-width:130px}.player-shell:fullscreen .controls .status,.player-shell:-webkit-full-screen .controls .status{min-width:64px;text-align:center}/* Corrección definitiva: la última regla también debe llenar el viewport */
 .player-shell:fullscreen .screen,
 .player-shell:-webkit-full-screen .screen{
-  position:absolute!important;inset:0 0 54px 0!important;
-  width:100vw!important;height:auto!important;min-height:0!important;
+  position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;min-height:0!important;
   max-height:none!important;aspect-ratio:auto!important;
   flex:none!important;margin:0!important;padding:0!important;
   overflow:hidden!important;background:#000!important;
@@ -582,10 +582,11 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible{
 .player-shell:fullscreen .screen video,
 .player-shell:-webkit-full-screen .screen video{
   position:absolute!important;inset:0!important;
-  width:100%!important;height:100%!important;
-  min-width:100%!important;min-height:100%!important;
-  max-width:none!important;max-height:none!important;
-  object-fit:cover!important;object-position:center!important;
+  display:block!important;width:100%!important;height:100%!important;
+  min-width:0!important;min-height:0!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;object-position:center center!important;
+  transform:none!important;
 }
 .player-shell:fullscreen .controls,
 .player-shell:-webkit-full-screen .controls{

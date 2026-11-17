@@ -52,3 +52,5 @@ jobs:
         uses: actions/deploy-pages@v4
 
 # Trigger initial publication now that the repository is public.
+
+# Re-run deployment after GitHub Pages was enabled in repository settings.

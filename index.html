@@ -411,10 +411,20 @@ button,a,input,select{touch-action:manipulation}
   min-height:0!important;max-height:none!important;aspect-ratio:auto!important;
   overflow:hidden!important;background:#000!important;
 }
+.player-shell:fullscreen .screen,
+.player-shell:-webkit-full-screen .screen{
+  position:relative!important;display:block!important;flex:1 1 0!important;
+  width:100vw!important;height:100%!important;min-height:0!important;
+  max-height:none!important;aspect-ratio:auto!important;overflow:hidden!important;
+  background:#000!important;
+}
 .player-shell:fullscreen .screen video,
 .player-shell:-webkit-full-screen .screen video{
-  display:block!important;width:100%!important;height:100%!important;
-  max-width:100%!important;max-height:100%!important;object-fit:contain!important;
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;
+  min-width:100%!important;min-height:100%!important;
+  max-width:none!important;max-height:none!important;
+  object-fit:cover!important;object-position:center center!important;
 }
 .player-shell:fullscreen .screen .overlay,
 .player-shell:-webkit-full-screen .screen .overlay{inset:0!important}

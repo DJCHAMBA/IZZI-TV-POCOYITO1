@@ -712,6 +712,42 @@ header .mark.app-brand-logo{width:42px;height:42px;border-radius:11px;clip-path:
 .country-directory-grid.list-view{grid-template-columns:1fr!important}
 .country-directory-grid.list-view .directory-channel-card .country-channel{min-height:58px}
 .country-directory-grid.list-view .directory-channel-card{max-width:100%}
+
+/* Professional channel finder and refined navigation rail */
+.home-nav{gap:7px;padding:12px 7px}
+.home-nav button{min-height:55px;border-radius:13px;transition:background .18s ease,transform .18s ease,color .18s ease}
+.home-nav button:hover{background:#211b39;color:#fff;transform:translateX(2px)}
+.home-nav button[data-open-channel-search]{background:linear-gradient(145deg,#201b3c,#14172b);border:1px solid #8b6de755;color:#d9c3ff}
+.home-nav button[data-open-channel-search] .nav-icon{font-size:25px;color:#c4a4ff}
+.home-nav button.active{box-shadow:inset 3px 0 #b88aff,0 5px 18px #0002}
+.channel-search-modal{position:fixed;inset:0;z-index:3000;display:none;align-items:flex-start;justify-content:center;padding:9vh 18px 24px}
+.channel-search-modal.open{display:flex}
+.channel-search-backdrop{position:absolute;inset:0;background:#03040bdc;backdrop-filter:blur(12px)}
+.channel-search-dialog{position:relative;width:min(720px,100%);max-height:82vh;display:flex;flex-direction:column;overflow:hidden;border:1px solid #a78bfa44;border-radius:22px;background:linear-gradient(145deg,#171b35,#0d1224 75%);box-shadow:0 28px 100px #000b}
+.channel-search-head{display:flex;justify-content:space-between;align-items:flex-start;padding:25px 26px 17px}
+.channel-search-head h2{margin:7px 0 5px;font-size:27px;letter-spacing:-.8px;color:#fff}
+.channel-search-head p{margin:0;color:#aab5d0;font-size:12px}
+.channel-search-close{width:38px;height:38px;border:1px solid #ffffff20;border-radius:11px;background:#ffffff0c;color:#fff;font-size:19px;cursor:pointer}
+.channel-search-input-wrap{margin:0 24px;display:flex;align-items:center;gap:12px;padding:0 15px;height:56px;border:1px solid #a78bfa77;border-radius:13px;background:#080b17;box-shadow:0 0 0 3px #9c7cf51a}
+.channel-search-input-wrap>span{font-size:25px;color:#c5a5ff}
+.channel-search-input-wrap input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#fff;font-size:15px}
+.channel-search-input-wrap kbd,.channel-search-footer kbd{padding:3px 6px;border:1px solid #ffffff25;border-radius:5px;background:#ffffff0b;color:#b7c2dc;font-size:10px}
+.channel-search-meta{display:flex;justify-content:space-between;gap:10px;padding:14px 26px 9px;color:#8592b1;font-size:10px}
+.channel-search-results{overflow:auto;min-height:190px;padding:0 16px 16px}
+.global-channel-result{width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;margin:4px 0;border:1px solid transparent;border-radius:12px;background:transparent;color:#f4f5ff;text-align:left;cursor:pointer}
+.global-channel-result:hover,.global-channel-result.active{border-color:#9b7be655;background:#282448}
+.global-channel-result .station-logo{width:48px;height:38px;flex:0 0 48px}
+.global-channel-result-copy{min-width:0;flex:1}
+.global-channel-result-copy strong,.global-channel-result-copy small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.global-channel-result-copy strong{font-size:12px}
+.global-channel-result-copy small{margin-top:4px;color:#95a3c1;font-size:10px}
+.global-channel-result .result-play{color:#c5a5ff;font-size:18px}
+.channel-search-empty{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#91a0bf;text-align:center}
+.channel-search-empty b{font-size:35px;color:#b994ff}
+.channel-search-empty strong{color:#e7eaff;font-size:13px}
+.channel-search-empty span{font-size:11px}
+.channel-search-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 22px;border-top:1px solid #ffffff12;color:#7f8ca9;font-size:9px;letter-spacing:1px}
+@media(max-width:600px){.channel-search-modal{padding:5vh 10px 12px}.channel-search-dialog{max-height:90vh;border-radius:17px}.channel-search-head{padding:19px 17px 14px}.channel-search-head h2{font-size:23px}.channel-search-input-wrap{margin:0 15px}.channel-search-meta{padding:12px 17px}.channel-search-footer{padding:10px 15px}}
 </style></head>
 <body>
 
@@ -721,6 +757,7 @@ header .mark.app-brand-logo{width:42px;height:42px;border-radius:11px;clip-path:
   <nav class="home-nav" aria-label="Navegación principal">
     <div class="rail-logo" title="izzi TV Pocoyito"><img src="./icons/icon.svg" alt="Pocoyito TV"></div>
     <button type="button" data-home-tab="inicio" class="active" title="Inicio"><span class="nav-icon">⌂</span><small>Inicio</small></button>
+    <button type="button" data-open-channel-search title="Buscar canal"><span class="nav-icon">⌕</span><small>Buscar</small></button>
     <button type="button" data-open-tv title="Televisión"><span class="nav-icon">▣</span><small>En vivo</small></button>
     <button type="button" data-home-action="explore" title="Explorar"><span class="nav-icon">▦</span><small>Explorar</small></button>
     <button type="button" data-home-action="categories" title="Países"><span class="nav-icon">🌎</span><small>Países</small></button>
@@ -786,6 +823,7 @@ header .mark.app-brand-logo{width:42px;height:42px;border-radius:11px;clip-path:
     <div class="home-note"><span>izzi TV Pocoyito</span> · Experiencia independiente de TV por internet <span class="note-right">No afiliada a izzi</span></div>
   </div>
 </section>
+<section id="channelSearchModal" class="channel-search-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Buscar canales"><div class="channel-search-backdrop" data-close-channel-search></div><div class="channel-search-dialog"><div class="channel-search-head"><div><span class="home-kicker">POCOYITO FINDER</span><h2>Encuentra tu canal</h2><p>Busca entre todos los canales del catálogo mundial.</p></div><button type="button" class="channel-search-close" data-close-channel-search aria-label="Cerrar">✕</button></div><label class="channel-search-input-wrap"><span>⌕</span><input id="globalChannelSearch" type="search" placeholder="Nombre del canal, país o categoría…" autocomplete="off"><kbd>ESC</kbd></label><div class="channel-search-meta"><span id="globalSearchCount">Escribe para comenzar</span><span>↑ ↓ navegar · Enter abrir</span></div><div id="globalSearchResults" class="channel-search-results"><div class="channel-search-empty"><b>⌕</b><strong>Tu televisión, más fácil de encontrar</strong><span>Prueba: Azteca, deportes, noticias o México.</span></div></div><div class="channel-search-footer"><span>POCOYITO TV</span><span>Acceso rápido <kbd>Ctrl</kbd> + <kbd>K</kbd></span></div></div></section>
 <div id="tvPage">
   <div class="tv-toolbar"><button id="backHome">← Inicio</button><span style="color:#aebbd5;font-size:12px">Televisión · Guía de canales</span></div>
 
@@ -1030,6 +1068,14 @@ function openTV(){
  if(!allChannels.length){message.textContent='Conectando con el catálogo de canales…';setStatus('CARGANDO CANALES');}
 }
 document.querySelectorAll('[data-open-tv]').forEach(el=>el.addEventListener('click',openTV));
+const channelSearchModal=document.getElementById('channelSearchModal'),globalChannelSearch=document.getElementById('globalChannelSearch'),globalSearchResults=document.getElementById('globalSearchResults'),globalSearchCount=document.getElementById('globalSearchCount');let globalSearchItems=[],globalSearchActive=-1;
+function closeGlobalChannelSearch(){channelSearchModal.classList.remove('open');channelSearchModal.setAttribute('aria-hidden','true');}
+function openGlobalChannelSearch(){channelSearchModal.classList.add('open');channelSearchModal.setAttribute('aria-hidden','false');globalChannelSearch.value='';globalSearchActive=-1;renderGlobalChannelSearch();setTimeout(()=>globalChannelSearch.focus(),40);}
+function renderGlobalChannelSearch(){const q=(globalChannelSearch.value||'').trim().toLocaleLowerCase('es');globalSearchResults.innerHTML='';if(!q){globalSearchCount.textContent=allChannels.length.toLocaleString('es-MX')+' canales en el catálogo';globalSearchResults.innerHTML='<div class="channel-search-empty"><b>⌕</b><strong>Tu televisión, más fácil de encontrar</strong><span>Prueba: Azteca, deportes, noticias o México.</span></div>';return;}globalSearchItems=allChannels.filter(c=>(c.name+' '+c.countryName+' '+c.group+' '+c.id).toLocaleLowerCase('es').includes(q)).slice(0,80);globalSearchCount.textContent=globalSearchItems.length.toLocaleString('es-MX')+' resultados'+(globalSearchItems.length===80?' · mostrando los primeros 80':'');if(!globalSearchItems.length){globalSearchResults.innerHTML='<div class="channel-search-empty"><b>⌕</b><strong>No encontramos ese canal</strong><span>Prueba con otro nombre, país o género.</span></div>';return;}globalSearchItems.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='global-channel-result'+(i===globalSearchActive?' active':'');b.appendChild(createChannelLogo(c));const copy=document.createElement('span');copy.className='global-channel-result-copy';const name=document.createElement('strong');name.textContent=c.name;const meta=document.createElement('small');meta.textContent=(c.group||'TV')+' · '+(c.countryName||'Internacional');copy.append(name,meta);const play=document.createElement('span');play.className='result-play';play.textContent='▶';b.append(copy,play);b.addEventListener('click',()=>{closeGlobalChannelSearch();openTV();playChannel(c,true);});globalSearchResults.appendChild(b);});}
+document.querySelectorAll('[data-open-channel-search]').forEach(b=>b.addEventListener('click',openGlobalChannelSearch));document.querySelectorAll('[data-close-channel-search]').forEach(b=>b.addEventListener('click',closeGlobalChannelSearch));globalChannelSearch.addEventListener('input',()=>{globalSearchActive=-1;renderGlobalChannelSearch();});
+globalChannelSearch.addEventListener('keydown',e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!globalSearchItems.length)return;globalSearchActive=(globalSearchActive+(e.key==='ArrowDown'?1:-1)+globalSearchItems.length)%globalSearchItems.length;renderGlobalChannelSearch();globalSearchResults.children[globalSearchActive]?.scrollIntoView({block:'nearest'});}else if(e.key==='Enter'&&globalSearchItems[globalSearchActive]){const c=globalSearchItems[globalSearchActive];closeGlobalChannelSearch();openTV();playChannel(c,true);}else if(e.key==='Escape')closeGlobalChannelSearch();});
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openGlobalChannelSearch();}if(e.key==='Escape'&&channelSearchModal.classList.contains('open'))closeGlobalChannelSearch();});
+
 document.querySelectorAll('[data-home-tab]').forEach(el=>el.addEventListener('click',()=>{const tab=el.dataset.homeTab;if(tab==='ajustes'){alert('izzi TV Pocoyito es de acceso libre. Tus favoritos se guardan en este navegador.');return;}if(tab==='inicio'){document.getElementById('homeScreen').scrollIntoView({behavior:'smooth'});return;}if(tab==='ligamx'){document.getElementById('ligaMxSection').scrollIntoView({behavior:'smooth',block:'start'});loadLigaMx();return;}if(tab==='apps'||tab==='ondemand'||tab==='beneficios'){alert('Esta sección estará disponible próximamente.');}}));
 document.getElementById('backHome').addEventListener('click',()=>{
  document.getElementById('tvPage').classList.remove('active');document.body.classList.remove('watching');document.getElementById('siteHeader').style.display='none';

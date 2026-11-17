@@ -48,3 +48,5 @@ jobs:
       - name: Publicar sitio web
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Trigger initial publication now that the repository is public.

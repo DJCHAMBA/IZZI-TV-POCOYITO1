@@ -3,9 +3,17 @@ const path = require('path');
 const http = require('http');
 const zlib = require('zlib');
 
-const UPSTREAM_HOST = '15.204.142.109';
-const UPSTREAM_PORT = 22880;
-const ALLOWED_PREFIX = '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/';
+const ALLOWED_STREAMS = [
+  { host: '15.204.142.109', port: '22880', prefix: '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/' },
+  { host: '45.5.57.58', port: '8000', prefix: '/play/a07n/' },
+  { host: '138.121.15.230', port: '9002', prefix: '/DISTRITO-COMEDIA/' },
+  { host: '190.61.47.54', port: '8000', prefix: '/play/a028/' }
+];
+function isAllowedStream(url) {
+  return url.protocol === 'http:' && ALLOWED_STREAMS.some(rule =>
+    url.hostname === rule.host && url.port === rule.port && url.pathname.startsWith(rule.prefix)
+  );
+}
 const LOCAL_PORT = 18787;
 let proxyServer;
 
@@ -25,8 +33,7 @@ function startLocalProxy() {
 
     let upstream;
     try { upstream = new URL(target.searchParams.get('u') || ''); } catch { res.writeHead(400); return res.end('Invalid stream URL'); }
-    if (upstream.protocol !== 'http:' || upstream.hostname !== UPSTREAM_HOST ||
-        upstream.port !== String(UPSTREAM_PORT) || !upstream.pathname.startsWith(ALLOWED_PREFIX)) {
+    if (!isAllowedStream(upstream)) {
       res.writeHead(403); return res.end('Stream host/path not allowed');
     }
 
@@ -41,7 +48,7 @@ function startLocalProxy() {
     else if (upstream.pathname.endsWith('/index.m3u8')) headers.Range = 'bytes=0-';
 
     const upstreamReq = http.request({
-      hostname: UPSTREAM_HOST, port: UPSTREAM_PORT,
+      hostname: upstream.hostname, port: Number(upstream.port),
       path: upstream.pathname + upstream.search, method: req.method, headers, timeout: 25000
     }, upstreamRes => {
       const status = upstreamRes.statusCode || 502;
@@ -74,8 +81,7 @@ function startLocalProxy() {
             if (!raw || raw.startsWith('#')) return raw;
             try {
               const absolute = new URL(raw, upstream);
-              if (absolute.hostname !== UPSTREAM_HOST || absolute.port !== String(UPSTREAM_PORT) ||
-                  !absolute.pathname.startsWith(ALLOWED_PREFIX)) return raw;
+              if (!isAllowedStream(absolute)) return raw;
               return 'http://127.0.0.1:' + LOCAL_PORT + '/hls?u=' + encodeURIComponent(absolute.href);
             } catch { return raw; }
           };

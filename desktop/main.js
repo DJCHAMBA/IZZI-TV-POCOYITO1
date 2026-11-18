@@ -4,10 +4,7 @@ const http = require('http');
 const zlib = require('zlib');
 
 const ALLOWED_STREAMS = [
-  { host: '15.204.142.109', port: '22880', prefix: '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/' },
-  { host: '45.5.57.58', port: '8000', prefix: '/play/a07n/' },
-  { host: '138.121.15.230', port: '9002', prefix: '/DISTRITO-COMEDIA/' },
-  { host: '190.61.47.54', port: '8000', prefix: '/play/a028/' }
+  { host: '15.204.142.109', port: '22880', prefix: '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/' }
 ];
 function isAllowedStream(url) {
   return url.protocol === 'http:' && ALLOWED_STREAMS.some(rule =>
@@ -29,6 +26,10 @@ function startLocalProxy() {
 
     let target;
     try { target = new URL(req.url, 'http://127.0.0.1'); } catch { res.writeHead(400); return res.end('Bad request'); }
+    if (target.pathname === '/health') {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay' }));
+    }
     if (target.pathname !== '/hls') { res.writeHead(404); return res.end('Not found'); }
 
     let upstream;

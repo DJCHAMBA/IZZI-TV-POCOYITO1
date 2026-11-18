@@ -1004,7 +1004,7 @@ body.android-tv :focus{scroll-margin:90px}
 <div class="tv-osd" id="tvOsd">
  <div class="osd-topline"><span class="osd-live"><i></i> EN VIVO</span><span class="osd-clock" id="osdClock">--:--</span></div>
  <div class="osd-main"><div class="osd-number" id="osdNumber">----</div><div class="osd-station" id="osdStation"><span class="osd-logo-fallback">TV</span></div><div class="osd-program"><strong id="osdChannelName">Selecciona un canal</strong><div class="osd-tags"><span id="osdCountry">Televisión</span><span id="osdCategory">En directo</span></div><div class="osd-load"><i id="osdLoadBar"></i></div><small id="osdLoadText">Esperando señal…</small></div><div class="osd-schedule"><strong id="osdTime">--:--</strong><b id="osdNow">Ahora: información no disponible</b><div class="osd-rule"></div><span id="osdNext">Siguiente: información no disponible</span><small id="osdWindow">Guía EPG no disponible</small></div></div>
- <div class="osd-bottom"><span>↑ ↓ Canal</span><i>·</i><span>← → Volumen</span><i>·</i><span>OK Seleccionar</span><i>·</i><span>Back / Esc Salir</span></div>
+ <div class="osd-bottom"><span>↑ ↓ ← → Navegar</span><i>·</i><span>OK Seleccionar</span><i>·</i><span>CH + / CH − Cambiar canal</span><i>·</i><span>Back / Esc Salir</span></div>
 </div><div class="overlay" id="overlay"><div class="spinner" id="spinner"></div><div class="big-logo">pocoyito <span>tv</span></div><p id="message">Cargando canales mexicanos y en español…</p></div></div><div class="controls"><button class="control primary" id="play">▶ Reproducir</button><button class="control" id="mute" title="Activar o silenciar audio">♫ Activar sonido</button><input class="volume" id="volume" type="range" min="0" max="1" step=".05" value="1" aria-label="Volumen"><button class="control favorite-control" id="favoriteCurrent" type="button">♡ Favorito</button><span class="spacer"></span><span class="status" id="status">Cargando lista…</span><button class="control" id="fullscreen">⛶ Pantalla completa</button></div></section><section class="info"><h2 id="infoTitle">Televisión en español</h2><p>El catálogo combina la lista de México y la lista de idioma español de IPTV-org. Incluye un filtro dedicado a los canales identificados como Telemundo. Si una fuente de Canal 5 falla, el reproductor intenta automáticamente otras versiones disponibles del mismo canal. La disponibilidad depende de cada fuente; algunas pueden estar fuera de línea, geobloqueadas o no permitir reproducción en navegador.</p></section></div>
 <aside class="catalog"><div class="catalog-head"><h2>Canales disponibles</h2><p>Selecciona una señal para sintonizar.</p><input class="search" id="search" type="search" placeholder="Buscar canal…" autocomplete="off"></div><div class="tabs"><button class="tab active" data-filter="all">Todos</button><button class="tab" data-filter="mx">México</button><button class="tab" data-filter="spa">En español</button><button class="tab" data-filter="telemundo">Telemundo</button></div><div style="padding:10px 14px 0"><select id="categoryFilter" class="search" aria-label="Categoría"><option value="all">Todas las categorías</option><option value="tv">TV abierta</option><option value="news">Noticias</option><option value="entertainment">Entretenimiento</option><option value="sports">Deportes</option><option value="movies">Películas y series</option><option value="kids">Infantil</option><option value="music">Música</option></select></div><div class="count" id="count">Preparando catálogo…</div><div class="channels" id="channels"><div class="empty">Descargando listas de canales…</div></div></aside></div></main>
 <section class="tv-usage-guide" aria-label="Cómo usar Pocoyito TV">
@@ -1090,11 +1090,15 @@ const IPTV_PROXY_BASE='https://pocoyito-iptv-proxy.jnew123gta5.workers.dev';
 const LOCAL_IPTV_PROXY='http://127.0.0.1:18787/hls?u=';
 const DISTRITO_STREAM_URL='http://15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/index.m3u8';
 const DISTRITO_STREAM_HOST='15.204.142.109';
+function relayBase(){
+  try{return (localStorage.getItem('pocoyitoRelayBaseV1')||'http://127.0.0.1:18787').replace(/\/$/,'');}
+  catch(e){return 'http://127.0.0.1:18787';}
+}
 function playbackUrl(url){
   try{
     const u=new URL(url);
     if(u.hostname===DISTRITO_STREAM_HOST&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/')){
-      return 'http://127.0.0.1:18787/transcode/index.m3u8';
+      return relayBase()+'/transcode/index.m3u8';
     }
     // Azteca 7: relay local para evitar Mixed Content y conservar la URL original de IPTV-org.
     if(u.hostname==='187.245.231.226'&&u.port==='8000'&&u.pathname.startsWith('/play/a0uz/')){
@@ -1239,10 +1243,24 @@ function playChannel(c,autoStart=false,isFallback=false){
     const isDistrito=/distrito\s*comedia/i.test(c.name);
     if(isDistrito){
       console.error('[Pocoyito TV] La única fuente confirmada de Distrito Comedia falló:',c.url,detail||'');
-      message.textContent='Para reproducir Distrito Comedia en la web, abre Pocoyito TV para PC y déjalo abierto como relay local. Luego pulsa Reproducir otra vez.';
-      setStatus('RELAY LOCAL REQUERIDO');
+      message.textContent='Distrito Comedia necesita el relay de la PC. Si esta app está en otro dispositivo, introduce la IP local de la PC (por ejemplo 192.168.1.25).';
+      setStatus('CONFIGURAR RELAY DE PC');
       spinner.style.display='none';
       overlay.classList.remove('hidden');
+      if(!window.__pocoyitoRelayPrompted){
+        window.__pocoyitoRelayPrompted=true;
+        setTimeout(()=>{
+          const current=relayBase();
+          const suggested=current.includes('127.0.0.1')||current.includes('localhost')?'':current.replace(/^https?:\/\//,'').replace(/:18787.*$/,'');
+          const entered=window.prompt('Distrito Comedia: escribe la IPv4 de la PC donde está abierta Pocoyito TV (en Windows usa ipconfig). Ejemplo: 192.168.1.25',suggested);
+          if(entered&&/^https?:\/\//i.test(entered.trim())||entered&&/^(\d{1,3}\.){3}\d{1,3}(:18787)?$/.test(entered.trim())){
+            const base=/^https?:\/\//i.test(entered.trim())?entered.trim().replace(/\/$/,''):('http://'+entered.trim().replace(/:18787$/,'')+':18787');
+            localStorage.setItem('pocoyitoRelayBaseV1',base);
+            window.__pocoyitoRelayPrompted=false;
+            playChannel(c,true);
+          }
+        },250);
+      }
       return;
     }
     const isC5=/canal\s*5/i.test(c.name)||/canal5/i.test(c.id);if(isC5&&!isFallback){const next=allChannels.find(x=>x.country&&/canal\s*5/i.test(x.name)&&!canal5Tried.has(x.url));if(next){message.textContent='Esta fuente no respondió. Probando otra señal de Canal 5…';setStatus('PROBANDO ALTERNATIVA');setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},350);return;}}spinner.style.display='none';const code=detail?.response?.code||detail?.networkDetails?.status||video.error?.code||0;const kind=String(detail?.details||detail?.type||'').toLowerCase();let reason='La señal no respondió. Puede estar fuera de línea o no permitir reproducción web.';if(code===403||kind.includes('403')||kind.includes('keyloaderror'))reason='El servidor rechazó el acceso (HTTP 403). La señal puede tener restricción regional o requerir autorización.';else if(code===404||kind.includes('404'))reason='El servidor no encontró la transmisión (HTTP 404). El enlace puede estar vencido o fuera de línea.';else if(code===401)reason='El servidor requiere autorización (HTTP 401).';else if(kind.includes('manifest')||kind.includes('level')||kind.includes('frag'))reason='No se pudo cargar la lista o los segmentos de video. La fuente puede estar caída, bloqueada por CORS o ser incompatible.';else if(video.error?.code===4)reason='El formato o la dirección de esta transmisión no es compatible con el reproductor.';else if(video.error?.code===3)reason='El navegador no pudo decodificar el video.';else if(video.error?.code===2)reason='Se perdió la conexión con el servidor de video.';if(isC5&&isFallback)reason='Las fuentes públicas de Canal 5 que aparecen en el catálogo no entregaron una señal reproducible.';message.textContent=reason+' Puedes reintentar o elegir otro canal.';overlay.classList.remove('hidden');setStatus(code?'ERROR '+code:'SIN SEÑAL');};
@@ -1269,23 +1287,26 @@ function syncFullscreenButton(){
  if(fullscreenButton)fullscreenButton.textContent=active?'⤢ Salir de pantalla completa':'⛶ Pantalla completa';
  playerShell.classList.remove('tv-controls-hidden');clearTimeout(controlsHideTimer);if(active&&!video.paused)showPlayerControls();
 }
+function setFallbackFullscreen(on){
+ playerShell.classList.toggle('pocoyito-fullscreen',!!on);
+ document.body.classList.toggle('pocoyito-fullscreen-active',!!on);
+ syncFullscreenButton();
+}
 fullscreenButton.onclick=async()=>{
- try{
-  const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
-  if(active){
-   if(document.exitFullscreen)await document.exitFullscreen();
-   else if(document.webkitExitFullscreen)document.webkitExitFullscreen();
-  }else if(playerShell.requestFullscreen){
-   await playerShell.requestFullscreen();
-  }else if(playerShell.webkitRequestFullscreen){
-   playerShell.webkitRequestFullscreen();
-  }else if(video.requestFullscreen){
-   await video.requestFullscreen();
-  }
- }catch(err){
-  const status=document.getElementById('status');
-  if(status)status.textContent='El navegador no permitió la pantalla completa';
+ const nativeActive=!!(document.fullscreenElement||document.webkitFullscreenElement);
+ const fallbackActive=playerShell.classList.contains('pocoyito-fullscreen');
+ if(nativeActive||fallbackActive){
+  if(document.exitFullscreen&&nativeActive){try{await document.exitFullscreen();}catch(e){setFallbackFullscreen(false);}}
+  else if(document.webkitExitFullscreen&&nativeActive){document.webkitExitFullscreen();}
+  else setFallbackFullscreen(false);
+  return;
  }
+ // Android TV WebView no siempre implementa Fullscreen API para contenedores HTML.
+ if(document.body.classList.contains('android-tv')||!playerShell.requestFullscreen){
+  setFallbackFullscreen(true);return;
+ }
+ try{await playerShell.requestFullscreen();}
+ catch(err){setFallbackFullscreen(true);}
 };
 document.addEventListener('fullscreenchange',syncFullscreenButton);
 document.addEventListener('webkitfullscreenchange',syncFullscreenButton);document.getElementById('search').addEventListener('input',render);document.getElementById('categoryFilter').addEventListener('change',render);document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));render();}));
@@ -1453,7 +1474,7 @@ document.getElementById('channelUp').onclick=()=>tuneByIndex(currentIndex()+1);
 document.getElementById('channelDown').onclick=()=>tuneByIndex(currentIndex()-1);
 document.addEventListener('keydown',e=>{
  const guideOpen=document.getElementById('guideModal').classList.contains('open');
- if(e.key==='Escape'){if(guideOpen)closeGuide();document.getElementById('quickMenu').classList.remove('open');return;}
+ if(e.key==='Escape'){if(playerShell.classList.contains('pocoyito-fullscreen')){setFallbackFullscreen(false);return;}if(guideOpen)closeGuide();document.getElementById('quickMenu').classList.remove('open');return;}
  if(e.key.toLowerCase()==='g'&&!guideOpen){openGuide();return;}
  if(guideOpen&&e.key==='Enter'&&selectedGuideChannel){tuneGuideChannel(selectedGuideChannel);return;}
  if(guideOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();const items=guideChannels();guideIndex=Math.max(0,Math.min(items.length-1,guideIndex+(e.key==='ArrowDown'?1:-1)));if(guideIndex>=guideLimit){guideLimit=Math.min(items.length,guideLimit+120);renderGuide();}const row=[...document.querySelectorAll('.guide-row')].find(r=>r.dataset.url===items[guideIndex]?.url);row?.scrollIntoView({block:'nearest'});if(items[guideIndex])updateGuideFeature(items[guideIndex]);return;}
@@ -2030,4 +2051,12 @@ body.android-tv .tv-usage-head>button,body.android-tv .tv-usage-card button{min-
 body.android-tv .tv-usage-guide button:focus-visible{outline:4px solid #35d4ff;outline-offset:4px}
 </style>
 
+<style id="pocoyito-webview-fullscreen">
+.player-shell.pocoyito-fullscreen{position:fixed!important;inset:0!important;z-index:99999!important;width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;margin:0!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;background:#000!important;overflow:hidden!important}
+.player-shell.pocoyito-fullscreen .screen{position:relative!important;display:block!important;flex:1 1 auto!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:auto!important;background:#000!important;overflow:hidden!important}
+.player-shell.pocoyito-fullscreen .screen video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:#000!important}
+.player-shell.pocoyito-fullscreen .controls{flex:0 0 auto!important;display:flex!important;min-height:54px!important;width:100%!important;z-index:10!important;background:#080d1df5!important}
+body.pocoyito-fullscreen-active{overflow:hidden!important}
+body.android-tv .player-shell.pocoyito-fullscreen .controls{padding:10px!important}
+</style>
 </body></html>

@@ -1593,7 +1593,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
   if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();return;}
   if(k==='g'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGuide());else openGuide();return;}
-  if(k==='f'){e.preventDefault();if(fs)document.exitFullscreen?.();else (player||$('video'))?.requestFullscreen?.().catch?.(()=>{});return;}
+  if(k==='f'){e.preventDefault();if(fs)document.exitFullscreen?.();else Promise.resolve((player||$('video'))?.requestFullscreen?.()).catch(()=>{});return;}
   if(k==='m'){e.preventDefault();openWorldHub();return;}
   if(k==='i'){e.preventDefault();if(inTV)showChannelOsd?.();else document.getElementById('infoTitle')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
   if(k==='?'||k==='/'){e.preventDefault();showShortcuts();return;}

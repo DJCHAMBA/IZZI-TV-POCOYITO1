@@ -69,7 +69,7 @@ function startDistritoTranscode(sourceUrl) {
   });
 }
 
-async function handleTranscodeRequest(route, res) {
+async async function handleTranscodeRequest(route, res) {
   if (!/^\\/transcode\\/(?:index\\.m3u8|seg_\\d+\\.ts)$/.test(route)) {
     res.writeHead(404); return res.end('Not found');
   }

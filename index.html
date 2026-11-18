@@ -1592,7 +1592,10 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
     // En la pantalla de TV, las flechas pertenecen al reproductor (canal/volumen),
     // no al navegador de foco de Android TV. Deja que el manejador del reproductor las procese.
     const tvPage=document.getElementById('tvPage');
-    if(tvPage?.classList.contains('active')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key))return;
+    if(tvPage?.classList.contains('active')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)){
+      const focusedUi=active&&active!==document.body&&active!==document.documentElement&&active.id!=='video'&&!active.closest('.screen');
+      if(!focusedUi)return; // El reproductor maneja el zapping y el volumen cuando no hay un control enfocado.
+    }
     const list=items();
     if(!list.length)return;
     if(key==='Enter'||key===' '){
@@ -1672,6 +1675,11 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   if(k==='i'){e.preventDefault();if(inTV)showChannelOsd?.();else document.getElementById('infoTitle')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
   if(k==='?'||k==='/'){e.preventDefault();showShortcuts();return;}
   if(inTV&&['arrowup','arrowdown','arrowleft','arrowright'].includes(k)){
+   const active=document.activeElement;
+   const navigatingUi=active&&active!==document.body&&active!==document.documentElement&&active.id!=='video'&&!active.closest('.screen');
+   // Cuando el foco está en menús, filtros o lista de canales, las flechas navegan la interfaz.
+   // En el área del reproductor, arriba/abajo hacen zapping e izquierda/derecha ajustan volumen.
+   if(navigatingUi)return;
    e.preventDefault();e.stopPropagation();
    if(typeof showPlayerControls==='function')showPlayerControls();
    if(k==='arrowup'){tuneByIndex(currentIndex()+1);return;}

@@ -133,7 +133,7 @@ class MainActivity : Activity() {
                     else -> "ArrowRight"
                 }
                 webView.evaluateJavascript(
-                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'$key',code:'$key',bubbles:true,cancelable:true}));",
+                    "(function(){var t=document.activeElement||document;var e=new KeyboardEvent('keydown',{key:'$key',code:'$key',bubbles:true,cancelable:true});t.dispatchEvent(e);})();",
                     null
                 )
             }

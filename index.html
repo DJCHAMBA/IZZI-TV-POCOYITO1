@@ -1064,7 +1064,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
 <section class="country-directory" id="countryDirectory" aria-hidden="true"><div class="country-directory-panel"><div class="country-directory-head"><div><span class="home-kicker">CATÁLOGO MUNDIAL IPTV-ORG</span><h2 id="countryDirectoryTitle">Canales por país</h2><p id="countryDirectorySubtitle">Explora todos los canales disponibles en la lista mundial.</p></div><button type="button" class="country-close" id="countryDirectoryClose">✕</button></div><div class="directory-layout"><aside class="directory-side"><div class="directory-side-title">CATEGORÍAS</div><button type="button" class="directory-side-item active" data-directory-view="countries"><span>🌎</span> Países</button><div class="directory-side-divider"></div><div id="directoryCategoryNav"></div></aside><main class="directory-main"><div class="country-directory-tools"><input id="countryDirectorySearch" class="search" placeholder="Buscar país o canal…"><div class="directory-extra-tools" id="directoryExtraTools" hidden><select id="directorySort" aria-label="Ordenar canales"><option value="default">Orden original</option><option value="az">Nombre A–Z</option><option value="za">Nombre Z–A</option></select><button type="button" id="directoryOnlyFavorites">♡ Favoritos</button><button type="button" id="directoryGridToggle" class="active">▦ Cuadrícula</button></div><button type="button" class="tab active" id="countryDirectoryBack" hidden>← Volver</button><button type="button" class="tab" id="countryDirectoryCountries" hidden>🌎 Explorar por país</button></div><div id="countryDirectoryGrid" class="country-directory-grid"></div></main></div></div></section>
 <footer>Reproductor independiente y no oficial. No está afiliado ni respaldado por TV Azteca o IPTV-org.<br>Las listas y señales son proporcionadas por IPTV-org y sus fuentes públicas. La disponibilidad puede cambiar.</footer>
 <script>
-const SOURCES=[{key:'iptv-org',label:'IPTV-org',url:'https://iptv-org.github.io/iptv/index.m3u'},{key:'iptv-org-mx',label:'IPTV-org · México',url:'https://iptv-org.github.io/iptv/countries/mx.m3u'},{key:'nexonic',label:'Nexonic IPTV · Verificados',url:'https://shahrukhalid.github.io/nexonic-iptv/playlists/verified.m3u'},{key:'nexonic-mx',label:'Nexonic IPTV · México',url:'https://shahrukhalid.github.io/nexonic-iptv/playlists/countries/mx.m3u'},{key:'legal-free',label:'Legal Free IPTV',url:'https://biskyt.github.io/legalFreeIPTVplaylist/live.m3u'},{key:'free-tv',label:'Free-TV',url:'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8'},{key:'charlie-mx',label:'CharlieII · IPTV México',url:'https://raw.githubusercontent.com/CharlieII/IPTV_mexico/refs/heads/main/lista.m3u'}];
+const SOURCES=[{key:'all',label:'IPTV-org',url:'https://iptv-org.github.io/iptv/index.m3u'}];
 const video=document.getElementById('video'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),spinner=document.getElementById('spinner'),statusEl=document.getElementById('status'),listEl=document.getElementById('channels'),countEl=document.getElementById('count');
 const IPTV_PROXY_BASE='https://pocoyito-iptv-proxy.jnew123gta5.workers.dev';
 const LOCAL_IPTV_PROXY='http://127.0.0.1:18787/hls?u=';
@@ -1091,22 +1091,27 @@ let channelMetadataByName=new Map();
 function applyCountryToChannel(c){const byId=channelMetadata.get(c.id);let meta=byId;if(!meta&&c.name)meta=channelMetadataByName.get(normalizeChannelName(c.name));let code=meta?.country||c.countryCode||'';if(!code){const suffix=String(c.id||'').match(/\.([a-z]{2})$/i);if(suffix)code=suffix[1].toUpperCase();}const info=countryMeta(code);c.countryCode=info.countryCode;c.countryName=info.countryName;c.country=info.countryCode==='MX';if(meta&&Array.isArray(meta.categories))c.categories=meta.categories;return c;}
 function parseM3U(text,source){const lines=text.split(/\r?\n/),out=[];for(let i=0;i<lines.length;i++){const line=lines[i].trim();if(!line.startsWith('#EXTINF'))continue;const comma=line.indexOf(',');const name=(comma>=0?line.slice(comma+1):attr(line,'tvg-name')).trim()||attr(line,'tvg-name')||'Canal sin nombre';let url='';for(let j=i+1;j<lines.length;j++){const candidate=lines[j].trim();if(!candidate)continue;if(candidate.startsWith('#'))continue;url=candidate;break;}if(!url)continue;const id=attr(line,'tvg-id'),group=attr(line,'group-title')||'General',language=attr(line,'tvg-language');const meta=countryMeta(attr(line,'tvg-country')||attr(line,'country'));const telemundo=/telemundo/i.test(name+' '+id+' '+group);out.push({id,name,logo:attr(line,'tvg-logo'),group,...meta,country:meta.countryCode==='MX',spanish:/spa|spanish|español/i.test(language),telemundo,url,sourceKey:source||'iptv-org'});}return out}
 function mergeChannels(channels){
- // Azteca 7: conservar la primera entrada de IPTV-org (fuente original que funcionaba)
- // y descartar variantes duplicadas agregadas por las listas secundarias.
- const aztecaSeen=new Set();
- channels=channels.filter(c=>{
-  const name=normalizeChannelName(c.name||'');
-  if(name==='azteca 7'||name==='azteca7'){
-   if(aztecaSeen.has('azteca7')) return false;
-   aztecaSeen.add('azteca7');
-  }
-  return true;
- });
+ const map=new Map();
+ for(const c of channels){
+  const key=c.url;
+  if(map.has(key)){
+   const old=map.get(key);
+   old.country ||= c.country;
+   old.spanish ||= c.spanish;
+   old.telemundo ||= c.telemundo;
+   if(!old.logo)old.logo=c.logo;
+   if(!old.countryCode&&c.countryCode){old.countryCode=c.countryCode;old.countryName=c.countryName;}
+  }else map.set(key,c);
+ }
+ const original=[...map.values()];
  const isDistrito=c=>String(c.name||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').includes('distrito comedia');
- const others=channels.filter(c=>!isDistrito(c));
- const existing=channels.find(c=>isDistrito(c)&&c.url&&c.url.includes('15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'));
+ const existing=original.find(c=>isDistrito(c)&&c.url&&c.url.includes('15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'));
  const canonical={...(existing||{}),id:'DistritoComedia.mx@HD',name:'Distrito Comedia (1080p)',logo:existing?.logo||'',group:'Televisión',countryCode:'MX',countryName:'México',country:true,spanish:true,telemundo:false,url:DISTRITO_STREAM_URL,sourceKey:'VLC-confirmed'};
- return [...others,canonical].sort((a,b)=>{if(a.countryCode==='MX'&&b.countryCode!=='MX')return -1;if(b.countryCode==='MX'&&a.countryCode!=='MX')return 1;return a.countryName.localeCompare(b.countryName,'es')||a.name.localeCompare(b.name,'es');});
+ return [...original.filter(c=>!isDistrito(c)),canonical].sort((a,b)=>{
+  if(a.countryCode==='MX'&&b.countryCode!=='MX')return -1;
+  if(b.countryCode==='MX'&&a.countryCode!=='MX')return 1;
+  return a.countryName.localeCompare(b.countryName,'es')||a.name.localeCompare(b.name,'es');
+ });
 }
 function categoryOf(c){const t=(c.name+' '+c.group).toLowerCase();if(/kids|niñ|infantil|cartoon|disney junior|nickelodeon/.test(t))return 'kids';if(/sport|deport|futbol|fútbol|espn|fox sports|tudn/.test(t))return 'sports';if(/news|noticia|cnn|milenio|foro tv|adn 40/.test(t))return 'news';if(/movie|cine|pel[ií]cula|film|hbo|cinemax|studio universal/.test(t))return 'movies';if(/music|m[uú]sica|mtv|telehit|bandamax/.test(t))return 'music';if(/entreten|series|comedy|universal|sony|warner/.test(t))return 'entertainment';if(c.country)return 'tv';return 'entertainment';}
 function visibleChannels(){const q=document.getElementById('search').value.trim().toLocaleLowerCase('es');const cat=document.getElementById('categoryFilter')?.value||'all';return allChannels.filter(c=>(filter==='all'||(filter==='mx'&&c.country)||(filter==='spa'&&c.spanish)||(filter==='telemundo'&&c.telemundo))&&(cat==='all'||categoryOf(c)===cat)&&(!q||c.name.toLocaleLowerCase('es').includes(q)||c.group.toLocaleLowerCase('es').includes(q)));}

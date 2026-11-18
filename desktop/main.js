@@ -1,6 +1,7 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const http = require('http');
+const zlib = require('zlib');
 
 const UPSTREAM_HOST = '15.204.142.109';
 const UPSTREAM_PORT = 22880;
@@ -33,7 +34,7 @@ function startLocalProxy() {
       'User-Agent': 'VLC/3.0.23 LibVLC/3.0.23',
       'Accept': '*/*',
       'Accept-Language': 'es_MX',
-      'Accept-Encoding': 'identity',
+      'Accept-Encoding': 'gzip, deflate',
       'Connection': 'keep-alive'
     };
     if (req.headers.range) headers.Range = req.headers.range;
@@ -56,7 +57,18 @@ function startLocalProxy() {
         const chunks = [];
         upstreamRes.on('data', chunk => chunks.push(chunk));
         upstreamRes.on('end', () => {
-          let playlist = Buffer.concat(chunks).toString('utf8');
+          let playlistBuffer = Buffer.concat(chunks);
+          const encoding = String(upstreamRes.headers['content-encoding'] || '').toLowerCase();
+          try {
+            if (encoding.includes('gzip')) playlistBuffer = zlib.gunzipSync(playlistBuffer);
+            else if (encoding.includes('deflate')) playlistBuffer = zlib.inflateSync(playlistBuffer);
+            else if (encoding.includes('br')) playlistBuffer = zlib.brotliDecompressSync(playlistBuffer);
+          } catch (decodeError) {
+            console.error('No se pudo descomprimir playlist HLS:', decodeError);
+            res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8' });
+            return res.end('No se pudo descomprimir la lista HLS');
+          }
+          let playlist = playlistBuffer.toString('utf8').replace(/^\\uFEFF/, '').trim();
           const rewrite = value => {
             const raw = String(value || '').trim();
             if (!raw || raw.startsWith('#')) return raw;

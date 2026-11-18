@@ -58,7 +58,8 @@ class MainActivity : Activity() {
             settings.allowFileAccess = false
             settings.allowContentAccess = false
             settings.javaScriptCanOpenWindowsAutomatically = false
-            settings.mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            // Las señales IPTV públicas pueden usar HTTP.
+            settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
                     assetLoader.shouldInterceptRequest(request.url)
@@ -77,6 +78,20 @@ class MainActivity : Activity() {
             }
         }
         setContentView(webView)
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
+                assetLoader.shouldInterceptRequest(request.url)
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                if (isTvDevice) view.evaluateJavascript("""
+                    (function(){
+                      document.body.classList.add('android-tv');
+                      document.documentElement.classList.add('android-tv');
+                      setTimeout(function(){ if(typeof window.openTV==='function') window.openTV(); }, 650);
+                    })();
+                """.trimIndent(), null)
+            }
+        }
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html")
         webView.requestFocus()
     }
@@ -111,15 +126,32 @@ class MainActivity : Activity() {
                 KeyEvent.KEYCODE_DPAD_RIGHT -> "ArrowRight"
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
                 KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A -> "Enter"
-                KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> " "
-                KeyEvent.KEYCODE_BACK -> null
+                KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP,
+                KeyEvent.KEYCODE_MEDIA_NEXT -> "PageUp"
+                KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN,
+                KeyEvent.KEYCODE_MEDIA_PREVIOUS -> "PageDown"
+                KeyEvent.KEYCODE_GUIDE -> "g"
+                KeyEvent.KEYCODE_INFO -> "i"
+                KeyEvent.KEYCODE_SEARCH -> "CTRL_K"
+                KeyEvent.KEYCODE_MENU -> "q"
                 else -> null
             }
+            if (event.keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+                webView.evaluateJavascript("""
+                    (function(){
+                      if(document.getElementById('vodPlayer')?.classList.contains('open')) document.getElementById('vodPlayPause')?.click();
+                      else if(document.getElementById('tvPage')?.classList.contains('active')) document.getElementById('play')?.click();
+                    })();
+                """.trimIndent(), null)
+                return true
+            }
             if (jsKey != null) {
-                webView.evaluateJavascript(
-                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));",
-                    null
-                )
+                val script = if (jsKey == "CTRL_K") {
+                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',code:'KeyK',ctrlKey:true,bubbles:true,cancelable:true}));"
+                } else {
+                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'$jsKey',code:'$jsKey',bubbles:true,cancelable:true}));"
+                }
+                webView.evaluateJavascript(script, null)
                 return true
             }
         }
@@ -129,10 +161,24 @@ class MainActivity : Activity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (customView != null) { exitCustomView(); return true }
-            webView.evaluateJavascript(
-                "if(document.fullscreenElement){document.exitFullscreen()}else if(document.getElementById('vodPage')?.classList.contains('active')){document.getElementById('vodBack')?.click()}else if(document.getElementById('tvPage')?.classList.contains('active')){document.getElementById('tvBack')?.click()}else{history.back()}",
-                null
-            )
+            webView.evaluateJavascript("""
+                (function(){
+                  const guide=document.getElementById('guideModal'), search=document.getElementById('channelSearchModal');
+                  const quick=document.getElementById('quickMenu'), directory=document.getElementById('countryDirectory');
+                  const world=document.getElementById('pocoyitoWorldHub');
+                  if(document.fullscreenElement){document.exitFullscreen();return;}
+                  if(guide?.classList.contains('open')){document.getElementById('closeGuide')?.click();return;}
+                  if(search?.classList.contains('open')){if(typeof closeGlobalChannelSearch==='function')closeGlobalChannelSearch();return;}
+                  if(quick?.classList.contains('open')){quick.classList.remove('open');return;}
+                  if(directory?.classList.contains('open')){document.getElementById('countryDirectoryClose')?.click();return;}
+                  if(world && !world.hidden && world.style.display!=='none'){world.hidden=true;world.style.display='none';return;}
+                  const vp=document.getElementById('vodPlayer');
+                  if(vp && vp.getAttribute('aria-hidden')!=='true' && getComputedStyle(vp).display!=='none'){document.getElementById('vodPlayerBack')?.click();return;}
+                  const vod=document.getElementById('vodPage');
+                  if(vod && getComputedStyle(vod).display!=='none'){document.getElementById('vodBack')?.click();return;}
+                  if(document.getElementById('tvPage')?.classList.contains('active')){document.getElementById('backHome')?.click();return;}
+                })();
+            """.trimIndent(), null)
             return true
         }
         return super.onKeyDown(keyCode, event)

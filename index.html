@@ -1068,16 +1068,22 @@ const SOURCES=[{key:'iptv-org',label:'IPTV-org',url:'https://iptv-org.github.io/
 const video=document.getElementById('video'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),spinner=document.getElementById('spinner'),statusEl=document.getElementById('status'),listEl=document.getElementById('channels'),countEl=document.getElementById('count');
 const IPTV_PROXY_BASE='https://pocoyito-iptv-proxy.jnew123gta5.workers.dev';
 const LOCAL_IPTV_PROXY='http://127.0.0.1:18787/hls?u=';
+const DISTRITO_STREAMS=[
+  {host:'15.204.142.109',port:'22880',prefix:'/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'},
+  {host:'45.5.57.58',port:'8000',prefix:'/play/a07n/'},
+  {host:'138.121.15.230',port:'9002',prefix:'/DISTRITO-COMEDIA/'},
+  {host:'190.61.47.54',port:'8000',prefix:'/play/a028/'}
+];
 function playbackUrl(url){
   try{
     const u=new URL(url);
-    const isDistrito=u.hostname==='15.204.142.109'&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/');
+    const isDistrito=DISTRITO_STREAMS.some(x=>u.protocol==='http:'&&u.hostname===x.host&&u.port===x.port&&u.pathname.startsWith(x.prefix));
     if(isDistrito&&window.pocoyitoDesktop)return LOCAL_IPTV_PROXY+encodeURIComponent(u.href);
     return u.protocol==='http:'?IPTV_PROXY_BASE+'/proxy?url='+encodeURIComponent(u.href):url;
   }catch(e){return url;}
 }
 const COUNTRY_META_URL='https://iptv-org.github.io/api/channels.json',COUNTRY_LIST_URL='https://iptv-org.github.io/api/countries.json';let channelMetadata=new Map(),countryDirectoryMetadata=new Map();
-let hls=null,allChannels=[],filter='all',selected=null,canal5Tried=new Set(),playbackToken=0;
+let hls=null,allChannels=[],filter='all',selected=null,canal5Tried=new Set(),distritoTried=new Set(),playbackToken=0;
 const LAST_CHANNEL_KEY='izziPocoyitoLastChannelV1';
 let ligaGames=[],ligaFilter='all',ligaBusy=false;
 function attr(line,key){const m=line.match(new RegExp('(?:^|\\s)'+key+'="([^"]*)"','i'));return m?m[1]:''}
@@ -1170,13 +1176,26 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<'
 function setStatus(t){statusEl.textContent=t;}
 function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAttribute('src');video.load();}
 function playChannel(c,autoStart=false,isFallback=false){
-  if(!isFallback)canal5Tried.clear();
+  if(!isFallback){canal5Tried.clear();distritoTried.clear();}
   const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
   selected=c;try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
   const badge=document.getElementById('currentBadge');
   if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
   document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();
-  const fail=(detail=null)=>{if(token!==playbackToken)return;const isC5=/canal\s*5/i.test(c.name)||/canal5/i.test(c.id);if(isC5&&!isFallback){const next=allChannels.find(x=>x.country&&/canal\s*5/i.test(x.name)&&!canal5Tried.has(x.url));if(next){message.textContent='Esta fuente no respondió. Probando otra señal de Canal 5…';setStatus('PROBANDO ALTERNATIVA');setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},350);return;}}spinner.style.display='none';const code=detail?.response?.code||detail?.networkDetails?.status||video.error?.code||0;const kind=String(detail?.details||detail?.type||'').toLowerCase();let reason='La señal no respondió. Puede estar fuera de línea o no permitir reproducción web.';if(code===403||kind.includes('403')||kind.includes('keyloaderror'))reason='El servidor rechazó el acceso (HTTP 403). La señal puede tener restricción regional o requerir autorización.';else if(code===404||kind.includes('404'))reason='El servidor no encontró la transmisión (HTTP 404). El enlace puede estar vencido o fuera de línea.';else if(code===401)reason='El servidor requiere autorización (HTTP 401).';else if(kind.includes('manifest')||kind.includes('level')||kind.includes('frag'))reason='No se pudo cargar la lista o los segmentos de video. La fuente puede estar caída, bloqueada por CORS o ser incompatible.';else if(video.error?.code===4)reason='El formato o la dirección de esta transmisión no es compatible con el reproductor.';else if(video.error?.code===3)reason='El navegador no pudo decodificar el video.';else if(video.error?.code===2)reason='Se perdió la conexión con el servidor de video.';if(isC5&&isFallback)reason='Las fuentes públicas de Canal 5 que aparecen en el catálogo no entregaron una señal reproducible.';message.textContent=reason+' Puedes reintentar o elegir otro canal.';overlay.classList.remove('hidden');setStatus(code?'ERROR '+code:'SIN SEÑAL');};
+  const fail=(detail=null)=>{if(token!==playbackToken)return;
+    const isDistrito=/distrito\s*comedia/i.test(c.name);
+    if(isDistrito){
+      distritoTried.add(c.url);
+      const next=allChannels.find(x=>/distrito\s*comedia/i.test(x.name)&&!distritoTried.has(x.url));
+      if(next){
+        console.warn('[Pocoyito TV] Fuente de Distrito Comedia falló; probando alternativa:',c.url,'->',next.url,detail||'');
+        message.textContent='Esta fuente de Distrito Comedia no respondió. Probando otra señal…';
+        setStatus('PROBANDO OTRA FUENTE');
+        setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},300);
+        return;
+      }
+    }
+    const isC5=/canal\s*5/i.test(c.name)||/canal5/i.test(c.id);if(isC5&&!isFallback){const next=allChannels.find(x=>x.country&&/canal\s*5/i.test(x.name)&&!canal5Tried.has(x.url));if(next){message.textContent='Esta fuente no respondió. Probando otra señal de Canal 5…';setStatus('PROBANDO ALTERNATIVA');setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},350);return;}}spinner.style.display='none';const code=detail?.response?.code||detail?.networkDetails?.status||video.error?.code||0;const kind=String(detail?.details||detail?.type||'').toLowerCase();let reason='La señal no respondió. Puede estar fuera de línea o no permitir reproducción web.';if(code===403||kind.includes('403')||kind.includes('keyloaderror'))reason='El servidor rechazó el acceso (HTTP 403). La señal puede tener restricción regional o requerir autorización.';else if(code===404||kind.includes('404'))reason='El servidor no encontró la transmisión (HTTP 404). El enlace puede estar vencido o fuera de línea.';else if(code===401)reason='El servidor requiere autorización (HTTP 401).';else if(kind.includes('manifest')||kind.includes('level')||kind.includes('frag'))reason='No se pudo cargar la lista o los segmentos de video. La fuente puede estar caída, bloqueada por CORS o ser incompatible.';else if(video.error?.code===4)reason='El formato o la dirección de esta transmisión no es compatible con el reproductor.';else if(video.error?.code===3)reason='El navegador no pudo decodificar el video.';else if(video.error?.code===2)reason='Se perdió la conexión con el servidor de video.';if(isC5&&isFallback)reason='Las fuentes públicas de Canal 5 que aparecen en el catálogo no entregaron una señal reproducible.';message.textContent=reason+' Puedes reintentar o elegir otro canal.';overlay.classList.remove('hidden');setStatus(code?'ERROR '+code:'SIN SEÑAL');};
 
   let firstFrameTimer=setTimeout(()=>{if(token===playbackToken && video.readyState<2)fail();},18000);
   const clearFrameTimer=()=>clearTimeout(firstFrameTimer);

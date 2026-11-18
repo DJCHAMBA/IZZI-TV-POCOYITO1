@@ -1695,4 +1695,121 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
 .pocoyito-world .world-grid{grid-template-columns:minmax(280px,.85fr) minmax(360px,1.15fr);gap:18px}.pocoyito-world .world-card{padding:clamp(16px,2vw,24px);border-radius:18px;box-shadow:0 16px 40px #0003}.world-news-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}.world-news-tabs button{border:1px solid #ffffff20;background:#202847;color:#c7d2eb;border-radius:999px;padding:8px 12px;cursor:pointer;font-size:11px;font-weight:800}.world-news-tabs button.active{background:#6249c9;border-color:#ad96ff;color:white}.world-news-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;color:#8999b8;font-size:10px}.world-news-foot button{border:0;background:transparent;color:#c9b6ff;font-weight:800;cursor:pointer}.world-news-error{display:grid;gap:9px;padding:18px;background:#0e162b;border:1px solid #ffffff17;border-radius:12px;color:#dbe5ff}.world-news-error span{font-size:12px;color:#aab8d2;line-height:1.5}.world-news-error a{color:#c6b5ff;font-size:12px}.world-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}.world-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}.world-facts>div{display:flex;flex-direction:column;gap:5px;padding:13px;background:#0e162b;border-radius:10px}.world-facts b{font-size:10px;color:#93a2c0}.world-facts span{font-size:13px;color:#fff;font-weight:800}.world-quicklinks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.world-quicklinks a{padding:13px;border-radius:10px;background:#0e162b;border:1px solid #ffffff13;color:#dce4ff;text-decoration:none;font-size:12px}.world-quicklinks a:hover,.world-news-item:hover{border-color:#9179ff;background:#1b2440}
 @media(max-width:850px){.pocoyito-world{padding:14px!important}.pocoyito-world .world-heading{position:relative;flex-direction:column;align-items:flex-start}.world-head-actions{width:100%}.pocoyito-world .world-grid,.world-bottom-grid{grid-template-columns:1fr}.pocoyito-world .world-extras{grid-template-columns:repeat(2,minmax(0,1fr))}.world-quicklinks{grid-template-columns:1fr 1fr}}
 </style>
+<script>
+/* Pocoyito World v3: controlador independiente, cargas con timeout y estados visibles */
+(function(){
+ const $=id=>document.getElementById(id);
+ const hub=$('pocoyitoWorldHub');
+ if(!hub) return;
+ let cityCoords={lat:32.6245,lon:-115.4523,name:'Mexicali, Baja California',country:'MX'};
+ let selectedSport='soccer', selectedTopic='top', busy=false;
+ const sports={
+  soccer:['Premier League','soccer/eng.1'],laliga:['LaLiga','soccer/esp.1'],
+  ucl:['Champions League','soccer/uefa.champions'],mls:['MLS','soccer/usa.1'],
+  ligamx:['Liga MX','soccer/mex.1'],nba:['NBA','basketball/nba'],
+  nfl:['NFL','football/nfl'],mlb:['MLB','baseball/mlb'],nhl:['NHL','hockey/nhl']
+ };
+ const topics={top:'',nation:'noticias México',world:'noticias internacionales',sports:'deportes México',tech:'tecnología',business:'economía México'};
+ const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function status(s){if($('worldUpdated'))$('worldUpdated').textContent=s;if($('worldLocationStatus'))$('worldLocationStatus').textContent=s;}
+ async function timedFetch(url,ms=12000){
+  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),ms);
+  try{return await fetch(url,{cache:'no-store',signal:ctl.signal});}finally{clearTimeout(timer);}
+ }
+ function replaceButton(el,fn){
+  if(!el)return;
+  const fresh=el.cloneNode(true);el.replaceWith(fresh);fresh.addEventListener('click',fn);
+  return fresh;
+ }
+ function open(){hub.hidden=false;hub.style.display='block';hub.scrollIntoView({behavior:'smooth',block:'start'});refresh();}
+ replaceButton($('openWorldHub'),open);
+ document.querySelectorAll('[data-home-action="world"]').forEach(el=>{if(el.id!=='openWorldHub')replaceButton(el,open);});
+ replaceButton($('worldClose'),()=>{hub.hidden=true;hub.style.display='none';});
+ replaceButton($('worldRefresh'),refresh);
+ document.querySelectorAll('[data-news-topic]').forEach(el=>replaceButton(el,()=>{selectedTopic=el.dataset.newsTopic;document.querySelectorAll('[data-news-topic]').forEach(b=>b.classList.toggle('active',b.dataset.newsTopic===selectedTopic));loadNews();}));
+ document.querySelectorAll('[data-world-sport]').forEach(el=>replaceButton(el,()=>{selectedSport=el.dataset.worldSport;loadSports();}));
+ replaceButton($('worldUseLocation'),()=>{
+  if(!navigator.geolocation){status('Ubicación no disponible; escribe tu ciudad.');return;}
+  status('Solicitando permiso de ubicación…');
+  navigator.geolocation.getCurrentPosition(async p=>{
+   try{
+    const url='https://geocoding-api.open-meteo.com/v1/reverse?latitude='+p.coords.latitude+'&longitude='+p.coords.longitude+'&language=es&format=json';
+    const r=await timedFetch(url);if(!r.ok)throw Error('Geocodificación '+r.status);
+    const j=await r.json(),v=j.results?.[0];if(!v)throw Error('No se identificó la ciudad');
+    cityCoords={lat:p.coords.latitude,lon:p.coords.longitude,name:[v.name,v.admin1].filter(Boolean).join(', '),country:v.country_code||'MX'};
+    $('worldCity').value=v.name;refresh();
+   }catch(e){status('No se pudo detectar la ciudad: '+e.message);}
+  },()=>status('Permiso denegado; escribe tu ciudad.'),{timeout:10000,maximumAge:600000});
+ });
+ $('worldCity')?.addEventListener('keydown',e=>{if(e.key==='Enter'){cityCoords=null;refresh();}});
+ async function resolveCity(){
+  const name=$('worldCity')?.value?.trim()||'Mexicali';
+  if(cityCoords&&cityCoords.name.toLowerCase().includes(name.toLowerCase()))return cityCoords;
+  const r=await timedFetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(name)+'&count=1&language=es&format=json');
+  if(!r.ok)throw Error('No se pudo buscar la ciudad ('+r.status+')');
+  const j=await r.json(),p=j.results?.[0];if(!p)throw Error('No encontramos "'+name+'"');
+  cityCoords={lat:p.latitude,lon:p.longitude,name:[p.name,p.admin1].filter(Boolean).join(', '),country:p.country_code||'MX'};return cityCoords;
+ }
+ async function loadWeather(){
+  const w=$('worldWeather'),d=$('worldWeatherDetails'),fc=$('worldForecast');
+  w.innerHTML='<strong>…</strong><span>Conectando con Open-Meteo…</span>';
+  try{
+   const p=await resolveCity(),url='https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto';
+   const r=await timedFetch(url);if(!r.ok)throw Error('Clima respondió '+r.status);
+   const j=await r.json();if(!j.current||!j.daily?.time?.length)throw Error('Respuesta de clima incompleta');
+   const c=j.current,icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'},desc={0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna intensa',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve',73:'Nieve',75:'Nieve fuerte',80:'Chubascos',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta fuerte'};
+   $('weatherPlace').textContent=p.name;
+   $('worldWeather').innerHTML='<strong>'+Math.round(c.temperature_2m)+'°</strong><span style="font-size:24px">'+(icons[c.weather_code]||'🌡️')+'<br>'+safe(desc[c.weather_code]||'Condición actual')+'</span>';
+   d.innerHTML='<span>💨 Viento '+Math.round(c.wind_speed_10m)+' km/h</span><span>💧 Humedad '+c.relative_humidity_2m+'%</span><span>🌡️ Sensación '+Math.round(c.apparent_temperature)+'°</span>';
+   fc.innerHTML='<p>Pronóstico de 5 días</p>'+j.daily.time.map((day,i)=>'<div class="world-day">'+new Date(day+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short'})+' <b>'+(icons[j.daily.weather_code[i]]||'🌡️')+'</b> '+Math.round(j.daily.temperature_2m_max[i])+'° / '+Math.round(j.daily.temperature_2m_min[i])+'°</div>').join('');
+   $('worldLocationLabel').textContent='Clima de '+p.name+' · Noticias y deportes de México y el mundo.';
+   loadAir(p);
+  }catch(e){w.innerHTML='<strong>—</strong><span>'+safe(e.message||'Clima no disponible')+'</span>';d.innerHTML='<span>Servicio meteorológico no disponible. Reintenta.</span>';fc.innerHTML='<p>No se pudo cargar el pronóstico.</p>';throw e;}
+ }
+ async function loadAir(p){
+  try{const r=await timedFetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+p.lat+'&longitude='+p.lon+'&current=us_aqi');if(!r.ok)throw Error();const j=await r.json(),v=j.current?.us_aqi;if(v==null)throw Error();$('worldAir').textContent='🌿 Calidad del aire: AQI '+v+' · '+(v<=50?'Buena':v<=100?'Moderada':v<=150?'Riesgo para grupos sensibles':v<=200?'Mala':'Muy mala');}
+  catch(e){$('worldAir').textContent='Calidad del aire no disponible ahora.';}
+ }
+ async function loadNews(){
+  const box=$('worldNews'),label=$('newsSourceStatus'),topic=topics[selectedTopic]??'';
+  box.innerHTML='<p>Conectando con Google Noticias…</p>';label.textContent='Consultando fuente en vivo…';
+  const hl='es-419',rss='https://news.google.com/rss?hl='+hl+'&gl=MX&ceid=MX:'+hl+(topic?'&q='+encodeURIComponent(topic):'');
+  try{
+   let items=[];
+   try{const r=await timedFetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss));if(r.ok){const j=await r.json();if(j.status==='ok'&&Array.isArray(j.items))items=j.items.map(x=>({title:x.title,url:x.link,date:x.pubDate,source:x.author||'Google Noticias'}));}}catch(e){}
+   if(!items.length){
+    const r=await timedFetch('https://api.allorigins.win/raw?url='+encodeURIComponent(rss));if(!r.ok)throw Error('El proveedor RSS no respondió');
+    const xml=await r.text(),doc=new DOMParser().parseFromString(xml,'text/xml');
+    items=[...doc.querySelectorAll('item')].map(x=>({title:x.querySelector('title')?.textContent,url:x.querySelector('link')?.textContent,date:x.querySelector('pubDate')?.textContent,source:'Google Noticias'})).filter(x=>x.title&&x.url);
+   }
+   if(!items.length)throw Error('La fuente no devolvió titulares');
+   box.innerHTML=items.slice(0,10).map(x=>'<a class="world-news-item" href="'+safe(x.url)+'" target="_blank" rel="noopener"><strong>'+safe(x.title)+'</strong><small>'+safe(x.source)+' · '+safe(x.date?new Date(x.date).toLocaleString('es-MX'):'Reciente')+'</small></a>').join('');
+   label.textContent=items.length+' titulares recibidos · Google Noticias';
+  }catch(e){box.innerHTML='<div class="world-news-error"><b>No se pudieron cargar noticias.</b><span>'+safe(e.message)+' · Puedes reintentar o abrir la fuente directamente.</span><a href="'+rss.replace(/&/g,'&amp;')+'" target="_blank" rel="noopener">Abrir Google Noticias ↗</a></div>';label.textContent='Noticias sin conexión';throw e;}
+ }
+ async function loadSports(){
+  const root=$('worldSports'),item=sports[selectedSport]||sports.soccer;
+  document.querySelectorAll('[data-world-sport]').forEach(b=>b.classList.toggle('active',b.dataset.worldSport===selectedSport));
+  root.innerHTML='<p>Consultando '+safe(item[0])+'…</p>';
+  try{
+   const r=await timedFetch('https://site.api.espn.com/apis/site/v2/sports/'+item[1]+'/scoreboard');if(!r.ok)throw Error('ESPN respondió '+r.status);
+   const j=await r.json(),events=j.events||[];
+   if(!events.length){root.innerHTML='<p>No hay encuentros programados en este momento para '+safe(item[0])+'. Prueba otra competición.</p>';return;}
+   root.innerHTML=events.slice(0,12).map(ev=>{
+    const c=ev.competitions?.[0],teams=c?.competitors||[],home=teams.find(t=>t.homeAway==='home')||teams[0],away=teams.find(t=>t.homeAway==='away')||teams[1],st=ev.status?.type?.shortDetail||ev.status?.type?.description||'Programado';
+    const team=t=>'<span class="world-score-team">'+(t?.team?.logo?'<img src="'+safe(t.team.logo)+'" alt="">':'')+safe(t?.team?.shortDisplayName||t?.team?.displayName||'Equipo')+'</span>';
+    return '<div class="world-score">'+team(away)+'<div class="world-score-mid">'+safe(away?.score??'—')+' – '+safe(home?.score??'—')+'<small>'+safe(st)+'</small></div>'+team(home)+'</div>';
+   }).join('');
+  }catch(e){root.innerHTML='<div class="world-news-error"><b>Marcadores temporalmente no disponibles.</b><span>'+safe(e.message)+'</span><a href="https://www.espn.com/scores" target="_blank" rel="noopener">Ver marcadores en ESPN ↗</a></div>';throw e;}
+ }
+ async function refresh(){
+  if(busy)return;busy=true;status('Actualizando servicios…');
+  const results=await Promise.allSettled([loadWeather(),loadNews(),loadSports()]);
+  const failed=results.filter(x=>x.status==='rejected').length;
+  status(failed?('Listo con '+failed+' servicio(s) sin respuesta · revisa los avisos'):('Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})));
+  busy=false;
+ }
+ window.PocoyitoWorld={refresh,open};
+})();
+</script>
 </body></html>

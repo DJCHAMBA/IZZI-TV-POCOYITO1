@@ -957,7 +957,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
 
     <section class="pocoyito-world" id="pocoyitoWorldHub" hidden>
       <div class="world-heading"><div><span class="home-kicker">POCOYITO WORLD · CENTRO GLOBAL</span><h2>Tu mundo, <em>en directo.</em></h2><p id="worldLocationLabel">Clima, noticias, deportes y herramientas de tu región y del mundo.</p></div><div class="world-head-actions"><span id="worldUpdated">Listo para consultar</span><button id="worldRefresh" class="world-refresh">↻ Actualizar todo</button><button id="worldClose" class="world-refresh world-close" aria-label="Cerrar Mundo">✕ Cerrar</button></div></div>
-      <div class="world-location"><span>📍 Tu ubicación</span><input id="worldCity" value="Mexicali" aria-label="Ciudad para consultar el clima" placeholder="Escribe una ciudad…"><button id="worldUseLocation">Detectar ubicación</button><span id="worldUpdated">Listo para consultar</span></div>
+      <div class="world-location"><span>📍 Tu ubicación</span><input id="worldCity" value="Mexicali" aria-label="Ciudad para consultar el clima" placeholder="Escribe una ciudad…"><button id="worldUseLocation">Detectar ubicación</button><span id="worldLocationStatus">Ciudad seleccionada</span></div>
       <div class="world-grid">
         <article class="world-card weather-card"><div class="world-card-head"><span>🌤️ CLIMA LOCAL</span><small id="weatherPlace">Mexicali</small></div><div id="worldWeather" class="world-weather"><strong>--°</strong><span>Consulta el clima de tu ciudad</span></div><div id="worldWeatherDetails" class="world-weather-details"><span>💨 Viento --</span><span>💧 Humedad --</span><span>🌡️ Sensación --</span></div><div id="worldForecast" class="world-forecast"><p>Pronóstico de 5 días</p></div><div id="worldAir" class="world-air">Calidad del aire: consultando…</div></article>
         <article class="world-card news-card"><div class="world-card-head"><span>📰 NOTICIAS DE TU PAÍS</span><small id="newsCountry">México</small></div><div class="world-news-tabs"><button class="active" data-news-topic="top">Principales</button><button data-news-topic="nation">Nacionales</button><button data-news-topic="world">Internacionales</button><button data-news-topic="sports">Deportes</button><button data-news-topic="tech">Tecnología</button><button data-news-topic="business">Economía</button></div><div id="worldNews" class="world-feed"><p>Preparando titulares recientes…</p></div><div class="world-news-foot"><span id="newsSourceStatus">Fuentes RSS · Actualización manual</span><button id="newsMore" type="button">Ver más titulares ↗</button></div></article>
@@ -1621,28 +1621,37 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   else if(a==='alerts'){const numbers={MX:'911 · Emergencias | 089 · Denuncia anónima',US:'911 · Emergencias',CA:'911 · Emergencias',ES:'112 · Emergencias',AR:'911 · Emergencias',CO:'123 · Emergencias',CL:'133 · Carabineros / 131 · Ambulancia',PE:'105 · Policía / 106 · Ambulancia',BR:'190 · Policía / 192 · SAMU'};alert('NÚMEROS DE EMERGENCIA\\n'+(numbers[worldCountry]||'Consulta el número oficial de emergencias de tu país.')+'\\nSi existe peligro inmediato, llama a los servicios locales.');}
   else if(a==='share'){if(navigator.share){try{await navigator.share({title:'Pocoyito TV',text:'Mira Pocoyito TV',url:location.href});}catch(e){}}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(location.href);alert('Enlace copiado.');}else alert(location.href);}
  }));
- let worldCountry='MX',worldSport='soccer',worldBusy=false,worldCityCoords=null;
+ let worldCountry='MX',worldSport='soccer',worldBusy=false,worldCityCoords={lat:32.6245,lon:-115.4523,name:'Mexicali, Baja California, México',country:'MX'};
  const countryNames={MX:'México',US:'Estados Unidos',CA:'Canadá',ES:'España',AR:'Argentina',CO:'Colombia',CL:'Chile',PE:'Perú',BR:'Brasil',GB:'Reino Unido'};
- function setWorldStatus(t){if($('worldUpdated'))$('worldUpdated').textContent=t;}
+ function setWorldStatus(t){if($('worldUpdated'))$('worldUpdated').textContent=t;if($('worldLocationStatus'))$('worldLocationStatus').textContent=t;}
  async function geocodeCity(city){
   const r=await fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(city)+'&count=1&language=es&format=json');
   if(!r.ok)throw Error('No se pudo buscar la ciudad');const j=await r.json();if(!j.results?.length)throw Error('No encontramos esa ciudad');
   const p=j.results[0];worldCityCoords={lat:p.latitude,lon:p.longitude,name:[p.name,p.admin1,p.country].filter(Boolean).join(', '),country:p.country_code||'MX'};worldCountry=worldCityCoords.country;return worldCityCoords;
  }
  async function loadWorldWeather(){
+  const weather=$('worldWeather'),details=$('worldWeatherDetails'),forecast=$('worldForecast');
+  if(!weather)return;
+  weather.innerHTML='<strong>…</strong><span>Consultando clima de tu ciudad</span>';
   try{
-   const p=worldCityCoords||await geocodeCity($('worldCity')?.value||'Mexicali');
-   const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto');
-   if(!r.ok)throw Error('Clima no disponible');const j=await r.json(),c=j.current;
-   const icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
-   const desc={0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna intensa',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve',73:'Nieve',75:'Nieve fuerte',80:'Chubascos',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta fuerte'};
-   $('weatherPlace').textContent=p.name;$('worldLocationLabel').textContent='Información local para '+p.name+' y noticias de '+(countryNames[worldCountry]||p.country||'tu país')+'.';
-   $('worldWeather').innerHTML='<strong>'+Math.round(c.temperature_2m)+'°</strong><span style="font-size:25px">'+(icons[c.weather_code]||'🌡️')+'<br>'+(desc[c.weather_code]||'Condición actual')+'</span>';
-   $('worldWeatherDetails').innerHTML='<span>💨 Viento '+Math.round(c.wind_speed_10m)+' km/h</span><span>💧 Humedad '+c.relative_humidity_2m+'%</span><span>🌡️ Sensación '+Math.round(c.apparent_temperature)+'°</span><span>🌅 '+new Date(j.daily.sunrise[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span><span>🌇 '+new Date(j.daily.sunset[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span>';
-   $('worldForecast').innerHTML=j.daily.time.map((d,i)=>'<div class="world-day">'+new Date(d+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short'})+'<b>'+(icons[j.daily.weather_code[i]]||'🌡️')+'</b>'+Math.round(j.daily.temperature_2m_max[i])+'° / '+Math.round(j.daily.temperature_2m_min[i])+'°</div>').join('');
-   $('newsCountry').textContent=countryNames[worldCountry]||worldCountry;
+   let p=worldCityCoords;
+   const city=$('worldCity')?.value?.trim();
+   if(city&&(!p||!p.name.toLowerCase().includes(city.toLowerCase())))p=await geocodeCity(city);
+   if(!p)p=await geocodeCity('Mexicali');
+   const url='https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto';
+   const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('El servicio del clima respondió '+r.status);
+   const j=await r.json();if(!j.current||!j.daily?.time?.length)throw Error('El proveedor no entregó datos meteorológicos');
+   const c=j.current,icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'},desc={0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna intensa',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve',73:'Nieve',75:'Nieve fuerte',80:'Chubascos',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta fuerte'};
+   worldCityCoords=p;worldCountry=p.country||'MX';
+   if($('weatherPlace'))$('weatherPlace').textContent=p.name;
+   if($('worldLocationLabel'))$('worldLocationLabel').textContent='Información local para '+p.name+' y noticias de '+(countryNames[worldCountry]||p.country||'tu país')+'.';
+   weather.innerHTML='<strong>'+Math.round(c.temperature_2m)+'°</strong><span style="font-size:25px">'+(icons[c.weather_code]||'🌡️')+'<br>'+(desc[c.weather_code]||'Condición actual')+'</span>';
+   if(details)details.innerHTML='<span>💨 Viento '+Math.round(c.wind_speed_10m)+' km/h</span><span>💧 Humedad '+c.relative_humidity_2m+'%</span><span>🌡️ Sensación '+Math.round(c.apparent_temperature)+'°</span><span>🌅 '+new Date(j.daily.sunrise[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span><span>🌇 '+new Date(j.daily.sunset[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span>';
+   if(forecast)forecast.innerHTML=j.daily.time.map((d,i)=>'<div class="world-day">'+new Date(d+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short'})+'<b>'+(icons[j.daily.weather_code[i]]||'🌡️')+'</b>'+Math.round(j.daily.temperature_2m_max[i])+'° / '+Math.round(j.daily.temperature_2m_min[i])+'°</div>').join('');
+   if($('newsCountry'))$('newsCountry').textContent=countryNames[worldCountry]||worldCountry;
    loadWorldAir(p);
-  }catch(e){$('worldWeather').innerHTML='<strong>—</strong><span>'+escapeHtml(e.message||'No se pudo cargar el clima')+'</span>';}
+   return true;
+  }catch(e){weather.innerHTML='<strong>—</strong><span>'+escapeHtml(e.message||'No se pudo cargar el clima')+'</span>';if(details)details.innerHTML='<span>Comprueba tu conexión e inténtalo de nuevo.</span>';if(forecast)forecast.innerHTML='<p>Pronóstico temporalmente no disponible.</p>';setWorldStatus('Clima no disponible: '+(e.message||'error de conexión'));return false;}
  }
  async function loadWorldAir(p){try{const r=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+p.lat+'&longitude='+p.lon+'&current=us_aqi');if(!r.ok)throw Error();const j=await r.json(),v=j.current.us_aqi,grade=v<=50?'Buena':v<=100?'Moderada':v<=150?'No saludable para grupos sensibles':v<=200?'No saludable':v<=300?'Muy poco saludable':'Peligrosa';$('worldAir').textContent='🌿 Calidad del aire (AQI): '+v+' · '+grade;}catch(e){$('worldAir').textContent='Calidad del aire no disponible en este momento.';}}
  let worldNewsTopic='top';
@@ -1668,7 +1677,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   }catch(e){root.innerHTML='<p>Los marcadores no están disponibles temporalmente para este deporte.</p>';}
  }
  document.querySelectorAll('[data-world-sport]').forEach(b=>b.addEventListener('click',()=>loadWorldSports(b.dataset.worldSport)));
- async function loadWorldAll(){if(worldBusy)return;worldBusy=true;setWorldStatus('Actualizando…');await Promise.all([loadWorldWeather(),loadWorldNews(),loadWorldSports(worldSport)]);setWorldStatus('Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));worldBusy=false;}
+ async function loadWorldAll(){if(worldBusy)return;worldBusy=true;setWorldStatus('Actualizando clima, noticias y deportes…');try{const results=await Promise.allSettled([loadWorldWeather(),loadWorldNews(),loadWorldSports(worldSport)]);const failed=results.filter(x=>x.status==='rejected').length;setWorldStatus(failed?'Actualización parcial · '+failed+' servicio(s) fallaron':'Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));}finally{worldBusy=false;}}
  $('worldRefresh')?.addEventListener('click',()=>{worldCityCoords=null;loadWorldAll();});
  $('worldCity')?.addEventListener('keydown',e=>{if(e.key==='Enter'){worldCityCoords=null;loadWorldWeather();}});
  $('worldUseLocation')?.addEventListener('click',()=>{

@@ -45,11 +45,14 @@ function startLocalProxy() {
     }, upstreamRes => {
       const status = upstreamRes.statusCode || 502;
       const type = String(upstreamRes.headers['content-type'] || '');
-      res.statusCode = status;
-      for (const key of ['content-range', 'accept-ranges', 'last-modified', 'etag']) {
-        if (upstreamRes.headers[key]) res.setHeader(key, upstreamRes.headers[key]);
+      const isPlaylist = /mpegurl|\.m3u8/i.test(type) || upstream.pathname.toLowerCase().endsWith('.m3u8');
+      res.statusCode = isPlaylist ? 200 : status;
+      if (!isPlaylist) {
+        for (const key of ['content-range', 'accept-ranges', 'last-modified', 'etag']) {
+          if (upstreamRes.headers[key]) res.setHeader(key, upstreamRes.headers[key]);
+        }
       }
-      if (/mpegurl|\.m3u8/i.test(type) || upstream.pathname.toLowerCase().endsWith('.m3u8')) {
+      if (isPlaylist) {
         const chunks = [];
         upstreamRes.on('data', chunk => chunks.push(chunk));
         upstreamRes.on('end', () => {
@@ -73,7 +76,8 @@ function startLocalProxy() {
             return rewrite(trimmed);
           }).join('\n');
           res.setHeader('Content-Type', 'application/vnd.apple.mpegurl; charset=utf-8');
-          res.setHeader('Cache-Control', 'no-store');
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+          res.setHeader('Access-Control-Allow-Origin', '*');
           res.end(playlist);
         });
       } else {

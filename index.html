@@ -962,7 +962,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
         <article class="world-card weather-card"><div class="world-card-head"><span>🌤️ CLIMA LOCAL</span><small id="weatherPlace">Mexicali</small></div><div id="worldWeather" class="world-weather"><strong>--°</strong><span>Consulta el clima de tu ciudad</span></div><div id="worldWeatherDetails" class="world-weather-details"><span>💨 Viento --</span><span>💧 Humedad --</span><span>🌡️ Sensación --</span></div></article>
         <article class="world-card news-card"><div class="world-card-head"><span>📰 NOTICIAS DE TU PAÍS</span><small id="newsCountry">México</small></div><div id="worldNews" class="world-feed"><p>Preparando titulares recientes…</p></div></article>
       </div>
-      <article class="world-card sports-card"><div class="world-card-head"><span>🏆 MARCADOR GLOBAL</span><small>Fútbol y deportes internacionales</small></div><div class="world-sport-tabs"><button class="active" data-world-sport="soccer">⚽ Fútbol</button><button data-world-sport="nba">🏀 NBA</button><button data-world-sport="nfl">🏈 NFL</button><button data-world-sport="mlb">⚾ MLB</button><button data-world-sport="nhl">🏒 NHL</button></div><div id="worldSports" class="world-feed world-scores"><p>Consultando resultados deportivos…</p></div></article>
+      <article class="world-card sports-card"><div class="world-card-head"><span>🏆 MARCADOR GLOBAL</span><small>Fútbol y deportes internacionales</small></div><div class="world-sport-tabs"><button class="active" data-world-sport="soccer">⚽ Premier</button><button data-world-sport="laliga">🇪🇸 LaLiga</button><button data-world-sport="ucl">🏆 Champions</button><button data-world-sport="mls">🇺🇸 MLS</button><button data-world-sport="ligamx">🇲🇽 Liga MX</button><button data-world-sport="nba">🏀 NBA</button><button data-world-sport="nfl">🏈 NFL</button><button data-world-sport="mlb">⚾ MLB</button><button data-world-sport="nhl">🏒 NHL</button></div><div id="worldSports" class="world-feed world-scores"><p>Consultando resultados deportivos…</p></div></article>
       <div class="world-extras">
         <button data-world-extra="recent">🕘 <b>Continuar viendo</b><small>Últimos canales sintonizados</small></button>
         <button data-world-extra="favorites">♥ <b>Acceso rápido a favoritos</b><small>Tus canales guardados</small></button>
@@ -1571,7 +1571,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  if(player&&screen&&!$('fullscreenZap')){
   const bar=document.createElement('div');bar.id='fullscreenZap';bar.className='fullscreen-zap';bar.innerHTML='<button type="button" data-zap="prev" aria-label="Canal anterior">◀ CH</button><span class="zap-name" id="zapChannelName">Canal actual</span><button type="button" data-zap="next" aria-label="Canal siguiente">CH ▶</button><button type="button" data-zap="guide">▦ Guía</button><button type="button" data-zap="search">⌕ Buscar</button><button type="button" data-zap="exit">⤢ Salir</button>';
   screen.appendChild(bar);
-  bar.addEventListener('click',e=>{const b=e.target.closest('[data-zap]');if(!b)return;const a=b.dataset.zap;if(a==='prev')tuneByIndex(currentIndex()-1);if(a==='next')tuneByIndex(currentIndex()+1);if(a==='guide')openGuide();if(a==='search')openGlobalChannelSearch();if(a==='exit')document.exitFullscreen?.();});
+  bar.addEventListener('click',e=>{const b=e.target.closest('[data-zap]');if(!b)return;const a=b.dataset.zap;if(a==='prev')tuneByIndex(currentIndex()-1);if(a==='next')tuneByIndex(currentIndex()+1);if(a==='guide'){if(document.fullscreenElement)document.exitFullscreen().then(()=>openGuide());else openGuide();}if(a==='search'){if(document.fullscreenElement)document.exitFullscreen().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();}if(a==='exit')document.exitFullscreen?.();});
  }
  const oldPlay=window.playChannel;
  if(typeof oldPlay==='function'){
@@ -1586,8 +1586,8 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   const k=e.key.toLowerCase();
   const inTV=$('tvPage')?.classList.contains('active');
   const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
-  if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();openGlobalChannelSearch();return;}
-  if(k==='g'){e.preventDefault();openGuide();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();if(document.fullscreenElement)document.exitFullscreen().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();return;}
+  if(k==='g'){e.preventDefault();if(document.fullscreenElement)document.exitFullscreen().then(()=>openGuide());else openGuide();return;}
   if(k==='f'){e.preventDefault();openGuide(true);return;}
   if(k==='m'){e.preventDefault();$('mute')?.click();return;}
   if(k==='i'){e.preventDefault();showChannelOsd?.();return;}
@@ -1646,7 +1646,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
    feed.innerHTML=j.items.slice(0,7).map(x=>'<a class="world-news-item" href="'+escapeHtml(x.link)+'" target="_blank" rel="noopener"><strong>'+escapeHtml(x.title)+'</strong><small>'+escapeHtml((x.author||'Noticias')+' · '+(x.pubDate||'Reciente'))+'</small></a>').join('');
   }catch(e){feed.innerHTML='<p>No se pudieron cargar titulares ahora. Intenta actualizar en un momento.</p>';}
  }
- const sportsMap={soccer:['Fútbol','soccer/eng.1'],nba:['NBA','basketball/nba'],nfl:['NFL','football/nfl'],mlb:['MLB','baseball/mlb'],nhl:['NHL','hockey/nhl']};
+ const sportsMap={soccer:['Fútbol · Premier League','soccer/eng.1'],laliga:['LaLiga','soccer/esp.1'],ucl:['Champions League','soccer/uefa.champions'],mls:['MLS','soccer/usa.1'],ligamx:['Liga MX','soccer/mex.1'],nba:['NBA','basketball/nba'],nfl:['NFL','football/nfl'],mlb:['MLB','baseball/mlb'],nhl:['NHL','hockey/nhl']};
  async function loadWorldSports(sport){
   worldSport=sport;document.querySelectorAll('[data-world-sport]').forEach(b=>b.classList.toggle('active',b.dataset.worldSport===sport));
   const root=$('worldSports');root.innerHTML='<p>Actualizando marcadores…</p>';

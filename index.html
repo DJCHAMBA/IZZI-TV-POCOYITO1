@@ -987,6 +987,15 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
  <div class="osd-bottom"><span>▲▼ Canal</span><i>·</i><span>A Info</span><i>·</i><span>B Anterior</span><i>·</i><span>X Guía rápida</span><i>·</i><span>Y Favorito</span><i>·</i><span>− Número</span><i>·</i><span>+ Menú</span><i>·</i><span>Stick: pantalla doble</span></div>
 </div><div class="overlay" id="overlay"><div class="spinner" id="spinner"></div><div class="big-logo">pocoyito <span>tv</span></div><p id="message">Cargando canales mexicanos y en español…</p></div></div><div class="controls"><button class="control primary" id="play">▶ Reproducir</button><button class="control" id="mute" title="Activar o silenciar audio">♫ Activar sonido</button><input class="volume" id="volume" type="range" min="0" max="1" step=".05" value="1" aria-label="Volumen"><button class="control favorite-control" id="favoriteCurrent" type="button">♡ Favorito</button><span class="spacer"></span><span class="status" id="status">Cargando lista…</span><button class="control" id="fullscreen">⛶ Pantalla completa</button></div></section><section class="info"><h2 id="infoTitle">Televisión en español</h2><p>El catálogo combina la lista de México y la lista de idioma español de IPTV-org. Incluye un filtro dedicado a los canales identificados como Telemundo. Si una fuente de Canal 5 falla, el reproductor intenta automáticamente otras versiones disponibles del mismo canal. La disponibilidad depende de cada fuente; algunas pueden estar fuera de línea, geobloqueadas o no permitir reproducción en navegador.</p></section></div>
 <aside class="catalog"><div class="catalog-head"><h2>Canales disponibles</h2><p>Selecciona una señal para sintonizar.</p><input class="search" id="search" type="search" placeholder="Buscar canal…" autocomplete="off"></div><div class="tabs"><button class="tab active" data-filter="all">Todos</button><button class="tab" data-filter="mx">México</button><button class="tab" data-filter="spa">En español</button><button class="tab" data-filter="telemundo">Telemundo</button></div><div style="padding:10px 14px 0"><select id="categoryFilter" class="search" aria-label="Categoría"><option value="all">Todas las categorías</option><option value="tv">TV abierta</option><option value="news">Noticias</option><option value="entertainment">Entretenimiento</option><option value="sports">Deportes</option><option value="movies">Películas y series</option><option value="kids">Infantil</option><option value="music">Música</option></select></div><div class="count" id="count">Preparando catálogo…</div><div class="channels" id="channels"><div class="empty">Descargando listas de canales…</div></div></aside></div></main>
+<section class="tv-usage-guide" aria-label="Cómo usar Pocoyito TV">
+ <div class="tv-usage-head"><div><span class="tv-usage-kicker">POCOYITO TV · GUÍA RÁPIDA</span><h2>Disfruta la televisión a tu manera</h2><p>Controles sencillos para computadora, celular y televisión con control remoto.</p></div><button type="button" data-tv-action="help">⌨ Ver todos los atajos</button></div>
+ <div class="tv-usage-grid">
+  <article class="tv-usage-card"><div class="tv-usage-icon">⌨</div><h3>Computadora</h3><p>Usa el teclado o los botones de la pantalla. No necesitas memorizar todos los comandos.</p><ul><li><kbd>G</kbd> Guía de canales</li><li><kbd>F</kbd> Pantalla completa</li><li><kbd>Ctrl</kbd> + <kbd>K</kbd> Buscar</li><li><kbd>↑</kbd> <kbd>↓</kbd> Cambiar canal</li><li><kbd>←</kbd> <kbd>→</kbd> Volumen</li><li><kbd>Esc</kbd> Cerrar / volver</li></ul></article>
+  <article class="tv-usage-card"><div class="tv-usage-icon">☝</div><h3>Celular y tablet</h3><p>Diseñado para tocar, deslizar y ver sin controles diminutos.</p><ul><li>Toca <b>CH + / CH −</b> para cambiar canal</li><li>Toca <b>Guía</b> para explorar la programación</li><li>Toca <b>Buscar</b> para encontrar canales</li><li>Usa el botón <b>Favorito</b> para guardar señales</li><li>Gira el teléfono para una vista más amplia</li></ul></article>
+  <article class="tv-usage-card"><div class="tv-usage-icon">▣</div><h3>Android TV / control remoto</h3><p>Navega con las flechas del control y confirma con OK o Enter.</p><ul><li><kbd>↑</kbd> <kbd>↓</kbd> Cambiar canal en el reproductor</li><li><kbd>←</kbd> <kbd>→</kbd> Ajustar volumen</li><li><kbd>OK</kbd> Seleccionar botón</li><li><kbd>Back</kbd> Cerrar o regresar</li><li>En pantalla completa usa los botones flotantes</li></ul></article>
+ </div>
+ <div class="tv-usage-note"><b>Consejo:</b> si no sabes qué hacer, abre la Guía o usa Buscar. Los canales disponibles dependen de que su señal pública esté activa.</div>
+</section>
 </div>
 
 
@@ -1858,4 +1867,58 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  window.PocoyitoWorld={refresh,open};
 })();
 </script>
+
+<style id="pocoyito-usage-refresh">
+/* Experiencia unificada PC, móvil y Android TV */
+#tvPage .osd-main{box-sizing:border-box;width:100%;min-width:0;grid-template-columns:minmax(64px,.55fr) minmax(76px,.72fr) minmax(0,3fr) minmax(125px,1.15fr);gap:clamp(6px,1vw,12px)}
+#tvPage .osd-program,#tvPage .osd-schedule{min-width:0;max-width:100%}
+#tvPage .osd-schedule{overflow:hidden}
+#tvPage .osd-schedule>strong,#tvPage .osd-schedule b,#tvPage .osd-schedule span,#tvPage .osd-schedule small{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+#tvPage .osd-bottom{line-height:1.45;row-gap:5px}
+.tv-usage-guide{width:min(1500px,96vw);margin:22px auto 38px;padding:clamp(16px,2.5vw,28px);border:1px solid #ffffff19;border-radius:18px;background:linear-gradient(135deg,#101a34,#171327 65%,#101b30);color:#f5f7ff}
+.tv-usage-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px}
+.tv-usage-kicker{font-size:10px;font-weight:950;letter-spacing:1.7px;color:#8ebdff}
+.tv-usage-head h2{font-size:clamp(20px,2.5vw,29px);margin:6px 0}
+.tv-usage-head p{font-size:13px;color:#aab8d2;margin:0;line-height:1.5}
+.tv-usage-head>button{flex:0 0 auto;border:1px solid #6e8dff;background:#1c3b86;color:white;border-radius:10px;padding:12px 16px;font-weight:900;cursor:pointer}
+.tv-usage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tv-usage-card{min-width:0;padding:17px;border-radius:13px;background:#ffffff08;border:1px solid #ffffff15}
+.tv-usage-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;background:#274a9a;color:#fff;font-size:21px}
+.tv-usage-card h3{font-size:15px;margin:12px 0 6px}
+.tv-usage-card p{min-height:40px;font-size:11px;line-height:1.55;color:#aab8d2;margin:0 0 11px}
+.tv-usage-card ul{list-style:none;padding:0;margin:0;display:grid;gap:7px}
+.tv-usage-card li{font-size:11px;line-height:1.45;color:#e0e8fa}
+.tv-usage-card kbd,.tv-usage-card li kbd{display:inline-block;min-width:22px;text-align:center;padding:3px 6px;margin-right:2px;border:1px solid #ffffff2a;border-radius:5px;background:#ffffff12;color:#fff;font:800 10px system-ui}
+.tv-usage-note{margin-top:13px;padding:12px 14px;border-radius:10px;background:#16366b55;border:1px solid #4381d333;color:#c6d9ff;font-size:11px;line-height:1.5}
+.tv-touchbar{display:none}
+@media(max-width:760px){
+ .tv-usage-guide{width:calc(100% - 20px);margin:16px auto 90px;padding:15px}
+ .tv-usage-head{align-items:flex-start;flex-direction:column}
+ .tv-usage-head>button{width:100%;min-height:46px}
+ .tv-usage-grid{grid-template-columns:1fr;gap:9px}
+ .tv-usage-card{padding:14px}
+ .tv-usage-card p{min-height:0}
+ #tvPage .osd-main{grid-template-columns:58px minmax(0,1fr);gap:7px;padding:8px}
+ #tvPage .osd-station{display:none}
+ #tvPage .osd-number{height:50px;min-width:0;font-size:20px}
+ #tvPage .osd-program{grid-column:2}
+ #tvPage .osd-schedule{grid-column:1/-1;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px}
+ #tvPage .osd-schedule>strong{text-align:left}
+ #tvPage .osd-schedule .osd-rule{grid-column:1/-1}
+ #tvPage .osd-schedule small{display:none}
+ #tvPage .osd-bottom{display:none}
+ .tv-touchbar{position:sticky;bottom:8px;z-index:12;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;width:calc(100% - 16px);margin:10px auto;padding:8px;border:1px solid #ffffff25;border-radius:14px;background:#080d20ed;backdrop-filter:blur(14px);box-shadow:0 8px 30px #0008}
+ .tv-touchbar button{min-width:0;min-height:48px;padding:7px 3px;border:1px solid #ffffff1b;border-radius:10px;background:#172f70;color:white;font-size:10px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+ .tv-touchbar button span{font-size:17px;line-height:1}
+}
+@media(max-width:390px){.tv-touchbar{grid-template-columns:repeat(3,minmax(0,1fr))}.tv-touchbar button{min-height:44px}#tvPage .osd-schedule b{font-size:10px}}
+@media(min-width:761px) and (max-width:1050px){.tv-usage-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tv-usage-card:last-child{grid-column:1/-1}}
+body.android-tv .tv-usage-guide{border-color:#39bfff66}
+body.android-tv .tv-usage-card{padding:22px}
+body.android-tv .tv-usage-card h3{font-size:18px}
+body.android-tv .tv-usage-card li{font-size:14px}
+body.android-tv .tv-usage-head>button,body.android-tv .tv-usage-card button{min-height:54px}
+body.android-tv .tv-usage-guide button:focus-visible{outline:4px solid #35d4ff;outline-offset:4px}
+</style>
+<div class="tv-touchbar" aria-label="Controles táctiles de TV"><button type="button" data-tv-action="prev"><span>−</span>CH anterior</button><button type="button" data-tv-action="guide"><span>▦</span>Guía</button><button type="button" data-tv-action="search"><span>⌕</span>Buscar</button><button type="button" data-tv-action="next"><span>+</span>CH siguiente</button><button type="button" data-tv-action="favorites"><span>♥</span>Favoritos</button></div>
 </body></html>

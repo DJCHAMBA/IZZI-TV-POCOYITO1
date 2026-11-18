@@ -865,7 +865,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
 .world-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:11px;background:#0e162b;border:1px solid #ffffff12;border-radius:9px}
 .world-score-team{font-size:11px;font-weight:800;display:flex;align-items:center;gap:6px;min-width:0}.world-score-team:last-child{justify-content:flex-end;text-align:right}
 .world-score-team img{width:22px;height:22px;object-fit:contain}.world-score-mid{text-align:center;font-weight:900;font-size:14px;white-space:nowrap}.world-score-mid small{display:block;color:#a9b4cf;font-size:9px;font-weight:600;margin-top:3px}
-.world-extras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+.world-extras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}.world-forecast{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:12px}.world-day{background:#0d1428;padding:8px 4px;border-radius:8px;text-align:center;font-size:10px;color:#b9c6df}.world-day b{display:block;font-size:17px;color:#fff;margin:4px}.world-air{margin-top:9px;color:#9eacc9;font-size:10px}
 .world-extras button{display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:14px;background:#1b2040;border:1px solid #ffffff16;border-radius:10px;color:#cbbcff;text-align:left;cursor:pointer;font-size:18px}
 .world-extras b{font-size:11px;color:#fff}.world-extras small{font-size:10px;color:#96a3c0}
 .world-disclaimer{font-size:10px;color:#7585a6;line-height:1.5;margin:14px 0 0}
@@ -878,7 +878,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
 .player-shell:fullscreen .screen video,.player-shell:-webkit-full-screen .screen video{width:100%;height:100%;object-fit:contain}
 .player-shell:fullscreen .controls,.player-shell:-webkit-full-screen .controls{position:absolute;left:0;right:0;bottom:0;z-index:8;background:#080d20df;backdrop-filter:blur(12px)}
 .player-shell:fullscreen .fullscreen-zap,.player-shell:-webkit-full-screen .fullscreen-zap{bottom:76px}
-@media(max-width:760px){.world-grid{grid-template-columns:1fr}.world-extras{grid-template-columns:repeat(2,minmax(0,1fr))}.world-heading{align-items:flex-start}.world-location>span:last-child{margin-left:0;width:100%}.fullscreen-zap{bottom:8px;gap:4px;padding:6px}.fullscreen-zap button{padding:9px 10px;font-size:11px}.fullscreen-zap .zap-name{max-width:22vw}.player-shell:fullscreen .fullscreen-zap{bottom:72px}}
+@media(max-width:760px){.world-grid{grid-template-columns:1fr}.world-forecast{grid-template-columns:repeat(5,minmax(0,1fr))}.world-extras{grid-template-columns:repeat(2,minmax(0,1fr))}.world-heading{align-items:flex-start}.world-location>span:last-child{margin-left:0;width:100%}.fullscreen-zap{bottom:8px;gap:4px;padding:6px}.fullscreen-zap button{padding:9px 10px;font-size:11px}.fullscreen-zap .zap-name{max-width:22vw}.player-shell:fullscreen .fullscreen-zap{bottom:72px}}
 @media(max-width:420px){.world-card{padding:12px}.world-weather strong{font-size:44px}.world-extras button{padding:11px}.fullscreen-zap .zap-name{display:none}}
 
 </style></head>
@@ -898,7 +898,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
     <button type="button" data-open-vod="series" title="Series"><span class="nav-icon">▥</span><small>Series</small></button>
     <button type="button" data-home-action="guide" title="Guía"><span class="nav-icon">▦</span><small>Guía</small></button>
     <button type="button" data-home-tab="ligamx" title="Deportes"><span class="nav-icon">⚽</span><small>Deportes</small></button>
-    <button type="button" data-home-tab="mundo" title="Clima, noticias y deportes"><span class="nav-icon">🌐</span><small>Mundo</small></button>
+    <button type="button" id="openWorldHub" data-home-action="world" title="Clima, noticias y herramientas"><span class="nav-icon">🌐</span><small>Mundo</small></button>
     <button type="button" data-home-action="favorites" title="Favoritos"><span class="nav-icon">♡</span><small>Favoritos</small></button>
     <div class="rail-spacer"></div>
     <button type="button" data-home-tab="ajustes" title="Configuración"><span class="nav-icon">⚙</span><small>Ajustes</small></button>
@@ -959,7 +959,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
       <div class="world-heading"><div><span class="home-kicker">POCOYITO WORLD · INFORMACIÓN EN TIEMPO REAL</span><h2>Tu mundo, <em>en directo.</em></h2><p id="worldLocationLabel">Clima, noticias y resultados deportivos de tu región y del mundo.</p></div><button id="worldRefresh" class="world-refresh">↻ Actualizar</button></div>
       <div class="world-location"><span>📍 Tu ubicación</span><input id="worldCity" value="Mexicali" aria-label="Ciudad para consultar el clima" placeholder="Escribe una ciudad…"><button id="worldUseLocation">Detectar ubicación</button><span id="worldUpdated">Listo para consultar</span></div>
       <div class="world-grid">
-        <article class="world-card weather-card"><div class="world-card-head"><span>🌤️ CLIMA LOCAL</span><small id="weatherPlace">Mexicali</small></div><div id="worldWeather" class="world-weather"><strong>--°</strong><span>Consulta el clima de tu ciudad</span></div><div id="worldWeatherDetails" class="world-weather-details"><span>💨 Viento --</span><span>💧 Humedad --</span><span>🌡️ Sensación --</span></div></article>
+        <article class="world-card weather-card"><div class="world-card-head"><span>🌤️ CLIMA LOCAL</span><small id="weatherPlace">Mexicali</small></div><div id="worldWeather" class="world-weather"><strong>--°</strong><span>Consulta el clima de tu ciudad</span></div><div id="worldWeatherDetails" class="world-weather-details"><span>💨 Viento --</span><span>💧 Humedad --</span><span>🌡️ Sensación --</span></div><div id="worldForecast" class="world-forecast"><p>Pronóstico de 5 días</p></div><div id="worldAir" class="world-air">Calidad del aire: consultando…</div></article>
         <article class="world-card news-card"><div class="world-card-head"><span>📰 NOTICIAS DE TU PAÍS</span><small id="newsCountry">México</small></div><div id="worldNews" class="world-feed"><p>Preparando titulares recientes…</p></div></article>
       </div>
       <article class="world-card sports-card"><div class="world-card-head"><span>🏆 MARCADOR GLOBAL</span><small>Fútbol y deportes internacionales</small></div><div class="world-sport-tabs"><button class="active" data-world-sport="soccer">⚽ Premier</button><button data-world-sport="laliga">🇪🇸 LaLiga</button><button data-world-sport="ucl">🏆 Champions</button><button data-world-sport="mls">🇺🇸 MLS</button><button data-world-sport="ligamx">🇲🇽 Liga MX</button><button data-world-sport="nba">🏀 NBA</button><button data-world-sport="nfl">🏈 NFL</button><button data-world-sport="mlb">⚾ MLB</button><button data-world-sport="nhl">🏒 NHL</button></div><div id="worldSports" class="world-feed world-scores"><p>Consultando resultados deportivos…</p></div></article>
@@ -967,7 +967,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
         <button data-world-extra="recent">🕘 <b>Continuar viendo</b><small>Últimos canales sintonizados</small></button>
         <button data-world-extra="favorites">♥ <b>Acceso rápido a favoritos</b><small>Tus canales guardados</small></button>
         <button data-world-extra="guide">▦ <b>Guía inteligente</b><small>Busca programas y canales</small></button>
-        <button data-world-extra="search">⌕ <b>Buscador universal</b><small>Encuentra cualquier canal</small></button>
+        <button data-world-extra="search">⌕ <b>Buscador universal</b><small>Encuentra cualquier canal</small></button><button data-world-extra="currency">💱 <b>Tipo de cambio</b><small>USD y otras monedas</small></button><button data-world-extra="clock">🕒 <b>Reloj mundial</b><small>Horas en otras regiones</small></button><button data-world-extra="alerts">🆘 <b>Emergencias</b><small>Números útiles por país</small></button><button data-world-extra="share">↗ <b>Compartir Pocoyito</b><small>Enviar esta aplicación</small></button>
       </div>
       <p class="world-disclaimer">Los titulares y marcadores dependen de proveedores externos y pueden tener retraso. La ubicación solo se consulta si das permiso.</p>
     </section>
@@ -1604,16 +1604,18 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   }else el.remove();
  }
  document.getElementById('homeHelpBtn')?.addEventListener('click',showShortcuts);
- document.querySelector('[data-home-tab="mundo"]')?.addEventListener('click',()=>{
-  const hub=$('pocoyitoWorldHub');if(hub){hub.hidden=false;hub.scrollIntoView({behavior:'smooth',block:'start'});loadWorldAll();}
- });
  const hub=$('pocoyitoWorldHub');
- document.querySelectorAll('[data-home-tab]').forEach(b=>b.addEventListener('click',()=>{
-  if(b.dataset.homeTab!=='mundo'&&hub)hub.hidden=true;
- }));
- document.querySelectorAll('[data-world-extra]').forEach(b=>b.addEventListener('click',()=>{
+ function openWorldHub(){if(!hub)return;hub.hidden=false;hub.scrollIntoView({behavior:'smooth',block:'start'});loadWorldAll();}
+ $('openWorldHub')?.addEventListener('click',openWorldHub);
+ document.querySelectorAll('[data-home-tab]').forEach(b=>b.addEventListener('click',()=>{if(hub)hub.hidden=true;}));
+ document.querySelectorAll('[data-home-action="world"]').forEach(b=>b.addEventListener('click',openWorldHub));
+ document.querySelectorAll('[data-world-extra]').forEach(b=>b.addEventListener('click',async()=>{
   const a=b.dataset.worldExtra;
   if(a==='guide')openGuide();else if(a==='search')openGlobalChannelSearch();else if(a==='favorites')openGuide(true);else if(a==='recent'){openTV();const rec=recentChannelUrls?.()||[];const c=allChannels.find(x=>x.url===rec[0]);if(c)playChannel(c,true);}
+  else if(a==='currency'){try{const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN,EUR,CAD');const j=await r.json();alert('Tipo de cambio de referencia\\n1 USD = '+j.rates.MXN+' MXN\\n1 USD = '+j.rates.EUR+' EUR\\n1 USD = '+j.rates.CAD+' CAD\\nFecha: '+j.date);}catch(e){alert('Tipo de cambio temporalmente no disponible.');}}
+  else if(a==='clock'){const zones=['America/Mexico_City','America/Tijuana','America/New_York','Europe/Madrid','Asia/Tokyo'];alert('RELOJ MUNDIAL\\n'+zones.map(z=>z.split('/').pop().replace('_',' ')+' · '+new Date().toLocaleTimeString('es-MX',{timeZone:z,hour:'2-digit',minute:'2-digit'})).join('\\n'));}
+  else if(a==='alerts'){const numbers={MX:'911 · Emergencias | 089 · Denuncia anónima',US:'911 · Emergencias',CA:'911 · Emergencias',ES:'112 · Emergencias',AR:'911 · Emergencias',CO:'123 · Emergencias',CL:'133 · Carabineros / 131 · Ambulancia',PE:'105 · Policía / 106 · Ambulancia',BR:'190 · Policía / 192 · SAMU'};alert('NÚMEROS DE EMERGENCIA\\n'+(numbers[worldCountry]||'Consulta el número oficial de emergencias de tu país.')+'\\nSi existe peligro inmediato, llama a los servicios locales.');}
+  else if(a==='share'){if(navigator.share){try{await navigator.share({title:'Pocoyito TV',text:'Mira Pocoyito TV',url:location.href});}catch(e){}}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(location.href);alert('Enlace copiado.');}else alert(location.href);}
  }));
  let worldCountry='MX',worldSport='soccer',worldBusy=false,worldCityCoords=null;
  const countryNames={MX:'México',US:'Estados Unidos',CA:'Canadá',ES:'España',AR:'Argentina',CO:'Colombia',CL:'Chile',PE:'Perú',BR:'Brasil',GB:'Reino Unido'};
@@ -1626,16 +1628,19 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  async function loadWorldWeather(){
   try{
    const p=worldCityCoords||await geocodeCity($('worldCity')?.value||'Mexicali');
-   const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&timezone=auto');
+   const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+p.lat+'&longitude='+p.lon+'&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto');
    if(!r.ok)throw Error('Clima no disponible');const j=await r.json(),c=j.current;
    const icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',48:'🌫️',51:'🌦️',53:'🌦️',55:'🌧️',61:'🌧️',63:'🌧️',65:'🌧️',71:'🌨️',73:'🌨️',75:'❄️',80:'🌦️',81:'🌧️',82:'⛈️',95:'⛈️',96:'⛈️',99:'⛈️'};
    const desc={0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna intensa',61:'Lluvia ligera',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve',73:'Nieve',75:'Nieve fuerte',80:'Chubascos',81:'Chubascos',82:'Chubascos fuertes',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta fuerte'};
    $('weatherPlace').textContent=p.name;$('worldLocationLabel').textContent='Información local para '+p.name+' y noticias de '+(countryNames[worldCountry]||p.country||'tu país')+'.';
    $('worldWeather').innerHTML='<strong>'+Math.round(c.temperature_2m)+'°</strong><span style="font-size:25px">'+(icons[c.weather_code]||'🌡️')+'<br>'+(desc[c.weather_code]||'Condición actual')+'</span>';
-   $('worldWeatherDetails').innerHTML='<span>💨 Viento '+Math.round(c.wind_speed_10m)+' km/h</span><span>💧 Humedad '+c.relative_humidity_2m+'%</span><span>🌡️ Sensación '+Math.round(c.apparent_temperature)+'°</span>';
+   $('worldWeatherDetails').innerHTML='<span>💨 Viento '+Math.round(c.wind_speed_10m)+' km/h</span><span>💧 Humedad '+c.relative_humidity_2m+'%</span><span>🌡️ Sensación '+Math.round(c.apparent_temperature)+'°</span><span>🌅 '+new Date(j.daily.sunrise[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span><span>🌇 '+new Date(j.daily.sunset[0]).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})+'</span>';
+   $('worldForecast').innerHTML=j.daily.time.map((d,i)=>'<div class="world-day">'+new Date(d+'T12:00:00').toLocaleDateString('es-MX',{weekday:'short'})+'<b>'+(icons[j.daily.weather_code[i]]||'🌡️')+'</b>'+Math.round(j.daily.temperature_2m_max[i])+'° / '+Math.round(j.daily.temperature_2m_min[i])+'°</div>').join('');
    $('newsCountry').textContent=countryNames[worldCountry]||worldCountry;
+   loadWorldAir(p);
   }catch(e){$('worldWeather').innerHTML='<strong>—</strong><span>'+escapeHtml(e.message||'No se pudo cargar el clima')+'</span>';}
  }
+ async function loadWorldAir(p){try{const r=await fetch('https://air-quality-api.open-meteo.com/v1/air-quality?latitude='+p.lat+'&longitude='+p.lon+'&current=us_aqi');if(!r.ok)throw Error();const j=await r.json(),v=j.current.us_aqi,grade=v<=50?'Buena':v<=100?'Moderada':v<=150?'No saludable para grupos sensibles':v<=200?'No saludable':v<=300?'Muy poco saludable':'Peligrosa';$('worldAir').textContent='🌿 Calidad del aire (AQI): '+v+' · '+grade;}catch(e){$('worldAir').textContent='Calidad del aire no disponible en este momento.';}}
  async function loadWorldNews(){
   const feed=$('worldNews');feed.innerHTML='<p>Buscando los titulares más recientes…</p>';
   try{

@@ -118,6 +118,15 @@ class MainActivity : Activity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // No secuestrar las teclas cuando el usuario está escribiendo: WebView/IME
+        // necesita recibirlas para abrir y manejar el teclado en pantalla.
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            var textFieldFocused = false
+            webView.evaluateJavascript(
+                "(function(){var e=document.activeElement;return !!e && (e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable);})()"
+            ) { value -> textFieldFocused = value == "true" }
+            if (textFieldFocused) return super.dispatchKeyEvent(event)
+        }
         if (event.action == KeyEvent.ACTION_DOWN) {
             val jsKey = when (event.keyCode) {
                 KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"

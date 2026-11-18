@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'azteca7-test.html'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'icons/**'
@@ -33,7 +34,7 @@ jobs:
       - name: Preparar sitio web
         run: |
           mkdir -p _site/icons
-          cp index.html manifest.webmanifest service-worker.js _site/
+          cp index.html azteca7-test.html manifest.webmanifest service-worker.js _site/
           cp icons/icon.svg _site/icons/
       - name: Subir sitio
         uses: actions/upload-pages-artifact@v3

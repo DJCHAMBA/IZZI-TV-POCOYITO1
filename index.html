@@ -1283,7 +1283,7 @@ document.getElementById('favoriteCurrent').addEventListener('click',()=>{if(!sel
 const playerShell=document.querySelector('.player-shell');
 let controlsHideTimer=null;function showPlayerControls(){playerShell.classList.remove('tv-controls-hidden');clearTimeout(controlsHideTimer);if(document.fullscreenElement===playerShell&&!video.paused){controlsHideTimer=setTimeout(()=>{if(document.fullscreenElement===playerShell&&!video.paused)playerShell.classList.add('tv-controls-hidden');},5000);}}function togglePlayerControls(){showPlayerControls();}const playerScreen=document.querySelector('.player-shell .screen');playerScreen.addEventListener('click',e=>{if(e.target.closest('button'))return;showPlayerControls();});playerShell.addEventListener('mousemove',()=>{if(document.fullscreenElement===playerShell)showPlayerControls();});playerShell.addEventListener('touchstart',()=>{if(document.fullscreenElement===playerShell)showPlayerControls();},{passive:true});playerShell.addEventListener('pointerdown',e=>{if(e.target.closest('.controls')||e.target.closest('.fullscreen-zap'))showPlayerControls();});video.addEventListener('play',showPlayerControls);video.addEventListener('pause',()=>{playerShell.classList.remove('tv-controls-hidden');clearTimeout(controlsHideTimer);});
 function syncFullscreenButton(){
- const active=!!(document.fullscreenElement||document.webkitFullscreenElement);
+ const active=!!(document.fullscreenElement||document.webkitFullscreenElement||playerShell.classList.contains('pocoyito-fullscreen'));
  if(fullscreenButton)fullscreenButton.textContent=active?'⤢ Salir de pantalla completa':'⛶ Pantalla completa';
  playerShell.classList.remove('tv-controls-hidden');clearTimeout(controlsHideTimer);if(active&&!video.paused)showPlayerControls();
 }

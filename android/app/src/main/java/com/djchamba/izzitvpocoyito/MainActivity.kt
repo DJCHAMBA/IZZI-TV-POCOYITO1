@@ -118,15 +118,27 @@ class MainActivity : Activity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        // DPAD y Enter se dejan pasar al WebView de forma nativa. Así los campos
-        // de texto pueden recibir foco y mostrar el teclado virtual del televisor.
-        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode in setOf(
+        // En Android TV interceptamos las cuatro flechas en la Activity antes
+        // de que WebView/video/fullscreen puedan convertirlas en zapping o volumen.
+        // Se reenvían como eventos DOM únicamente para mover el foco de la interfaz.
+        if (isTvDevice && event.keyCode in setOf(
                 KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
-                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
-                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-                KeyEvent.KEYCODE_NUMPAD_ENTER
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT
             )) {
-            return super.dispatchKeyEvent(event)
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                val key = when (event.keyCode) {
+                    KeyEvent.KEYCODE_DPAD_UP -> "ArrowUp"
+                    KeyEvent.KEYCODE_DPAD_DOWN -> "ArrowDown"
+                    KeyEvent.KEYCODE_DPAD_LEFT -> "ArrowLeft"
+                    else -> "ArrowRight"
+                }
+                webView.evaluateJavascript(
+                    "document.dispatchEvent(new KeyboardEvent('keydown',{key:'$key',code:'$key',bubbles:true,cancelable:true}));",
+                    null
+                )
+            }
+            // Consumir también ACTION_UP evita que el WebView procese la tecla original.
+            return true
         }
         if (event.action == KeyEvent.ACTION_DOWN) {
             val jsKey = when (event.keyCode) {

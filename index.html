@@ -1646,6 +1646,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   if(a==='help')showShortcuts();
  }));
  const countryNames={MX:'México',US:'Estados Unidos',CA:'Canadá',ES:'España',AR:'Argentina',CO:'Colombia',CL:'Chile',PE:'Perú',BR:'Brasil',GB:'Reino Unido'};
+ let worldCountry='MX',worldSport='soccer',worldBusy=false,worldCityCoords={lat:32.6245,lon:-115.4523,name:'Mexicali, Baja California, México',country:'MX'};
  const hub=$('pocoyitoWorldHub');
  function openWorldHub(){if(!hub){console.error('Pocoyito World: no existe #pocoyitoWorldHub');return;}hub.hidden=false;hub.style.display='block';document.getElementById('homeScreen')?.scrollIntoView({block:'start'});requestAnimationFrame(()=>hub.scrollIntoView({behavior:'smooth',block:'start'}));loadWorldAll();}
  $('openWorldHub')?.addEventListener('click',openWorldHub);
@@ -1663,7 +1664,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   else if(a==='alerts'){const numbers={MX:'911 · Emergencias | 089 · Denuncia anónima',US:'911 · Emergencias',CA:'911 · Emergencias',ES:'112 · Emergencias',AR:'911 · Emergencias',CO:'123 · Emergencias',CL:'133 · Carabineros / 131 · Ambulancia',PE:'105 · Policía / 106 · Ambulancia',BR:'190 · Policía / 192 · SAMU'};alert('NÚMEROS DE EMERGENCIA\\n'+(numbers[worldCountry]||'Consulta el número oficial de emergencias de tu país.')+'\\nSi existe peligro inmediato, llama a los servicios locales.');}
   else if(a==='share'){if(navigator.share){try{await navigator.share({title:'Pocoyito TV',text:'Mira Pocoyito TV',url:location.href});}catch(e){}}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(location.href);alert('Enlace copiado.');}else alert(location.href);}
  }));
- let worldCountry='MX',worldSport='soccer',worldBusy=false,worldCityCoords={lat:32.6245,lon:-115.4523,name:'Mexicali, Baja California, México',country:'MX'};
+ 
  
  function setWorldStatus(t){if($('worldUpdated'))$('worldUpdated').textContent=t;if($('worldLocationStatus'))$('worldLocationStatus').textContent=t;}
  async function geocodeCity(city){

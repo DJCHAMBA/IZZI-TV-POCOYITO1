@@ -1366,7 +1366,6 @@ document.addEventListener('keydown',e=>{
  const guideOpen=document.getElementById('guideModal').classList.contains('open');
  if(e.key==='Escape'){if(guideOpen)closeGuide();document.getElementById('quickMenu').classList.remove('open');return;}
  if(e.key.toLowerCase()==='g'&&!guideOpen){openGuide();return;}
- if(e.key.toLowerCase()==='f'&&!guideOpen){openGuide(true);return;}
  if(guideOpen&&e.key==='Enter'&&selectedGuideChannel){tuneGuideChannel(selectedGuideChannel);return;}
  if(guideOpen&&(e.key==='ArrowDown'||e.key==='ArrowUp')){e.preventDefault();const items=guideChannels();guideIndex=Math.max(0,Math.min(items.length-1,guideIndex+(e.key==='ArrowDown'?1:-1)));if(guideIndex>=guideLimit){guideLimit=Math.min(items.length,guideLimit+120);renderGuide();}const row=[...document.querySelectorAll('.guide-row')].find(r=>r.dataset.url===items[guideIndex]?.url);row?.scrollIntoView({block:'nearest'});if(items[guideIndex])updateGuideFeature(items[guideIndex]);return;}
  if(!guideOpen&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&e.key==='ArrowUp'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}
@@ -1593,7 +1592,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
   if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();return;}
   if(k==='g'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGuide());else openGuide();return;}
-  if(k==='f'){e.preventDefault();if(fs)document.exitFullscreen?.();else Promise.resolve((inTV?(player||$('video')):document.documentElement)?.requestFullscreen?.()).catch(()=>{});return;}
+  if(k==='f'){e.preventDefault();fullscreenButton?.click();return;}
   if(k==='m'){e.preventDefault();if(inTV)$('backHome')?.click();openWorldHub();return;}
   if(k==='i'){e.preventDefault();if(inTV)showChannelOsd?.();else document.getElementById('infoTitle')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
   if(k==='?'||k==='/'){e.preventDefault();showShortcuts();return;}

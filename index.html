@@ -1565,6 +1565,16 @@ function renderLigaStandings(data){const box=document.getElementById('ligaStandi
 document.querySelectorAll('[data-liga-filter]').forEach(b=>b.addEventListener('click',()=>{ligaFilter=b.dataset.ligaFilter;document.querySelectorAll('[data-liga-filter]').forEach(x=>x.classList.toggle('active',x===b));renderLiga();}));
 
 if(/Android TV|AFT|BRAVIA|SHIELD|GoogleTV/i.test(navigator.userAgent)){document.body.classList.add('android-tv');}
+if(document.body.classList.contains('android-tv')){
+ document.addEventListener('keydown',e=>{
+  if(['PageUp','PageDown'].includes(e.key)&&document.getElementById('tvPage')?.classList.contains('active')){
+   e.preventDefault();e.stopPropagation();tuneByIndex(currentIndex()+(e.key==='PageUp'?1:-1));
+  }
+  if(e.key==='q'&&document.getElementById('tvPage')?.classList.contains('active')){
+   e.preventDefault();document.getElementById('openQuick')?.click();
+  }
+ },true);
+}
 if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));}
 </script><script>
 /* Navegación real con control remoto Android TV */

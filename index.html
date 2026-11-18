@@ -996,6 +996,7 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
  </div>
  <div class="tv-usage-note"><b>Consejo:</b> si no sabes qué hacer, abre la Guía o usa Buscar. Los canales disponibles dependen de que su señal pública esté activa.</div>
 </section>
+<div class="tv-touchbar" aria-label="Controles táctiles de TV"><button type="button" data-tv-action="prev"><span>−</span>CH anterior</button><button type="button" data-tv-action="guide"><span>▦</span>Guía</button><button type="button" data-tv-action="search"><span>⌕</span>Buscar</button><button type="button" data-tv-action="next"><span>+</span>CH siguiente</button><button type="button" data-tv-action="favorites"><span>♥</span>Favoritos</button></div>
 </div>
 
 
@@ -1624,6 +1625,15 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   }else el.remove();
  }
  document.getElementById('homeHelpBtn')?.addEventListener('click',showShortcuts);
+ document.querySelectorAll('[data-tv-action]').forEach(b=>b.addEventListener('click',()=>{
+  const a=b.dataset.tvAction;
+  if(a==='prev')tuneByIndex(currentIndex()-1);
+  if(a==='next')tuneByIndex(currentIndex()+1);
+  if(a==='guide')openGuide();
+  if(a==='search')openGlobalChannelSearch();
+  if(a==='favorites')openGuide(true);
+  if(a==='help')showShortcuts();
+ }));
  const hub=$('pocoyitoWorldHub');
  function openWorldHub(){if(!hub){console.error('Pocoyito World: no existe #pocoyitoWorldHub');return;}hub.hidden=false;hub.style.display='block';document.getElementById('homeScreen')?.scrollIntoView({block:'start'});requestAnimationFrame(()=>hub.scrollIntoView({behavior:'smooth',block:'start'}));loadWorldAll();}
  $('openWorldHub')?.addEventListener('click',openWorldHub);
@@ -1920,5 +1930,5 @@ body.android-tv .tv-usage-card li{font-size:14px}
 body.android-tv .tv-usage-head>button,body.android-tv .tv-usage-card button{min-height:54px}
 body.android-tv .tv-usage-guide button:focus-visible{outline:4px solid #35d4ff;outline-offset:4px}
 </style>
-<div class="tv-touchbar" aria-label="Controles táctiles de TV"><button type="button" data-tv-action="prev"><span>−</span>CH anterior</button><button type="button" data-tv-action="guide"><span>▦</span>Guía</button><button type="button" data-tv-action="search"><span>⌕</span>Buscar</button><button type="button" data-tv-action="next"><span>+</span>CH siguiente</button><button type="button" data-tv-action="favorites"><span>♥</span>Favoritos</button></div>
+
 </body></html>

@@ -70,7 +70,12 @@ function startDistritoTranscode(sourceUrl) {
 }
 
 async function handleTranscodeRequest(route, res) {
-  if (!/^\\/transcode\\/(?:index\\.m3u8|seg_\\d+\\.ts)$/.test(route)) {
+  const isIndex = route === '/transcode/index.m3u8';
+  const segmentName = route.startsWith('/transcode/') ? route.slice(11) : '';
+  const segmentDigits = segmentName.startsWith('seg_') && segmentName.endsWith('.ts')
+    ? segmentName.slice(4, -3) : '';
+  const isSegment = segmentDigits.length > 0 && [...segmentDigits].every(ch => ch >= '0' && ch <= '9');
+  if (!isIndex && !isSegment) {
     res.writeHead(404); return res.end('Not found');
   }
   const sourceUrl = 'http://15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/index.m3u8';

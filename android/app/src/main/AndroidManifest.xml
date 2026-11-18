@@ -3,7 +3,7 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.hardware.faketouch" android:required="false" />
-    <application android:allowBackup="true" android:usesCleartextTraffic="false"
+    <application android:allowBackup="true" android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true" android:label="izzi TV Pocoyito"
         android:theme="@style/AppTheme" android:banner="@drawable/tv_banner"
         android:icon="@drawable/app_icon">

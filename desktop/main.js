@@ -32,7 +32,7 @@ function findFfmpeg() {
   if (process.platform === 'win32') {
     try {
       const found = execFileSync('where.exe', ['ffmpeg'], { encoding: 'utf8', windowsHide: true, timeout: 5000 })
-        .split(/\\r?\\n/).map(x => x.trim()).find(x => x && fs.existsSync(x));
+        .split(/\r?\n/).map(x => x.trim()).find(x => x && fs.existsSync(x));
       if (found) return found;
     } catch {}
   }
@@ -46,7 +46,7 @@ function startDistritoTranscode(sourceUrl) {
   transcodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-distrito-'));
   const ffmpeg = findFfmpeg();
   const output = path.join(transcodeDir, 'index.m3u8');
-  const headers = 'Accept: */*\\r\\nAccept-Language: es_MX\\r\\n';
+  const headers = 'Accept: */*\r\nAccept-Language: es_MX\r\n';
   const args = [
     '-hide_banner', '-loglevel', 'warning', '-nostdin', '-y',
     '-user_agent', 'VLC/3.0.23 LibVLC/3.0.23',

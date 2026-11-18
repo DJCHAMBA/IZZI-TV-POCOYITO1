@@ -2,6 +2,7 @@ const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const os = require('os');
 const { spawn, execFileSync } = require('child_process');
 const zlib = require('zlib');
 
@@ -116,7 +117,7 @@ function startLocalProxy() {
     try { target = new URL(req.url, 'http://127.0.0.1'); } catch { res.writeHead(400); return res.end('Bad request'); }
     if (target.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-      return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay' }));
+      return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay', port: LOCAL_PORT }));
     }
     if (target.pathname.startsWith('/transcode/')) {
       return handleTranscodeRequest(target.pathname, res);
@@ -211,7 +212,7 @@ function startLocalProxy() {
       reject(error);
     };
     server.once('error', onError);
-    server.listen(LOCAL_PORT, '127.0.0.1', () => {
+    server.listen(LOCAL_PORT, '0.0.0.0', () => {
       server.removeListener('error', onError);
       writeProxyLog('OK escuchando en http://127.0.0.1:' + LOCAL_PORT);
       console.log('Pocoyito local IPTV proxy listening on 127.0.0.1:' + LOCAL_PORT);

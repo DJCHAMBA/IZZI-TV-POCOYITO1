@@ -1615,7 +1615,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  document.querySelectorAll('[data-home-action="world"]').forEach(b=>b.addEventListener('click',openWorldHub));
  document.querySelectorAll('[data-world-extra]').forEach(b=>b.addEventListener('click',async()=>{
   const a=b.dataset.worldExtra;
-  if(a==='guide')openGuide();else if(a==='search')openGlobalChannelSearch();else if(a==='favorites')openGuide(true);else if(a==='recent'){openTV();const rec=recentChannelUrls?.()||[];const c=allChannels.find(x=>x.url===rec[0]);if(c)playChannel(c,true);}
+  if(a==='guide')openGuide();else if(a==='search')openGlobalChannelSearch();else if(a==='favorites')openGuide(true);else if(a==='recent'){const rec=recentChannelUrls();const c=allChannels.find(x=>x.url===rec[0]);if(c){openTV();playChannel(c,true);}else alert('Todavía no tienes canales recientes. Reproduce un canal y aparecerá aquí.');}
   else if(a==='currency'){try{const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN,EUR,CAD');const j=await r.json();alert('Tipo de cambio de referencia\\n1 USD = '+j.rates.MXN+' MXN\\n1 USD = '+j.rates.EUR+' EUR\\n1 USD = '+j.rates.CAD+' CAD\\nFecha: '+j.date);}catch(e){alert('Tipo de cambio temporalmente no disponible.');}}
   else if(a==='clock'){const zones=['America/Mexico_City','America/Tijuana','America/New_York','Europe/Madrid','Asia/Tokyo'];alert('RELOJ MUNDIAL\\n'+zones.map(z=>z.split('/').pop().replace('_',' ')+' · '+new Date().toLocaleTimeString('es-MX',{timeZone:z,hour:'2-digit',minute:'2-digit'})).join('\\n'));}
   else if(a==='alerts'){const numbers={MX:'911 · Emergencias | 089 · Denuncia anónima',US:'911 · Emergencias',CA:'911 · Emergencias',ES:'112 · Emergencias',AR:'911 · Emergencias',CO:'123 · Emergencias',CL:'133 · Carabineros / 131 · Ambulancia',PE:'105 · Policía / 106 · Ambulancia',BR:'190 · Policía / 192 · SAMU'};alert('NÚMEROS DE EMERGENCIA\\n'+(numbers[worldCountry]||'Consulta el número oficial de emergencias de tu país.')+'\\nSi existe peligro inmediato, llama a los servicios locales.');}
@@ -1679,7 +1679,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  document.querySelectorAll('[data-world-sport]').forEach(b=>b.addEventListener('click',()=>loadWorldSports(b.dataset.worldSport)));
  async function loadWorldAll(){if(worldBusy)return;worldBusy=true;setWorldStatus('Actualizando clima, noticias y deportes…');try{const results=await Promise.allSettled([loadWorldWeather(),loadWorldNews(),loadWorldSports(worldSport)]);const failed=results.filter(x=>x.status==='rejected').length;setWorldStatus(failed?'Actualización parcial · '+failed+' servicio(s) fallaron':'Actualizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));}finally{worldBusy=false;}}
  $('worldRefresh')?.addEventListener('click',()=>{worldCityCoords=null;loadWorldAll();});
- $('worldCity')?.addEventListener('keydown',e=>{if(e.key==='Enter'){worldCityCoords=null;loadWorldWeather();}});
+ $('worldCity')?.addEventListener('keydown',e=>{if(e.key==='Enter'){worldCityCoords=null;loadWorldAll();}});
  $('worldUseLocation')?.addEventListener('click',()=>{
   if(!navigator.geolocation){setWorldStatus('Este dispositivo no ofrece ubicación');return;}
   setWorldStatus('Solicitando permiso de ubicación…');

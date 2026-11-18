@@ -1074,6 +1074,11 @@ const DISTRITO_STREAMS=[
   {host:'138.121.15.230',port:'9002',prefix:'/DISTRITO-COMEDIA/'},
   {host:'190.61.47.54',port:'8000',prefix:'/play/a028/'}
 ];
+const DISTRITO_FALLBACK_URLS=[
+  'http://45.5.57.58:8000/play/a07n/index.m3u8',
+  'http://138.121.15.230:9002/DISTRITO-COMEDIA/index.m3u8',
+  'http://190.61.47.54:8000/play/a028/index.m3u8'
+];
 function playbackUrl(url){
   try{
     const u=new URL(url);
@@ -1186,7 +1191,11 @@ function playChannel(c,autoStart=false,isFallback=false){
     const isDistrito=/distrito\s*comedia/i.test(c.name);
     if(isDistrito){
       distritoTried.add(c.url);
-      const next=allChannels.find(x=>/distrito\s*comedia/i.test(x.name)&&!distritoTried.has(x.url));
+      const catalogAlternatives=allChannels.filter(x=>/distrito\s*comedia/i.test(x.name)&&!distritoTried.has(x.url));
+      const knownAlternatives=DISTRITO_FALLBACK_URLS
+        .filter(url=>!distritoTried.has(url))
+        .map(url=>({id:'DistritoComedia.mx@SD',name:'Distrito Comedia (1080p)',logo:'',group:'Internacional',countryCode:'MX',countryName:'México',country:true,spanish:true,telemundo:false,url}));
+      const next=[...catalogAlternatives,...knownAlternatives].find(x=>x.url!==c.url);
       if(next){
         console.warn('[Pocoyito TV] Fuente de Distrito Comedia falló; probando alternativa:',c.url,'->',next.url,detail||'');
         message.textContent='Esta fuente de Distrito Comedia no respondió. Probando otra señal…';

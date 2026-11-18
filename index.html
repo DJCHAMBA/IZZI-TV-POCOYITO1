@@ -1068,7 +1068,14 @@ const SOURCES=[{key:'iptv-org',label:'IPTV-org',url:'https://iptv-org.github.io/
 const video=document.getElementById('video'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),spinner=document.getElementById('spinner'),statusEl=document.getElementById('status'),listEl=document.getElementById('channels'),countEl=document.getElementById('count');
 const IPTV_PROXY_BASE='https://pocoyito-iptv-proxy.jnew123gta5.workers.dev';
 const LOCAL_IPTV_PROXY='http://127.0.0.1:18787/hls?u=';
-function playbackUrl(url){try{const u=new URL(url);if(u.hostname==='15.204.142.109'&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'))return LOCAL_IPTV_PROXY+encodeURIComponent(u.href);return u.protocol==='http:'?IPTV_PROXY_BASE+'/proxy?url='+encodeURIComponent(u.href):url;}catch(e){return url;}}
+function playbackUrl(url){
+  try{
+    const u=new URL(url);
+    const isDistrito=u.hostname==='15.204.142.109'&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/');
+    if(isDistrito&&window.pocoyitoDesktop)return LOCAL_IPTV_PROXY+encodeURIComponent(u.href);
+    return u.protocol==='http:'?IPTV_PROXY_BASE+'/proxy?url='+encodeURIComponent(u.href):url;
+  }catch(e){return url;}
+}
 const COUNTRY_META_URL='https://iptv-org.github.io/api/channels.json',COUNTRY_LIST_URL='https://iptv-org.github.io/api/countries.json';let channelMetadata=new Map(),countryDirectoryMetadata=new Map();
 let hls=null,allChannels=[],filter='all',selected=null,canal5Tried=new Set(),playbackToken=0;
 const LAST_CHANNEL_KEY='izziPocoyitoLastChannelV1';

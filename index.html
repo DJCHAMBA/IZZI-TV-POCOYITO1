@@ -882,6 +882,26 @@ body.android-tv button:focus-visible,body.android-tv a:focus-visible,body.androi
 @media(max-width:420px){.world-card{padding:12px}.world-weather strong{font-size:44px}.world-extras button{padding:11px}.fullscreen-zap .zap-name{display:none}}
 
 .player-shell.tv-controls-hidden:fullscreen .fullscreen-zap,.player-shell.tv-controls-hidden:-webkit-full-screen .fullscreen-zap{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .25s ease,visibility .25s ease}.player-shell:fullscreen .fullscreen-zap,.player-shell:-webkit-full-screen .fullscreen-zap{opacity:1;visibility:visible;transition:opacity .25s ease,visibility .25s ease}
+</style><style id="android-tv-performance">
+/* Perfil ligero para televisores Android: menos composición GPU y menos trabajo de pintura. */
+html.android-tv,body.android-tv{scroll-behavior:auto!important}
+body.android-tv *,body.android-tv *::before,body.android-tv *::after{
+ animation:none!important;transition:none!important;scroll-behavior:auto!important;
+ text-shadow:none!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.android-tv .player-shell,body.android-tv .catalog,body.android-tv .panel,body.android-tv .card,
+body.android-tv .channel-search-dialog,body.android-tv .guide-wrap,body.android-tv .vod-card{
+ box-shadow:none!important;
+}
+body.android-tv .channel-search-backdrop,body.android-tv .guide-modal,body.android-tv .country-directory{
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+body.android-tv img{content-visibility:auto}
+body.android-tv .channel-list,body.android-tv .guide-list,body.android-tv .vod-grid{content-visibility:auto;contain-intrinsic-size:1px 600px}
+body.android-tv input,body.android-tv textarea,body.android-tv select{
+ font-size:18px!important;min-height:48px!important;user-select:text!important;-webkit-user-select:text!important;
+}
+body.android-tv :focus{scroll-margin:90px}
 </style></head>
 <body>
 

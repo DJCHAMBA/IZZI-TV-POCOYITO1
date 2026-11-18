@@ -1712,9 +1712,14 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  const topics={top:'',nation:'noticias México',world:'noticias internacionales',sports:'deportes México',tech:'tecnología',business:'economía México'};
  const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  function status(s){if($('worldUpdated'))$('worldUpdated').textContent=s;if($('worldLocationStatus'))$('worldLocationStatus').textContent=s;}
- async function timedFetch(url,ms=12000){
-  const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),ms);
-  try{return await fetch(url,{cache:'no-store',signal:ctl.signal});}finally{clearTimeout(timer);}
+ async function timedFetch(url,ms=22000){
+  let timer;
+  try{
+   return await Promise.race([
+    fetch(url,{cache:'no-store'}),
+    new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Tiempo de espera agotado ('+Math.round(ms/1000)+' s)')),ms);})
+   ]);
+  }finally{if(timer)clearTimeout(timer);}
  }
  function replaceButton(el,fn){
   if(!el)return;
@@ -1772,20 +1777,50 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  }
  async function loadNews(){
   const box=$('worldNews'),label=$('newsSourceStatus'),topic=topics[selectedTopic]??'';
-  box.innerHTML='<p>Conectando con Google Noticias…</p>';label.textContent='Consultando fuente en vivo…';
+  box.innerHTML='<p>Conectando con fuentes de noticias…</p>';label.textContent='Consultando Google Noticias…';
   const hl='es-419',rss='https://news.google.com/rss?hl='+hl+'&gl=MX&ceid=MX:'+hl+(topic?'&q='+encodeURIComponent(topic):'');
-  try{
-   let items=[];
-   try{const r=await timedFetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss));if(r.ok){const j=await r.json();if(j.status==='ok'&&Array.isArray(j.items))items=j.items.map(x=>({title:x.title,url:x.link,date:x.pubDate,source:x.author||'Google Noticias'}));}}catch(e){}
-   if(!items.length){
-    const r=await timedFetch('https://api.allorigins.win/raw?url='+encodeURIComponent(rss));if(!r.ok)throw Error('El proveedor RSS no respondió');
-    const xml=await r.text(),doc=new DOMParser().parseFromString(xml,'text/xml');
-    items=[...doc.querySelectorAll('item')].map(x=>({title:x.querySelector('title')?.textContent,url:x.querySelector('link')?.textContent,date:x.querySelector('pubDate')?.textContent,source:'Google Noticias'})).filter(x=>x.title&&x.url);
+  const parseXml=xml=>{
+   const doc=new DOMParser().parseFromString(xml,'text/xml');
+   if(doc.querySelector('parsererror'))throw Error('La respuesta RSS no tiene formato válido');
+   return [...doc.querySelectorAll('item')].map(x=>({
+    title:x.querySelector('title')?.textContent?.trim(),
+    url:x.querySelector('link')?.textContent?.trim(),
+    date:x.querySelector('pubDate')?.textContent?.trim(),
+    source:x.querySelector('source')?.textContent?.trim()||'Google Noticias'
+   })).filter(x=>x.title&&x.url&&/^https?:\/\//i.test(x.url));
+  };
+  const attempts=[
+   async()=>{
+    const r=await timedFetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss),25000);
+    if(!r.ok)throw Error('rss2json respondió '+r.status);
+    const j=await r.json();if(j.status!=='ok'||!Array.isArray(j.items))throw Error(j.message||'rss2json no entregó titulares');
+    return j.items.map(x=>({title:x.title,url:x.link,date:x.pubDate,source:x.author||'Google Noticias'})).filter(x=>x.title&&x.url);
+   },
+   async()=>{
+    const r=await timedFetch('https://api.allorigins.win/raw?url='+encodeURIComponent(rss),25000);
+    if(!r.ok)throw Error('AllOrigins respondió '+r.status);
+    return parseXml(await r.text());
+   },
+   async()=>{
+    const r=await timedFetch('https://corsproxy.io/?url='+encodeURIComponent(rss),25000);
+    if(!r.ok)throw Error('CORS proxy respondió '+r.status);
+    return parseXml(await r.text());
    }
-   if(!items.length)throw Error('La fuente no devolvió titulares');
-   box.innerHTML=items.slice(0,10).map(x=>'<a class="world-news-item" href="'+safe(x.url)+'" target="_blank" rel="noopener"><strong>'+safe(x.title)+'</strong><small>'+safe(x.source)+' · '+safe(x.date?new Date(x.date).toLocaleString('es-MX'):'Reciente')+'</small></a>').join('');
-   label.textContent=items.length+' titulares recibidos · Google Noticias';
-  }catch(e){box.innerHTML='<div class="world-news-error"><b>No se pudieron cargar noticias.</b><span>'+safe(e.message)+' · Puedes reintentar o abrir la fuente directamente.</span><a href="'+rss.replace(/&/g,'&amp;')+'" target="_blank" rel="noopener">Abrir Google Noticias ↗</a></div>';label.textContent='Noticias sin conexión';throw e;}
+  ];
+  const errors=[];
+  for(let i=0;i<attempts.length;i++){
+   try{
+    const items=await attempts[i]();
+    if(!items.length)throw Error('La fuente no devolvió titulares');
+    box.innerHTML=items.slice(0,12).map(x=>'<a class="world-news-item" href="'+safe(x.url)+'" target="_blank" rel="noopener"><strong>'+safe(x.title)+'</strong><small>'+safe(x.source)+' · '+safe(x.date?new Date(x.date).toLocaleString('es-MX'):'Reciente')+'</small></a>').join('');
+    label.textContent=items.length+' titulares recibidos · Fuente '+(i+1)+' de 3';
+    return;
+   }catch(e){errors.push(e?.message||'Error desconocido');}
+  }
+  const detail=errors.join(' | ');
+  box.innerHTML='<div class="world-news-error"><b>No se pudo conectar con las fuentes de noticias.</b><span>'+safe(detail)+'</span><a href="'+rss.replace(/&/g,'&amp;')+'" target="_blank" rel="noopener">Abrir Google Noticias directamente ↗</a></div>';
+  label.textContent='Fuentes no disponibles · pulsa Actualizar todo';
+  throw Error(detail);
  }
  async function loadSports(){
   const root=$('worldSports'),item=sports[selectedSport]||sports.soccer;

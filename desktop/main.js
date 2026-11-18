@@ -1,5 +1,6 @@
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const zlib = require('zlib');
 
@@ -14,8 +15,18 @@ function isAllowedStream(url) {
 const LOCAL_PORT = 18787;
 let proxyServer;
 
+function writeProxyLog(message) {
+  try {
+    const logPath = path.join(app.getPath('userData'), 'pocoyito-local-proxy.log');
+    fs.appendFileSync(logPath, new Date().toISOString() + ' ' + message + '\\n', 'utf8');
+  } catch (error) {
+    console.error('No se pudo escribir el log del proxy:', error);
+  }
+}
+
 function startLocalProxy() {
-  if (proxyServer) return Promise.resolve();
+  if (proxyServer && proxyServer.listening) return Promise.resolve();
+  if (proxyServer) { try { proxyServer.close(); } catch {} proxyServer = null; }
   proxyServer = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
@@ -113,9 +124,16 @@ function startLocalProxy() {
     if (req.method === 'HEAD') upstreamReq.end(); else req.pipe(upstreamReq);
   });
   return new Promise((resolve, reject) => {
-    proxyServer.once('error', reject);
-    proxyServer.listen(LOCAL_PORT, '127.0.0.1', () => {
-      proxyServer.removeListener('error', reject);
+    const server = proxyServer;
+    const onError = (error) => {
+      writeProxyLog('ERROR al iniciar en 127.0.0.1:' + LOCAL_PORT + ': ' + (error.stack || error.message));
+      if (proxyServer === server) proxyServer = null;
+      reject(error);
+    };
+    server.once('error', onError);
+    server.listen(LOCAL_PORT, '127.0.0.1', () => {
+      server.removeListener('error', onError);
+      writeProxyLog('OK escuchando en http://127.0.0.1:' + LOCAL_PORT);
       console.log('Pocoyito local IPTV proxy listening on 127.0.0.1:' + LOCAL_PORT);
       resolve();
     });
@@ -141,7 +159,10 @@ function createWindow() {
 }
 app.whenReady().then(async () => {
   try { await startLocalProxy(); }
-  catch (error) { console.error('No se pudo iniciar el proxy IPTV local:', error); }
+  catch (error) {
+    console.error('No se pudo iniciar el proxy IPTV local:', error);
+    writeProxyLog('INICIO FALLIDO: ' + (error.stack || error.message));
+  }
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });

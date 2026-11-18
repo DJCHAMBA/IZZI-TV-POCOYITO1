@@ -1515,6 +1515,10 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
     const active=document.activeElement;
     const editing=active&&(['INPUT','TEXTAREA','SELECT'].includes(active.tagName)||active.isContentEditable);
     if(editing&&key!=='Enter')return;
+    // En la pantalla de TV, las flechas pertenecen al reproductor (canal/volumen),
+    // no al navegador de foco de Android TV. Deja que el manejador del reproductor las procese.
+    const tvPage=document.getElementById('tvPage');
+    if(tvPage?.classList.contains('active')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key))return;
     const list=items();
     if(!list.length)return;
     if(key==='Enter'||key===' '){

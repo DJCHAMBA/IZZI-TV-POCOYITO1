@@ -2,6 +2,7 @@ const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
+const { spawn, execFileSync } = require('child_process');
 const zlib = require('zlib');
 
 const ALLOWED_STREAMS = [
@@ -13,6 +14,8 @@ function isAllowedStream(url) {
   );
 }
 const LOCAL_PORT = 18787;
+let transcodeProcess = null;
+let transcodeDir = null;
 let proxyServer;
 
 function writeProxyLog(message) {
@@ -22,6 +25,74 @@ function writeProxyLog(message) {
   } catch (error) {
     console.error('No se pudo escribir el log del proxy:', error);
   }
+}
+
+function findFfmpeg() {
+  if (process.env.POCOYITO_FFMPEG && fs.existsSync(process.env.POCOYITO_FFMPEG)) return process.env.POCOYITO_FFMPEG;
+  if (process.platform === 'win32') {
+    try {
+      const found = execFileSync('where.exe', ['ffmpeg'], { encoding: 'utf8', windowsHide: true, timeout: 5000 })
+        .split(/\\r?\\n/).map(x => x.trim()).find(x => x && fs.existsSync(x));
+      if (found) return found;
+    } catch {}
+  }
+  return 'ffmpeg';
+}
+
+function startDistritoTranscode(sourceUrl) {
+  if (transcodeProcess && transcodeProcess.exitCode === null) return;
+  if (transcodeProcess) { try { transcodeProcess.kill(); } catch {} transcodeProcess = null; }
+  if (transcodeDir) { try { fs.rmSync(transcodeDir, { recursive: true, force: true }); } catch {} }
+  transcodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-distrito-'));
+  const ffmpeg = findFfmpeg();
+  const output = path.join(transcodeDir, 'index.m3u8');
+  const headers = 'Accept: */*\\r\\nAccept-Language: es_MX\\r\\n';
+  const args = [
+    '-hide_banner', '-loglevel', 'warning', '-nostdin', '-y',
+    '-user_agent', 'VLC/3.0.23 LibVLC/3.0.23',
+    '-headers', headers,
+    '-i', sourceUrl,
+    '-map', '0:v:0?', '-map', '0:a:0?',
+    '-c:v', 'copy',
+    '-c:a', 'aac', '-b:a', '128k', '-ac', '2', '-ar', '48000',
+    '-f', 'hls', '-hls_time', '6', '-hls_list_size', '8',
+    '-hls_flags', 'delete_segments+append_list+independent_segments+omit_endlist',
+    '-hls_segment_filename', path.join(transcodeDir, 'seg_%06d.ts'),
+    output
+  ];
+  writeProxyLog('Iniciando FFmpeg para Distrito Comedia: ' + ffmpeg);
+  transcodeProcess = spawn(ffmpeg, args, { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
+  transcodeProcess.stderr.on('data', chunk => writeProxyLog('FFmpeg: ' + chunk.toString().trim()));
+  transcodeProcess.on('error', error => writeProxyLog('FFmpeg no pudo arrancar: ' + (error.stack || error.message)));
+  transcodeProcess.on('exit', (code, signal) => {
+    writeProxyLog('FFmpeg terminó. code=' + code + ' signal=' + signal);
+  });
+}
+
+async function handleTranscodeRequest(route, res) {
+  if (!/^\\/transcode\\/(?:index\\.m3u8|seg_\\d+\\.ts)$/.test(route)) {
+    res.writeHead(404); return res.end('Not found');
+  }
+  const sourceUrl = 'http://15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/index.m3u8';
+  if (!transcodeProcess || transcodeProcess.exitCode !== null) startDistritoTranscode(sourceUrl);
+  const name = path.basename(route);
+  const file = path.join(transcodeDir, name);
+  if (name === 'index.m3u8') {
+    const deadline = Date.now() + 12000;
+    while (Date.now() < deadline && !fs.existsSync(file) && transcodeProcess && transcodeProcess.exitCode === null) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+  }
+  if (!fs.existsSync(file)) {
+    res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '2', 'Cache-Control': 'no-store' });
+    return res.end('FFmpeg está preparando la señal. Reintenta en unos segundos.');
+  }
+  res.writeHead(200, {
+    'Content-Type': name.endsWith('.m3u8') ? 'application/vnd.apple.mpegurl; charset=utf-8' : 'video/MP2T',
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    'Access-Control-Allow-Origin': '*'
+  });
+  fs.createReadStream(file).pipe(res);
 }
 
 function startLocalProxy() {
@@ -40,6 +111,9 @@ function startLocalProxy() {
     if (target.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay' }));
+    }
+    if (target.pathname.startsWith('/transcode/')) {
+      return handleTranscodeRequest(target.pathname, res);
     }
     if (target.pathname !== '/hls') { res.writeHead(404); return res.end('Not found'); }
 
@@ -141,6 +215,9 @@ function startLocalProxy() {
 }
 
 function stopLocalProxy() {
+  if (transcodeProcess) { try { transcodeProcess.kill(); } catch {} transcodeProcess = null; }
+  if (transcodeDir) { try { fs.rmSync(transcodeDir, { recursive: true, force: true }); } catch {} transcodeDir = null; }
+
   if (proxyServer) { proxyServer.close(); proxyServer = null; }
 }
 

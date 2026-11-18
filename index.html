@@ -1741,7 +1741,7 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
    }catch(e){status('No se pudo detectar la ciudad: '+e.message);}
   },()=>status('Permiso denegado; escribe tu ciudad.'),{timeout:10000,maximumAge:600000});
  });
- $('worldCity')?.addEventListener('keydown',e=>{if(e.key==='Enter'){cityCoords=null;refresh();}});
+ const cityInput=$('worldCity');if(cityInput){const freshInput=cityInput.cloneNode(true);cityInput.replaceWith(freshInput);freshInput.addEventListener('keydown',e=>{if(e.key==='Enter'){cityCoords=null;refresh();}});}
  async function resolveCity(){
   const name=$('worldCity')?.value?.trim()||'Mexicali';
   if(cityCoords&&cityCoords.name.toLowerCase().includes(name.toLowerCase()))return cityCoords;

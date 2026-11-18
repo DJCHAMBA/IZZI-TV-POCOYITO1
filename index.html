@@ -1068,22 +1068,14 @@ const SOURCES=[{key:'iptv-org',label:'IPTV-org',url:'https://iptv-org.github.io/
 const video=document.getElementById('video'),overlay=document.getElementById('overlay'),message=document.getElementById('message'),spinner=document.getElementById('spinner'),statusEl=document.getElementById('status'),listEl=document.getElementById('channels'),countEl=document.getElementById('count');
 const IPTV_PROXY_BASE='https://pocoyito-iptv-proxy.jnew123gta5.workers.dev';
 const LOCAL_IPTV_PROXY='http://127.0.0.1:18787/hls?u=';
-const DISTRITO_STREAMS=[
-  {host:'15.204.142.109',port:'22880',prefix:'/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'},
-  {host:'45.5.57.58',port:'8000',prefix:'/play/a07n/'},
-  {host:'138.121.15.230',port:'9002',prefix:'/DISTRITO-COMEDIA/'},
-  {host:'190.61.47.54',port:'8000',prefix:'/play/a028/'}
-];
-const DISTRITO_FALLBACK_URLS=[
-  'http://45.5.57.58:8000/play/a07n/index.m3u8',
-  'http://138.121.15.230:9002/DISTRITO-COMEDIA/index.m3u8',
-  'http://190.61.47.54:8000/play/a028/index.m3u8'
-];
+const DISTRITO_STREAM_URL='http://15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/index.m3u8';
+const DISTRITO_STREAM_HOST='15.204.142.109';
 function playbackUrl(url){
   try{
     const u=new URL(url);
-    const isDistrito=DISTRITO_STREAMS.some(x=>u.protocol==='http:'&&u.hostname===x.host&&u.port===x.port&&u.pathname.startsWith(x.prefix));
-    if(isDistrito&&window.pocoyitoDesktop)return LOCAL_IPTV_PROXY+encodeURIComponent(u.href);
+    if(u.hostname===DISTRITO_STREAM_HOST&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/')){
+      return LOCAL_IPTV_PROXY+encodeURIComponent(u.href);
+    }
     return u.protocol==='http:'?IPTV_PROXY_BASE+'/proxy?url='+encodeURIComponent(u.href):url;
   }catch(e){return url;}
 }
@@ -1098,7 +1090,12 @@ function normalizeChannelName(v){return String(v||'').normalize('NFD').replace(/
 let channelMetadataByName=new Map();
 function applyCountryToChannel(c){const byId=channelMetadata.get(c.id);let meta=byId;if(!meta&&c.name)meta=channelMetadataByName.get(normalizeChannelName(c.name));let code=meta?.country||c.countryCode||'';if(!code){const suffix=String(c.id||'').match(/\.([a-z]{2})$/i);if(suffix)code=suffix[1].toUpperCase();}const info=countryMeta(code);c.countryCode=info.countryCode;c.countryName=info.countryName;c.country=info.countryCode==='MX';if(meta&&Array.isArray(meta.categories))c.categories=meta.categories;return c;}
 function parseM3U(text,source){const lines=text.split(/\r?\n/),out=[];for(let i=0;i<lines.length;i++){const line=lines[i].trim();if(!line.startsWith('#EXTINF'))continue;const comma=line.indexOf(',');const name=(comma>=0?line.slice(comma+1):attr(line,'tvg-name')).trim()||attr(line,'tvg-name')||'Canal sin nombre';let url='';for(let j=i+1;j<lines.length;j++){const candidate=lines[j].trim();if(!candidate)continue;if(candidate.startsWith('#'))continue;url=candidate;break;}if(!url)continue;const id=attr(line,'tvg-id'),group=attr(line,'group-title')||'General',language=attr(line,'tvg-language');const meta=countryMeta(attr(line,'tvg-country')||attr(line,'country'));const telemundo=/telemundo/i.test(name+' '+id+' '+group);out.push({id,name,logo:attr(line,'tvg-logo'),group,...meta,country:meta.countryCode==='MX',spanish:/spa|spanish|español/i.test(language),telemundo,url,sourceKey:source||'iptv-org'});}return out}
-function mergeChannels(channels){return [...channels].sort((a,b)=>{if(a.countryCode==='MX'&&b.countryCode!=='MX')return -1;if(b.countryCode==='MX'&&a.countryCode!=='MX')return 1;return a.countryName.localeCompare(b.countryName,'es')||a.name.localeCompare(b.name,'es');});}
+function mergeChannels(channels){
+ const others=channels.filter(c=>!/distrito\\s*comedia/i.test(c.name));
+ const existing=channels.find(c=>/distrito\\s*comedia/i.test(c.name)&&c.url&&c.url.includes('15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'));
+ const canonical={...(existing||{}),id:'DistritoComedia.mx@HD',name:'Distrito Comedia (1080p)',logo:existing?.logo||'',group:'Televisión',countryCode:'MX',countryName:'México',country:true,spanish:true,telemundo:false,url:DISTRITO_STREAM_URL,sourceKey:'VLC-confirmed'};
+ return [...others,canonical].sort((a,b)=>{if(a.countryCode==='MX'&&b.countryCode!=='MX')return -1;if(b.countryCode==='MX'&&a.countryCode!=='MX')return 1;return a.countryName.localeCompare(b.countryName,'es')||a.name.localeCompare(b.name,'es');});
+}
 function categoryOf(c){const t=(c.name+' '+c.group).toLowerCase();if(/kids|niñ|infantil|cartoon|disney junior|nickelodeon/.test(t))return 'kids';if(/sport|deport|futbol|fútbol|espn|fox sports|tudn/.test(t))return 'sports';if(/news|noticia|cnn|milenio|foro tv|adn 40/.test(t))return 'news';if(/movie|cine|pel[ií]cula|film|hbo|cinemax|studio universal/.test(t))return 'movies';if(/music|m[uú]sica|mtv|telehit|bandamax/.test(t))return 'music';if(/entreten|series|comedy|universal|sony|warner/.test(t))return 'entertainment';if(c.country)return 'tv';return 'entertainment';}
 function visibleChannels(){const q=document.getElementById('search').value.trim().toLocaleLowerCase('es');const cat=document.getElementById('categoryFilter')?.value||'all';return allChannels.filter(c=>(filter==='all'||(filter==='mx'&&c.country)||(filter==='spa'&&c.spanish)||(filter==='telemundo'&&c.telemundo))&&(cat==='all'||categoryOf(c)===cat)&&(!q||c.name.toLocaleLowerCase('es').includes(q)||c.group.toLocaleLowerCase('es').includes(q)));}
 
@@ -1190,19 +1187,12 @@ function playChannel(c,autoStart=false,isFallback=false){
   const fail=(detail=null)=>{if(token!==playbackToken)return;
     const isDistrito=/distrito\s*comedia/i.test(c.name);
     if(isDistrito){
-      distritoTried.add(c.url);
-      const catalogAlternatives=allChannels.filter(x=>/distrito\s*comedia/i.test(x.name)&&!distritoTried.has(x.url));
-      const knownAlternatives=DISTRITO_FALLBACK_URLS
-        .filter(url=>!distritoTried.has(url))
-        .map(url=>({id:'DistritoComedia.mx@SD',name:'Distrito Comedia (1080p)',logo:'',group:'Internacional',countryCode:'MX',countryName:'México',country:true,spanish:true,telemundo:false,url}));
-      const next=[...catalogAlternatives,...knownAlternatives].find(x=>x.url!==c.url);
-      if(next){
-        console.warn('[Pocoyito TV] Fuente de Distrito Comedia falló; probando alternativa:',c.url,'->',next.url,detail||'');
-        message.textContent='Esta fuente de Distrito Comedia no respondió. Probando otra señal…';
-        setStatus('PROBANDO OTRA FUENTE');
-        setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},300);
-        return;
-      }
+      console.error('[Pocoyito TV] La única fuente confirmada de Distrito Comedia falló:',c.url,detail||'');
+      message.textContent='Para reproducir Distrito Comedia en la web, abre Pocoyito TV para PC y déjalo abierto como relay local. Luego pulsa Reproducir otra vez.';
+      setStatus('RELAY LOCAL REQUERIDO');
+      spinner.style.display='none';
+      overlay.classList.remove('hidden');
+      return;
     }
     const isC5=/canal\s*5/i.test(c.name)||/canal5/i.test(c.id);if(isC5&&!isFallback){const next=allChannels.find(x=>x.country&&/canal\s*5/i.test(x.name)&&!canal5Tried.has(x.url));if(next){message.textContent='Esta fuente no respondió. Probando otra señal de Canal 5…';setStatus('PROBANDO ALTERNATIVA');setTimeout(()=>{if(token===playbackToken)playChannel(next,false,true);},350);return;}}spinner.style.display='none';const code=detail?.response?.code||detail?.networkDetails?.status||video.error?.code||0;const kind=String(detail?.details||detail?.type||'').toLowerCase();let reason='La señal no respondió. Puede estar fuera de línea o no permitir reproducción web.';if(code===403||kind.includes('403')||kind.includes('keyloaderror'))reason='El servidor rechazó el acceso (HTTP 403). La señal puede tener restricción regional o requerir autorización.';else if(code===404||kind.includes('404'))reason='El servidor no encontró la transmisión (HTTP 404). El enlace puede estar vencido o fuera de línea.';else if(code===401)reason='El servidor requiere autorización (HTTP 401).';else if(kind.includes('manifest')||kind.includes('level')||kind.includes('frag'))reason='No se pudo cargar la lista o los segmentos de video. La fuente puede estar caída, bloqueada por CORS o ser incompatible.';else if(video.error?.code===4)reason='El formato o la dirección de esta transmisión no es compatible con el reproductor.';else if(video.error?.code===3)reason='El navegador no pudo decodificar el video.';else if(video.error?.code===2)reason='Se perdió la conexión con el servidor de video.';if(isC5&&isFallback)reason='Las fuentes públicas de Canal 5 que aparecen en el catálogo no entregaron una señal reproducible.';message.textContent=reason+' Puedes reintentar o elegir otro canal.';overlay.classList.remove('hidden');setStatus(code?'ERROR '+code:'SIN SEÑAL');};
 

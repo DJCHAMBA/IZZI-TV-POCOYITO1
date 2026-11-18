@@ -1591,11 +1591,11 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   const k=e.key.toLowerCase();
   const inTV=$('tvPage')?.classList.contains('active');
   const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
-  if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();if(document.fullscreenElement)document.exitFullscreen().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();return;}
-  if(k==='g'){e.preventDefault();if(document.fullscreenElement)document.exitFullscreen().then(()=>openGuide());else openGuide();return;}
-  if(k==='f'){e.preventDefault();openGuide(true);return;}
-  if(k==='m'){e.preventDefault();$('mute')?.click();return;}
-  if(k==='i'){e.preventDefault();showChannelOsd?.();return;}
+  if((e.ctrlKey||e.metaKey)&&k==='k'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGlobalChannelSearch());else openGlobalChannelSearch();return;}
+  if(k==='g'){e.preventDefault();if(fs)document.exitFullscreen?.().then(()=>openGuide());else openGuide();return;}
+  if(k==='f'){e.preventDefault();if(fs)document.exitFullscreen?.();else (player||$('video'))?.requestFullscreen?.().catch?.(()=>{});return;}
+  if(k==='m'){e.preventDefault();openWorldHub();return;}
+  if(k==='i'){e.preventDefault();if(inTV)showChannelOsd?.();else document.getElementById('infoTitle')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
   if(k==='?'||k==='/'){e.preventDefault();showShortcuts();return;}
   if(inTV&&['arrowup','arrowdown','arrowleft','arrowright'].includes(k)){
    e.preventDefault();e.stopPropagation();
@@ -1611,12 +1611,12 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   }
   if(inTV&&k==='pageup'){e.preventDefault();tuneByIndex(currentIndex()+1);return;}
   if(inTV&&k==='pagedown'){e.preventDefault();tuneByIndex(currentIndex()-1);return;}
-  if(k==='escape'&&fs){e.preventDefault();document.exitFullscreen?.();}
+  if(k==='escape'){const guide=$('guideModal'),search=$('channelSearchModal'),help=$('pocoyitoShortcuts'),world=$('pocoyitoWorldHub');if(help){help.remove();e.preventDefault();return;}if(search?.classList.contains('open')){closeGlobalChannelSearch();e.preventDefault();return;}if(guide?.classList.contains('open')){closeGuide();e.preventDefault();return;}if(world&&!world.hidden&&world.style.display!=='none'){world.hidden=true;world.style.display='none';e.preventDefault();return;}if(fs){e.preventDefault();document.exitFullscreen?.();return;}if(inTV){e.preventDefault();$('backHome')?.click();}}
  },true);
  function showShortcuts(){
   let el=$('pocoyitoShortcuts');
   if(!el){el=document.createElement('div');el.id='pocoyitoShortcuts';el.style.cssText='position:fixed;inset:0;z-index:100;background:#030611eF;display:grid;place-items:center;padding:18px;color:#fff';
-   el.innerHTML='<div style="width:min(520px,100%);background:#171d38;border:1px solid #8171e8;border-radius:16px;padding:22px"><h2 style="margin-top:0">⌨️ Atajos de Pocoyito TV</h2><p>↑ / → Canal siguiente</p><p>↓ / ← Canal anterior</p><p>G · Abrir guía</p><p>F · Favoritos</p><p>Ctrl + K · Buscar canal</p><p>M · Silenciar / activar audio</p><p>I · Información del canal</p><p>Esc · Salir de pantalla completa o cerrar</p><button id="closePocoyitoShortcuts" style="padding:10px 16px;background:#6049c8;color:#fff;border:0;border-radius:8px">Cerrar</button></div>';
+   el.innerHTML='<div style="width:min(520px,100%);background:#171d38;border:1px solid #8171e8;border-radius:16px;padding:22px"><h2 style="margin-top:0">⌨️ Atajos de Pocoyito TV</h2><p>G · Guía</p><p>F · Pantalla completa</p><p>Ctrl + K · Búsqueda</p><p>M · Mundo</p><p>I · Información</p><p>? · Ayuda</p><p>Esc · Salir / cerrar</p><button id="closePocoyitoShortcuts" style="padding:10px 16px;background:#6049c8;color:#fff;border:0;border-radius:8px">Cerrar</button></div>';
    document.body.appendChild(el);el.addEventListener('click',e=>{if(e.target===el||e.target.id==='closePocoyitoShortcuts')el.remove();});
   }else el.remove();
  }

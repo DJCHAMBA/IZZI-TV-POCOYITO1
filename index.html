@@ -1076,7 +1076,7 @@ function playbackUrl(url){
     if(u.hostname===DISTRITO_STREAM_HOST&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/')){
       return 'http://127.0.0.1:18787/transcode/index.m3u8';
     }
-    return u.protocol==='http:'?IPTV_PROXY_BASE+'/proxy?url='+encodeURIComponent(u.href):url;
+    return url;
   }catch(e){return url;}
 }
 const COUNTRY_META_URL='https://iptv-org.github.io/api/channels.json',COUNTRY_LIST_URL='https://iptv-org.github.io/api/countries.json';let channelMetadata=new Map(),countryDirectoryMetadata=new Map();

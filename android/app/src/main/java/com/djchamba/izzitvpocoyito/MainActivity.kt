@@ -118,14 +118,15 @@ class MainActivity : Activity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        // No secuestrar las teclas cuando el usuario está escribiendo: WebView/IME
-        // necesita recibirlas para abrir y manejar el teclado en pantalla.
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            var textFieldFocused = false
-            webView.evaluateJavascript(
-                "(function(){var e=document.activeElement;return !!e && (e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable);})()"
-            ) { value -> textFieldFocused = value == "true" }
-            if (textFieldFocused) return super.dispatchKeyEvent(event)
+        // DPAD y Enter se dejan pasar al WebView de forma nativa. Así los campos
+        // de texto pueden recibir foco y mostrar el teclado virtual del televisor.
+        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode in setOf(
+                KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER
+            )) {
+            return super.dispatchKeyEvent(event)
         }
         if (event.action == KeyEvent.ACTION_DOWN) {
             val jsKey = when (event.keyCode) {

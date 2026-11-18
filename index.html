@@ -1609,12 +1609,11 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
     const active=document.activeElement;
     const editing=active&&(['INPUT','TEXTAREA','SELECT'].includes(active.tagName)||active.isContentEditable);
     if(editing&&key!=='Enter')return;
-    // En la pantalla de TV, las flechas pertenecen al reproductor (canal/volumen),
-    // no al navegador de foco de Android TV. Deja que el manejador del reproductor las procese.
+    // En la pantalla de TV, las cuatro flechas SOLO mueven el foco
+    // entre botones y controles. Nunca cambian de canal ni ajustan el volumen.
     const tvPage=document.getElementById('tvPage');
     if(tvPage?.classList.contains('active')&&['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)){
-      const focusedUi=active&&active!==document.body&&active!==document.documentElement&&active.id!=='video'&&!active.closest('.screen');
-      if(!focusedUi)return; // El reproductor maneja el zapping y el volumen cuando no hay un control enfocado.
+      // La navegación direccional continúa abajo, incluso con el video a pantalla completa.
     }
     const list=items();
     if(!list.length)return;

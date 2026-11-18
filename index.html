@@ -1091,6 +1091,17 @@ let channelMetadataByName=new Map();
 function applyCountryToChannel(c){const byId=channelMetadata.get(c.id);let meta=byId;if(!meta&&c.name)meta=channelMetadataByName.get(normalizeChannelName(c.name));let code=meta?.country||c.countryCode||'';if(!code){const suffix=String(c.id||'').match(/\.([a-z]{2})$/i);if(suffix)code=suffix[1].toUpperCase();}const info=countryMeta(code);c.countryCode=info.countryCode;c.countryName=info.countryName;c.country=info.countryCode==='MX';if(meta&&Array.isArray(meta.categories))c.categories=meta.categories;return c;}
 function parseM3U(text,source){const lines=text.split(/\r?\n/),out=[];for(let i=0;i<lines.length;i++){const line=lines[i].trim();if(!line.startsWith('#EXTINF'))continue;const comma=line.indexOf(',');const name=(comma>=0?line.slice(comma+1):attr(line,'tvg-name')).trim()||attr(line,'tvg-name')||'Canal sin nombre';let url='';for(let j=i+1;j<lines.length;j++){const candidate=lines[j].trim();if(!candidate)continue;if(candidate.startsWith('#'))continue;url=candidate;break;}if(!url)continue;const id=attr(line,'tvg-id'),group=attr(line,'group-title')||'General',language=attr(line,'tvg-language');const meta=countryMeta(attr(line,'tvg-country')||attr(line,'country'));const telemundo=/telemundo/i.test(name+' '+id+' '+group);out.push({id,name,logo:attr(line,'tvg-logo'),group,...meta,country:meta.countryCode==='MX',spanish:/spa|spanish|español/i.test(language),telemundo,url,sourceKey:source||'iptv-org'});}return out}
 function mergeChannels(channels){
+ // Azteca 7: conservar la primera entrada de IPTV-org (fuente original que funcionaba)
+ // y descartar variantes duplicadas agregadas por las listas secundarias.
+ const aztecaSeen=new Set();
+ channels=channels.filter(c=>{
+  const name=normalizeChannelName(c.name||'');
+  if(name==='azteca 7'||name==='azteca7'){
+   if(aztecaSeen.has('azteca7')) return false;
+   aztecaSeen.add('azteca7');
+  }
+  return true;
+ });
  const isDistrito=c=>String(c.name||'').toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').includes('distrito comedia');
  const others=channels.filter(c=>!isDistrito(c));
  const existing=channels.find(c=>isDistrito(c)&&c.url&&c.url.includes('15.204.142.109:22880/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/'));

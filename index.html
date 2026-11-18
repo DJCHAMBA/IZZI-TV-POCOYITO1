@@ -1500,7 +1500,7 @@ function renderLigaStandings(data){const box=document.getElementById('ligaStandi
 document.querySelectorAll('[data-liga-filter]').forEach(b=>b.addEventListener('click',()=>{ligaFilter=b.dataset.ligaFilter;document.querySelectorAll('[data-liga-filter]').forEach(x=>x.classList.toggle('active',x===b));renderLiga();}));
 
 if(/Android TV|AFT|BRAVIA|SHIELD|GoogleTV/i.test(navigator.userAgent)){document.body.classList.add('android-tv');}
-if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));}
 </script><script>
 /* Navegación real con control remoto Android TV */
 (function(){

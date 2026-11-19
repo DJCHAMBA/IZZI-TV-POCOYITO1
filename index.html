@@ -1101,7 +1101,7 @@ function playbackUrl(url){
       return relayBase()+'/transcode/index.m3u8';
     }
     // Canal 5 México: usar el mismo relay local HLS que Azteca 7 en Electron.
-    if(u.hostname==='45.5.118.152'&&u.port==='8000'&&u.pathname.startsWith('/play/a03/')){
+    if(u.hostname==='45.5.118.152'&&u.port==='8000'&&u.pathname.startsWith('/play/a03i/')){
       return relayBase()+'/hls?u='+encodeURIComponent(u.href);
     }
     // Azteca 7: relay local para evitar Mixed Content y conservar la URL original de IPTV-org.

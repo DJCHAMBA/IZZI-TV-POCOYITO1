@@ -29,6 +29,7 @@
 <button id="startPlay">▶ Iniciar reproducción</button>
 <button id="retryPlay">↻ Reiniciar HLS</button>
 <button id="nativePlay">Probar HLS nativo</button>
+<button id="codecCheck">Comprobar códecs</button>
 <button id="stopPlay">■ Detener</button>
 </div>
 <video id="video" controls playsinline preload="none"></video>
@@ -176,6 +177,18 @@ async function startHls(mode='hls'){
 $('startPlay').onclick=()=>startHls('hls');
 $('retryPlay').onclick=()=>startHls('hls');
 $('nativePlay').onclick=()=>startHls('native');
+$('codecCheck').onclick=()=>{
+ const ms=window.MediaSource,video=document.createElement('video');
+ const checks=[
+  ['H.264 MP4','video/mp4; codecs="avc1.42E01E"'],
+  ['HEVC H.265 (hvc1)','video/mp4; codecs="hvc1.1.6.L93.B0"'],
+  ['HEVC H.265 (hev1)','video/mp4; codecs="hev1.1.6.L93.B0"'],
+  ['AAC audio','audio/mp4; codecs="mp4a.40.2"']
+ ];
+ const rows=checks.map(([n,m])=>n+': '+(ms?.isTypeSupported?ms.isTypeSupported(m):'MediaSource no disponible'));
+ rows.push('HLS nativo: '+(video.canPlayType('application/vnd.apple.mpegurl')||'no anunciado'));
+ playerState(rows.join('\n')+'\nSi HEVC aparece false y H.264 true, este navegador necesita que el video se convierta a H.264. El audio puede seguir funcionando aunque la imagen no.', 'ok');
+};
 $('stopPlay').onclick=stopPlayer;
 $('play').onclick=()=>startHls('hls');
 </script></body></html>

@@ -19,6 +19,9 @@ function isAllowedStream(url) {
 const LOCAL_PORT = 18787;
 let transcodeProcess = null;
 let transcodeDir = null;
+let canal5TranscodeProcess = null;
+let canal5TranscodeDir = null;
+let canal5TranscodeSource = null;
 let proxyServer;
 
 function writeProxyLog(message) {
@@ -72,6 +75,80 @@ function startDistritoTranscode(sourceUrl) {
   });
 }
 
+
+function startCanal5Transcode(sourceUrl) {
+  if (canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null && canal5TranscodeSource === sourceUrl) return;
+  if (canal5TranscodeProcess) { try { canal5TranscodeProcess.kill(); } catch {} canal5TranscodeProcess = null; }
+  if (canal5TranscodeDir) { try { fs.rmSync(canal5TranscodeDir, { recursive: true, force: true }); } catch {} }
+  canal5TranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-canal5-'));
+  canal5TranscodeSource = sourceUrl;
+  const ffmpeg = findFfmpeg();
+  const output = path.join(canal5TranscodeDir, 'index.m3u8');
+  const headers = 'Accept: */*\\r\\nAccept-Language: es_MX\\r\\n';
+  const args = [
+    '-hide_banner', '-loglevel', 'warning', '-nostdin', '-y',
+    '-user_agent', 'VLC/3.0.23 LibVLC/3.0.23',
+    '-headers', headers,
+    '-i', sourceUrl,
+    '-map', '0:v:0', '-map', '0:a:0?',
+    '-vf', 'scale=min(1280\\,iw):-2',
+    '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency',
+    '-crf', '23', '-pix_fmt', 'yuv420p', '-profile:v', 'main',
+    '-c:a', 'aac', '-b:a', '128k', '-ac', '2', '-ar', '48000',
+    '-f', 'hls', '-hls_time', '4', '-hls_list_size', '8',
+    '-hls_flags', 'delete_segments+append_list+independent_segments+omit_endlist',
+    '-hls_segment_filename', path.join(canal5TranscodeDir, 'seg_%06d.ts'),
+    output
+  ];
+  writeProxyLog('Iniciando transcodificación Canal 5 HEVC -> H.264 con FFmpeg: ' + ffmpeg);
+  canal5TranscodeProcess = spawn(ffmpeg, args, { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
+  canal5TranscodeProcess.stderr.on('data', chunk => writeProxyLog('FFmpeg Canal 5: ' + chunk.toString().trim()));
+  canal5TranscodeProcess.on('error', error => writeProxyLog('FFmpeg Canal 5 no pudo arrancar: ' + (error.stack || error.message)));
+  canal5TranscodeProcess.on('exit', (code, signal) => writeProxyLog('FFmpeg Canal 5 terminó. code=' + code + ' signal=' + signal));
+}
+
+async function handleCanal5TranscodeRequest(route, searchParams, res) {
+  const isIndex = route === '/canal5/index.m3u8';
+  const segmentName = route.startsWith('/canal5/') ? route.slice('/canal5/'.length) : '';
+  const isSegment = /^seg_\\d{6}\\.ts$/.test(segmentName);
+  if (!isIndex && !isSegment) { res.writeHead(404); return res.end('Not found'); }
+
+  if (isIndex) {
+    let source;
+    try { source = new URL(searchParams.get('u') || ''); } catch {
+      res.writeHead(400); return res.end('Invalid Canal 5 source URL');
+    }
+    if (!isAllowedStream(source) || source.hostname !== '45.5.118.152' || !source.pathname.startsWith('/play/a03i/')) {
+      res.writeHead(403); return res.end('Canal 5 source not allowed');
+    }
+    if (!canal5TranscodeProcess || canal5TranscodeProcess.exitCode !== null || canal5TranscodeSource !== source.href) {
+      startCanal5Transcode(source.href);
+    }
+  } else if (!canal5TranscodeDir || !canal5TranscodeProcess) {
+    res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '2', 'Cache-Control': 'no-store' });
+    return res.end('Canal 5 todavía no inició la conversión. Vuelve a solicitar la lista.');
+  }
+
+  const name = isIndex ? 'index.m3u8' : segmentName;
+  const file = path.join(canal5TranscodeDir, name);
+  if (isIndex) {
+    const deadline = Date.now() + 25000;
+    while (Date.now() < deadline && !fs.existsSync(file) && canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null) {
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+  }
+  if (!fs.existsSync(file)) {
+    res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '2', 'Cache-Control': 'no-store' });
+    return res.end('FFmpeg está preparando Canal 5 en H.264. Reintenta en unos segundos.');
+  }
+  res.writeHead(200, {
+    'Content-Type': isIndex ? 'application/vnd.apple.mpegurl; charset=utf-8' : 'video/MP2T',
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    'Access-Control-Allow-Origin': '*'
+  });
+  fs.createReadStream(file).pipe(res);
+}
+
 async function handleTranscodeRequest(route, res) {
   const isIndex = route === '/transcode/index.m3u8';
   const segmentName = route.startsWith('/transcode/') ? route.slice(11) : '';
@@ -119,6 +196,9 @@ function startLocalProxy() {
     if (target.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay', port: LOCAL_PORT }));
+    }
+    if (target.pathname.startsWith('/canal5/')) {
+      return handleCanal5TranscodeRequest(target.pathname, target.searchParams, res);
     }
     if (target.pathname.startsWith('/transcode/')) {
       return handleTranscodeRequest(target.pathname, res);
@@ -223,6 +303,8 @@ function startLocalProxy() {
 }
 
 function stopLocalProxy() {
+  if (canal5TranscodeProcess) { try { canal5TranscodeProcess.kill(); } catch {} canal5TranscodeProcess = null; }
+  if (canal5TranscodeDir) { try { fs.rmSync(canal5TranscodeDir, { recursive: true, force: true }); } catch {} canal5TranscodeDir = null; }
   if (transcodeProcess) { try { transcodeProcess.kill(); } catch {} transcodeProcess = null; }
   if (transcodeDir) { try { fs.rmSync(transcodeDir, { recursive: true, force: true }); } catch {} transcodeDir = null; }
 

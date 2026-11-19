@@ -21,6 +21,7 @@
 <label class="muted" for="url">URL HLS de origen (se rellena al encontrarlo; también puedes pegar una URL .m3u8)</label>
 <input id="url" placeholder="http://45.5.118.152:8000/play/.../index.m3u8">
 <button id="play">Probar mediante relay local</button>
+<button id="probe">Analizar manifiesto y segmento TS</button><div id="probeResult" class="status">La prueba avanzada detectará si el relay entrega MPEG-TS válido o datos comprimidos/incorrectos.</div>
 </div>
 <div class="panel">
 <h2>3. Reproducción y diagnóstico</h2>
@@ -57,6 +58,26 @@ $('find').onclick=async()=>{
   $('sourceResult').textContent=found.map(x=>x.name+'\n'+x.url).join('\n\n');
   $('sourceResult').className='status ok';
  }catch(e){$('sourceResult').textContent='No se pudo encontrar automáticamente: '+e.message+'\nPuedes pegar la URL HLS manualmente en el campo.';$('sourceResult').className='status bad';}
+};
+$('probe').onclick=async()=>{
+ const raw=$('url').value.trim();if(!raw){$('probeResult').textContent='Primero busca Canal 5 o pega la URL HLS.';return;}
+ let u;try{u=new URL(raw);if(u.hostname!=='45.5.118.152'||u.port!=='8000'||!u.pathname.startsWith('/play/'))throw new Error('URL no corresponde al servidor de Canal 5.');}catch(e){$('probeResult').textContent=e.message;return;}
+ const proxy=base+'/hls?u='+encodeURIComponent(u.href);
+ $('probeResult').textContent='1) Descargando manifiesto...';
+ try{
+  const mr=await fetch(proxy,{cache:'no-store'});const mt=await mr.text();
+  if(!mr.ok)throw new Error('Manifiesto HTTP '+mr.status+': '+mt.slice(0,180));
+  const line=mt.split(/\\r?\\n/).map(x=>x.trim()).find(x=>x&&!x.startsWith('#'));
+  if(!line)throw new Error('Manifiesto sin URI de segmento. Respuesta: '+mt.slice(0,400));
+  const seg=new URL(line,proxy).href;
+  $('probeResult').textContent='2) Manifiesto HTTP '+mr.status+' OK.\nSegmento: '+seg+'\n3) Descargando segmento...';
+  const sr=await fetch(seg,{cache:'no-store'});const buf=await sr.arrayBuffer();const b=new Uint8Array(buf);
+  const hex=Array.from(b.slice(0,16)).map(x=>x.toString(16).padStart(2,'0')).join(' ');
+  const gzip=b[0]===0x1f&&b[1]===0x8b;
+  const ts=b.length>376&&b[0]===0x47&&b[188]===0x47&&b[376]===0x47;
+  $('probeResult').textContent='Manifiesto: HTTP '+mr.status+' ('+mt.length+' caracteres)\nSegmento: HTTP '+sr.status+'\nContent-Type: '+(sr.headers.get('content-type')||'(no indicado)')+'\nBytes: '+b.length+'\nPrimeros bytes: '+hex+'\nFirma gzip: '+gzip+'\nSync MPEG-TS en bytes 0/188/376: '+ts+'\n'+(ts?'Los bytes iniciales parecen MPEG-TS válido. El error puede estar en el contenido/códec del segmento.':gzip?'El relay está entregando datos gzip sin descomprimir; esta es una causa probable de fragParsingError.':'El segmento no empieza como MPEG-TS normal; revisaremos la respuesta upstream y el proxy.') ;
+  $('probeResult').className='status '+(ts?'ok':'bad');
+ }catch(e){$('probeResult').textContent='Falló diagnóstico: '+e.message;$('probeResult').className='status bad';}
 };
 $('play').onclick=async()=>{
  const raw=$('url').value.trim();if(!raw){log('Primero busca Canal 5 o pega su URL HLS.','bad');return;}

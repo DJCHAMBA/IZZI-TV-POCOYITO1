@@ -24,6 +24,10 @@ let canal5TranscodeDir = null;
 let canal5TranscodeSource = null;
 let canal5TranscodeError = '';
 let canal5TranscodeLog = [];
+let backupTranscodeProcess = null;
+let backupTranscodeDir = null;
+let backupTranscodeSource = null;
+let backupTranscodeLog = [];
 let proxyServer;
 
 function writeProxyLog(message) {
@@ -108,6 +112,49 @@ function startCanal5Transcode(sourceUrl) {
   canal5TranscodeProcess.stderr.on('data', chunk => { const line = chunk.toString().trim(); if (line) { canal5TranscodeLog.push(line); canal5TranscodeLog = canal5TranscodeLog.slice(-20); writeProxyLog('FFmpeg Canal 5: ' + line); } });
   canal5TranscodeProcess.on('error', error => { canal5TranscodeError = error.message; writeProxyLog('FFmpeg Canal 5 no pudo arrancar: ' + (error.stack || error.message)); });
   canal5TranscodeProcess.on('exit', (code, signal) => { canal5TranscodeError = code === 0 ? canal5TranscodeError : (canal5TranscodeError || 'FFmpeg terminó con código ' + code + ' (' + signal + ')'); writeProxyLog('FFmpeg Canal 5 terminó. code=' + code + ' signal=' + signal); });
+}
+
+function isPublicBackupUrl(source) {
+  if (!['http:', 'https:'].includes(source.protocol) || source.username || source.password) return false;
+  const host = source.hostname.toLowerCase();
+  if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
+  if (/^(127\\.|10\\.|192\\.168\\.|169\\.254\\.)/.test(host) || /^172\\.(1[6-9]|2[0-9]|3[01])\\./.test(host) || host === '0.0.0.0') return false;
+  return true;
+}
+function startBackupTranscode(sourceUrl) {
+  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
+  if (backupTranscodeDir) { try { fs.rmSync(backupTranscodeDir, { recursive: true, force: true }); } catch {} }
+  backupTranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-backup-'));
+  backupTranscodeSource = sourceUrl; backupTranscodeLog = [];
+  const output = path.join(backupTranscodeDir, 'index.m3u8');
+  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\\r\\n');
+  const args = ['-hide_banner','-loglevel','warning','-nostdin','-y','-user_agent','VLC/3.0.23 LibVLC/3.0.23','-headers',headers,'-i',sourceUrl,
+    '-map','0:v:0?','-map','0:a:0?','-vf','scale=-2:720','-c:v','libx264','-preset','veryfast','-tune','zerolatency','-crf','24','-pix_fmt','yuv420p','-profile:v','main',
+    '-c:a','aac','-b:a','128k','-ac','2','-ar','48000','-f','hls','-hls_time','4','-hls_list_size','8',
+    '-hls_flags','delete_segments+append_list+independent_segments+omit_endlist','-hls_segment_filename',path.join(backupTranscodeDir,'seg_%06d.ts'),output];
+  const ffmpeg=findFfmpeg();
+  writeProxyLog('Iniciando respaldo Dearbulut con FFmpeg H.264: '+ffmpeg+' · '+sourceUrl);
+  backupTranscodeProcess=spawn(ffmpeg,args,{windowsHide:true,stdio:['ignore','ignore','pipe']});
+  backupTranscodeProcess.stderr.on('data',chunk=>{const line=chunk.toString().trim();if(line){backupTranscodeLog.push(line);backupTranscodeLog=backupTranscodeLog.slice(-20);writeProxyLog('FFmpeg respaldo: '+line);}});
+  backupTranscodeProcess.on('error',error=>{backupTranscodeLog.push('ERROR: '+error.message);writeProxyLog('FFmpeg respaldo no arrancó: '+error.message);});
+  backupTranscodeProcess.on('exit',(code,signal)=>writeProxyLog('FFmpeg respaldo terminó. code='+code+' signal='+signal));
+}
+async function handleBackupTranscodeRequest(route, searchParams, res) {
+  const isIndex=route==='/backup/index.m3u8';
+  const segment=route.startsWith('/backup/')?route.slice('/backup/'.length):'';
+  const digits=segment.startsWith('seg_')&&segment.endsWith('.ts')?segment.slice(4,-3):'';
+  const isSegment=digits.length===6&&[...digits].every(ch=>ch>='0'&&ch<='9');
+  if(!isIndex&&!isSegment){res.writeHead(404);return res.end('Not found');}
+  if(isIndex){
+    let source;try{source=new URL(searchParams.get('u')||'');}catch{res.writeHead(400);return res.end('Invalid backup URL');}
+    if(!isPublicBackupUrl(source)){res.writeHead(403);return res.end('Backup URL is not allowed');}
+    if(backupTranscodeSource!==source.href||!backupTranscodeProcess||backupTranscodeProcess.exitCode!==null)startBackupTranscode(source.href);
+  }else if(!backupTranscodeDir||!backupTranscodeProcess){res.writeHead(503,{'Retry-After':'2'});return res.end('Backup stream is starting');}
+  const name=isIndex?'index.m3u8':segment,file=path.join(backupTranscodeDir,name);
+  if(isIndex){const deadline=Date.now()+30000;while(Date.now()<deadline&&!fs.existsSync(file)&&backupTranscodeProcess&&backupTranscodeProcess.exitCode===null)await new Promise(resolve=>setTimeout(resolve,250));}
+  if(!fs.existsSync(file)){res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Retry-After':'2','Cache-Control':'no-store'});return res.end('FFmpeg is preparing the backup stream. Retry shortly.');}
+  res.writeHead(200,{'Content-Type':isIndex?'application/vnd.apple.mpegurl; charset=utf-8':'video/MP2T','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});
+  fs.createReadStream(file).pipe(res);
 }
 
 async function handleCanal5TranscodeRequest(route, searchParams, res) {
@@ -204,6 +251,9 @@ function startLocalProxy() {
     if (target.pathname === '/canal5/status') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ffmpeg: findFfmpeg(), running: !!canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null, exitCode: canal5TranscodeProcess?.exitCode ?? null, error: canal5TranscodeError, log: canal5TranscodeLog, outputReady: !!canal5TranscodeDir && fs.existsSync(path.join(canal5TranscodeDir, 'index.m3u8')) }));
+    }
+    if (target.pathname.startsWith('/backup/')) {
+      return handleBackupTranscodeRequest(target.pathname, target.searchParams, res);
     }
     if (target.pathname.startsWith('/canal5/')) {
       return handleCanal5TranscodeRequest(target.pathname, target.searchParams, res);
@@ -311,6 +361,8 @@ function startLocalProxy() {
 }
 
 function stopLocalProxy() {
+  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
+  if (backupTranscodeDir) { try { fs.rmSync(backupTranscodeDir, { recursive: true, force: true }); } catch {} backupTranscodeDir = null; }
   if (canal5TranscodeProcess) { try { canal5TranscodeProcess.kill(); } catch {} canal5TranscodeProcess = null; }
   if (canal5TranscodeDir) { try { fs.rmSync(canal5TranscodeDir, { recursive: true, force: true }); } catch {} canal5TranscodeDir = null; }
   if (transcodeProcess) { try { transcodeProcess.kill(); } catch {} transcodeProcess = null; }

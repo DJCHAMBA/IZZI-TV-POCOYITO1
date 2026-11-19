@@ -21,7 +21,7 @@
 <label class="muted" for="url">URL HLS de origen (se rellena al encontrarlo; también puedes pegar una URL .m3u8)</label>
 <input id="url" placeholder="http://45.5.118.152:8000/play/.../index.m3u8">
 <button id="play">Probar mediante relay local</button>
-<button id="probe">Analizar manifiesto y segmento TS</button><div id="probeResult" class="status">La prueba avanzada detectará si el relay entrega MPEG-TS válido o datos comprimidos/incorrectos.</div>
+<button id="probe">Analizar 5 segmentos TS</button><div id="probeResult" class="status">La prueba avanzada detectará si el relay entrega MPEG-TS válido o datos comprimidos/incorrectos.</div>
 </div>
 <div class="panel">
 <h2>3. Reproducción y diagnóstico</h2>
@@ -61,38 +61,41 @@ $('find').onclick=async()=>{
 };
 $('probe').onclick=async()=>{
  const raw=$('url').value.trim();if(!raw){$('probeResult').textContent='Primero busca Canal 5 o pega la URL HLS.';return;}
- let u;try{u=new URL(raw);if(u.hostname!=='45.5.118.152'||u.port!=='8000'||!u.pathname.startsWith('/play/'))throw new Error('URL no corresponde al servidor de Canal 5.');}catch(e){$('probeResult').textContent=e.message;return;}
- let current=base+'/hls?u='+encodeURIComponent(u.href), history=[];
- $('probeResult').textContent='1) Descargando manifiesto maestro...';
+ let origin;try{origin=new URL(raw);if(origin.hostname!=='45.5.118.152'||origin.port!=='8000'||!origin.pathname.startsWith('/play/'))throw new Error('URL no corresponde al servidor de Canal 5.');}catch(e){$('probeResult').textContent=e.message;return;}
+ let current=base+'/hls?u='+encodeURIComponent(origin.href),history=[],mediaUrl='',segmentUrls=[];
+ $('probeResult').textContent='1) Siguiendo las listas HLS...';
  try{
-  let segmentUrl='',mediaText='';
   for(let depth=0;depth<5;depth++){
-   const response=await fetch(current,{cache:'no-store'});
-   const body=await response.text();
-   history.push('Playlist '+(depth+1)+': HTTP '+response.status+' · '+current);
-   if(!response.ok)throw new Error(history.join('\n')+'\n'+body.slice(0,250));
+   const response=await fetch(current,{cache:'no-store'}),body=await response.text();
+   history.push('Playlist '+(depth+1)+': HTTP '+response.status);
+   if(!response.ok)throw new Error(history.join('\n')+'\n'+body.slice(0,220));
    const lines=body.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-   const streamIndex=lines.findIndex(x=>x.startsWith('#EXT-X-STREAM-INF'));
-   if(streamIndex>=0){
-    const variant=lines.slice(streamIndex+1).find(x=>!x.startsWith('#'));
-    if(!variant)throw new Error('La lista maestra anuncia variantes pero no contiene URL de variante.');
-    current=new URL(variant,current).href;
-    continue;
+   const si=lines.findIndex(x=>x.startsWith('#EXT-X-STREAM-INF'));
+   if(si>=0){
+    const variant=lines.slice(si+1).find(x=>!x.startsWith('#'));
+    if(!variant)throw new Error('La lista maestra no contiene URL de variante.');
+    current=new URL(variant,current).href;continue;
    }
-   mediaText=body;
-   segmentUrl=lines.find(x=>!x.startsWith('#')&&!x.startsWith('data:'));
-   if(!segmentUrl)throw new Error('La lista de medios no contiene segmentos.');
-   segmentUrl=new URL(segmentUrl,current).href;
+   mediaUrl=current;
+   segmentUrls=lines.filter(x=>!x.startsWith('#')&&!x.startsWith('data:')).slice(0,5).map(x=>new URL(x,mediaUrl).href);
    break;
   }
-  if(!segmentUrl)throw new Error('Se superó el límite de 5 niveles de listas HLS; no se encontró un segmento.');
-  $('probeResult').textContent=history.join('\n')+'\nLista de medios recibida.\nSegmento: '+segmentUrl+'\nDescargando segmento...';
-  const sr=await fetch(segmentUrl,{cache:'no-store'});const buf=await sr.arrayBuffer();const b=new Uint8Array(buf);
-  const hex=Array.from(b.slice(0,24)).map(x=>x.toString(16).padStart(2,'0')).join(' ');
-  const gzip=b[0]===0x1f&&b[1]===0x8b;
-  const ts=b.length>376&&b[0]===0x47&&b[188]===0x47&&b[376]===0x47;
-  $('probeResult').textContent=history.join('\n')+'\nSegmento: HTTP '+sr.status+'\nContent-Type: '+(sr.headers.get('content-type')||'(no indicado)')+'\nBytes: '+b.length+'\nPrimeros bytes: '+hex+'\nFirma gzip: '+gzip+'\nSync MPEG-TS en bytes 0/188/376: '+ts+'\n'+(ts?'Los bytes iniciales parecen MPEG-TS válido.':gzip?'El segmento parece venir comprimido con gzip; posible causa de fragParsingError.':'El segmento no empieza como MPEG-TS normal; revisar respuesta upstream/proxy.');
-  $('probeResult').className='status '+(sr.ok&&ts?'ok':'bad');
+  if(!segmentUrls.length)throw new Error('No encontré segmentos en la lista de medios.');
+  const reports=[];
+  for(let i=0;i<segmentUrls.length;i++){
+   const response=await fetch(segmentUrls[i],{headers:{Range:'bytes=0-1127'},cache:'no-store'});
+   const buf=await response.arrayBuffer(),b=new Uint8Array(buf);
+   const pids=[];
+   for(let off=0;off+3<b.length&&off<1128;off+=188){
+    if(b[off]!==0x47){pids.push('sync roto en '+off);break;}
+    const pid=((b[off+1]&0x1f)<<8)|b[off+2];
+    pids.push(pid===0x1fff?'NULL':'0x'+pid.toString(16).padStart(4,'0'));
+   }
+   const allNull=pids.length>0&&pids.every(x=>x==='NULL');
+   reports.push('SEGMENTO '+(i+1)+': HTTP '+response.status+' · '+b.length+' bytes · '+(response.headers.get('content-range')||'sin Content-Range')+'\nPIDs: '+pids.join(', ')+'\nPrimeros bytes: '+Array.from(b.slice(0,12)).map(x=>x.toString(16).padStart(2,'0')).join(' ')+'\n'+(allNull?'⚠ Solo paquetes nulos en la muestra.':pids.some(x=>x.startsWith('0x'))?'✓ Hay paquetes TS con PID de contenido.':'⚠ No se detectó sincronía TS.'));
+  }
+  $('probeResult').textContent=history.join('\n')+'\nVariante: '+mediaUrl+'\nSe revisaron '+reports.length+' segmentos con Range 0-1127 (hasta 6 paquetes por segmento).\n\n'+reports.join('\n\n')+'\n\nSi todos salen NULL o 188 bytes, el origen está enviando relleno. Si aparecen PIDs distintos de NULL, el flujo sí contiene paquetes de contenido y seguiremos con el parser/códec.';
+  $('probeResult').className='status '+(reports.some(x=>x.includes('✓ Hay paquetes'))?'ok':'bad');
  }catch(e){$('probeResult').textContent='Falló diagnóstico:\n'+e.message;$('probeResult').className='status bad';}
 };
 $('play').onclick=async()=>{

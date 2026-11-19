@@ -1100,9 +1100,9 @@ function playbackUrl(url){
     if(u.hostname===DISTRITO_STREAM_HOST&&u.port==='22880'&&u.pathname.startsWith('/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/')){
       return relayBase()+'/transcode/index.m3u8';
     }
-    // Canal 5 México: usar el relay local de la PC, igual que Azteca 7.
-    if(u.hostname==='45.5.118.152'&&u.port==='8000'&&u.pathname.startsWith('/play/')){
-      return 'http://127.0.0.1:18787/hls?u='+encodeURIComponent(u.href);
+    // Canal 5 México: convertir HEVC a H.264 localmente con FFmpeg para que Chrome muestre video.
+    if(u.hostname==='45.5.118.152'&&u.port==='8000'&&u.pathname.startsWith('/play/a03i/')){
+      return relayBase()+'/canal5/index.m3u8?u='+encodeURIComponent(u.href);
     }
     // Azteca 7: relay local para evitar Mixed Content y conservar la URL original de IPTV-org.
     if(u.hostname==='187.245.231.226'&&u.port==='8000'&&u.pathname.startsWith('/play/a0uz/')){

@@ -86,7 +86,7 @@ function startCanal5Transcode(sourceUrl) {
   canal5TranscodeSource = sourceUrl;
   const ffmpeg = findFfmpeg();
   const output = path.join(canal5TranscodeDir, 'index.m3u8');
-  const headers = 'Accept: */*\\r\\nAccept-Language: es_MX\\r\\n';
+  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\r\n');
   const args = [
     '-hide_banner', '-loglevel', 'warning', '-nostdin', '-y',
     '-user_agent', 'VLC/3.0.23 LibVLC/3.0.23',

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pocoyito TV · Laboratorio Canal 5</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20"></script>
+<style>
+:root{color-scheme:dark;font-family:Arial,sans-serif;background:#080b16;color:#f7f9ff}*{box-sizing:border-box}body{margin:0;padding:24px;max-width:1050px;margin:auto}header{display:flex;align-items:center;gap:14px;margin-bottom:22px}.logo{width:48px;height:48px;border-radius:13px;background:#5534db;display:grid;place-items:center;font-weight:900;font-size:23px}h1{font-size:22px;margin:0}p{color:#aab5d0}.panel{background:#111a30;border:1px solid #293858;border-radius:15px;padding:18px;margin:14px 0}button{border:0;border-radius:9px;padding:11px 15px;background:#2458dc;color:white;font-weight:bold;cursor:pointer;margin:5px 5px 5px 0}button:disabled{opacity:.5}input{width:100%;background:#080f20;color:white;border:1px solid #405174;border-radius:8px;padding:12px;margin:8px 0}video{width:100%;max-height:55vh;background:#000;border-radius:12px;margin-top:10px}.status{padding:10px;border-radius:8px;background:#0a1224;white-space:pre-wrap;overflow-wrap:anywhere}.ok{color:#6fe0a0}.bad{color:#ff8585}.muted{font-size:13px;color:#9aa8c5}code{overflow-wrap:anywhere}
+</style></head>
+<body>
+<header><div class="logo">P</div><div><h1>POCOYITO TV · LABORATORIO</h1><div class="muted">Prueba independiente del relay local · Canal 5 México</div></div></header>
+<div class="panel">
+<h2>1. Conexión con tu PC</h2>
+<p>Abre tu app Pocoyito TV normal para iniciar el servidor local. Esta página no instala ni modifica nada.</p>
+<button id="health">Comprobar relay local</button><div id="healthResult" class="status">Sin comprobar.</div>
+</div>
+<div class="panel">
+<h2>2. Encontrar Canal 5 automáticamente</h2>
+<p>Busca el canal en la lista pública IPTV-org y toma su URL de origen.</p>
+<button id="find">Buscar Canal 5 en IPTV-org</button><div id="sourceResult" class="status">Todavía no se ha buscado.</div>
+<label class="muted" for="url">URL HLS de origen (se rellena al encontrarlo; también puedes pegar una URL .m3u8)</label>
+<input id="url" placeholder="http://45.5.118.152:8000/play/.../index.m3u8">
+<button id="play">Probar mediante relay local</button>
+</div>
+<div class="panel">
+<h2>3. Reproducción y diagnóstico</h2>
+<video id="video" controls playsinline></video>
+<div id="log" class="status">Esperando prueba.</div>
+</div>
+<script>
+const base='http://127.0.0.1:18787';
+const $=id=>document.getElementById(id);
+let hls=null,source='';
+function log(s,cls=''){ $('log').className='status '+cls; $('log').textContent=s; }
+$('health').onclick=async()=>{
+ $('healthResult').textContent='Conectando con '+base+' ...';
+ try{const r=await fetch(base+'/health',{cache:'no-store'});const t=await r.text();$('healthResult').textContent='HTTP '+r.status+' · '+t;$('healthResult').className='status '+(r.ok?'ok':'bad');}
+ catch(e){$('healthResult').textContent='No se pudo conectar: '+e.message+'\nAbre Pocoyito TV en esta PC y vuelve a intentar.';$('healthResult').className='status bad';}
+};
+$('find').onclick=async()=>{
+ $('sourceResult').textContent='Descargando lista IPTV-org...';
+ try{
+  const r=await fetch('https://iptv-org.github.io/iptv/index.m3u',{cache:'no-store'});
+  if(!r.ok)throw new Error('IPTV-org respondió HTTP '+r.status);
+  const lines=(await r.text()).split(/\r?\n/);
+  let found=[];
+  for(let i=0;i<lines.length;i++){
+   if(!lines[i].startsWith('#EXTINF'))continue;
+   const name=lines[i].slice(lines[i].lastIndexOf(',')+1).trim();
+   if(/canal\s*5/i.test(name)){
+    let u='';for(let j=i+1;j<lines.length;j++){if(lines[j].trim()&&!lines[j].startsWith('#')){u=lines[j].trim();break;}}
+    if(u)found.push({name,url:u});
+   }
+  }
+  if(!found.length)throw new Error('No encontré Canal 5 en la lista principal de IPTV-org.');
+  source=found[0].url;$('url').value=source;
+  $('sourceResult').textContent=found.map(x=>x.name+'\n'+x.url).join('\n\n');
+  $('sourceResult').className='status ok';
+ }catch(e){$('sourceResult').textContent='No se pudo encontrar automáticamente: '+e.message+'\nPuedes pegar la URL HLS manualmente en el campo.';$('sourceResult').className='status bad';}
+};
+$('play').onclick=async()=>{
+ const raw=$('url').value.trim();if(!raw){log('Primero busca Canal 5 o pega su URL HLS.','bad');return;}
+ let u;try{u=new URL(raw);if(u.hostname!=='45.5.118.152'||u.port!=='8000'||!u.pathname.startsWith('/play/'))throw new Error('La URL no corresponde al servidor/ruta de Canal 5 esperados.');}catch(e){log('URL no válida: '+e.message,'bad');return;}
+ if(hls){hls.destroy();hls=null;}
+ const video=$('video');video.pause();video.removeAttribute('src');video.load();
+ const proxied=base+'/hls?u='+encodeURIComponent(u.href);
+ log('Solicitando relay local...\n'+proxied);
+ try{
+  const check=await fetch(base+'/health',{cache:'no-store'});if(!check.ok)throw new Error('Relay local HTTP '+check.status);
+ }catch(e){log('No hay relay local disponible: '+e.message+'\nAbre Pocoyito TV en esta misma PC.','bad');return;}
+ if(window.Hls&&Hls.isSupported()){
+  hls=new Hls({enableWorker:true,lowLatencyMode:false});
+  hls.on(Hls.Events.MANIFEST_LOADING,(_,d)=>log('Cargando manifiesto:\n'+d.url));
+  hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>log('Manifiesto recibido. Niveles: '+d.levels.length+'. Pulsa play si no inicia automáticamente.','ok'));
+  hls.on(Hls.Events.FRAG_LOADED,(_,d)=>log('Segmento recibido: '+(d.frag?.url||'segmento')+'\nBytes: '+(d.stats?.loaded||0),'ok'));
+  hls.on(Hls.Events.ERROR,(_,d)=>log('HLS ERROR\nTipo: '+d.type+'\nDetalle: '+d.details+'\nFatal: '+d.fatal+'\nURL: '+(d.frag?.url||d.url||''),'bad'));
+  hls.loadSource(proxied);hls.attachMedia(video);
+  video.play().catch(()=>{});
+ }else if(video.canPlayType('application/vnd.apple.mpegurl')){
+  video.src=proxied;video.play().catch(()=>{});
+ }else log('Este navegador no soporta HLS.js ni HLS nativo.','bad');
+};
+</script></body></html>

@@ -118,7 +118,7 @@ function isPublicBackupUrl(source) {
   if (!['http:', 'https:'].includes(source.protocol) || source.username || source.password) return false;
   const host = source.hostname.toLowerCase();
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
-  if (/^(127\\.|10\\.|192\\.168\\.|169\\.254\\.)/.test(host) || /^172\\.(1[6-9]|2[0-9]|3[01])\\./.test(host) || host === '0.0.0.0') return false;
+  if (/^(127\.|10\.|192\.168\.|169\.254\.)/.test(host) || /^172\.(1[6-9]|2[0-9]|3[01])\./.test(host) || host === '0.0.0.0') return false;
   return true;
 }
 function startBackupTranscode(sourceUrl) {
@@ -127,7 +127,7 @@ function startBackupTranscode(sourceUrl) {
   backupTranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-backup-'));
   backupTranscodeSource = sourceUrl; backupTranscodeLog = [];
   const output = path.join(backupTranscodeDir, 'index.m3u8');
-  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\\r\\n');
+  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\r\n');
   const args = ['-hide_banner','-loglevel','warning','-nostdin','-y','-user_agent','VLC/3.0.23 LibVLC/3.0.23','-headers',headers,'-i',sourceUrl,
     '-map','0:v:0?','-map','0:a:0?','-vf','scale=-2:720','-c:v','libx264','-preset','veryfast','-tune','zerolatency','-crf','24','-pix_fmt','yuv420p','-profile:v','main',
     '-c:a','aac','-b:a','128k','-ac','2','-ar','48000','-f','hls','-hls_time','4','-hls_list_size','8',

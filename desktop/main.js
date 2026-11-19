@@ -9,6 +9,7 @@ const zlib = require('zlib');
 const ALLOWED_STREAMS = [
   { host: '15.204.142.109', port: '22880', prefix: '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/' },
   { host: '187.245.231.226', port: '8000', prefix: '/play/a0uz/' },
+  { host: '45.5.118.152', port: '8000', prefix: '/play/' },
 ];
 function isAllowedStream(url) {
   return url.protocol === 'http:' && ALLOWED_STREAMS.some(rule =>

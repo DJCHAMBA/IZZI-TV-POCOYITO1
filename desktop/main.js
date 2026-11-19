@@ -22,6 +22,8 @@ let transcodeDir = null;
 let canal5TranscodeProcess = null;
 let canal5TranscodeDir = null;
 let canal5TranscodeSource = null;
+let canal5TranscodeError = '';
+let canal5TranscodeLog = [];
 let proxyServer;
 
 function writeProxyLog(message) {
@@ -52,7 +54,7 @@ function startDistritoTranscode(sourceUrl) {
   transcodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-distrito-'));
   const ffmpeg = findFfmpeg();
   const output = path.join(transcodeDir, 'index.m3u8');
-  const headers = 'Accept: */*\r\nAccept-Language: es_MX\r\n';
+  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\r\n');
   const args = [
     '-hide_banner', '-loglevel', 'warning', '-nostdin', '-y',
     '-user_agent', 'VLC/3.0.23 LibVLC/3.0.23',
@@ -91,7 +93,7 @@ function startCanal5Transcode(sourceUrl) {
     '-headers', headers,
     '-i', sourceUrl,
     '-map', '0:v:0', '-map', '0:a:0?',
-    '-vf', 'scale=min(1280\\,iw):-2',
+    '-vf', 'scale=-2:720',
     '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency',
     '-crf', '23', '-pix_fmt', 'yuv420p', '-profile:v', 'main',
     '-c:a', 'aac', '-b:a', '128k', '-ac', '2', '-ar', '48000',
@@ -102,15 +104,17 @@ function startCanal5Transcode(sourceUrl) {
   ];
   writeProxyLog('Iniciando transcodificación Canal 5 HEVC -> H.264 con FFmpeg: ' + ffmpeg);
   canal5TranscodeProcess = spawn(ffmpeg, args, { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
-  canal5TranscodeProcess.stderr.on('data', chunk => writeProxyLog('FFmpeg Canal 5: ' + chunk.toString().trim()));
-  canal5TranscodeProcess.on('error', error => writeProxyLog('FFmpeg Canal 5 no pudo arrancar: ' + (error.stack || error.message)));
-  canal5TranscodeProcess.on('exit', (code, signal) => writeProxyLog('FFmpeg Canal 5 terminó. code=' + code + ' signal=' + signal));
+  canal5TranscodeError = ''; canal5TranscodeLog = [];
+  canal5TranscodeProcess.stderr.on('data', chunk => { const line = chunk.toString().trim(); if (line) { canal5TranscodeLog.push(line); canal5TranscodeLog = canal5TranscodeLog.slice(-20); writeProxyLog('FFmpeg Canal 5: ' + line); } });
+  canal5TranscodeProcess.on('error', error => { canal5TranscodeError = error.message; writeProxyLog('FFmpeg Canal 5 no pudo arrancar: ' + (error.stack || error.message)); });
+  canal5TranscodeProcess.on('exit', (code, signal) => { canal5TranscodeError = code === 0 ? canal5TranscodeError : (canal5TranscodeError || 'FFmpeg terminó con código ' + code + ' (' + signal + ')'); writeProxyLog('FFmpeg Canal 5 terminó. code=' + code + ' signal=' + signal); });
 }
 
 async function handleCanal5TranscodeRequest(route, searchParams, res) {
   const isIndex = route === '/canal5/index.m3u8';
   const segmentName = route.startsWith('/canal5/') ? route.slice('/canal5/'.length) : '';
-  const isSegment = /^seg_\\d{6}\\.ts$/.test(segmentName);
+  const digits = segmentName.startsWith('seg_') && segmentName.endsWith('.ts') ? segmentName.slice(4, -3) : '';
+  const isSegment = digits.length === 6 && [...digits].every(ch => ch >= '0' && ch <= '9');
   if (!isIndex && !isSegment) { res.writeHead(404); return res.end('Not found'); }
 
   if (isIndex) {
@@ -196,6 +200,10 @@ function startLocalProxy() {
     if (target.pathname === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ok: true, service: 'Pocoyito local IPTV relay', port: LOCAL_PORT }));
+    }
+    if (target.pathname === '/canal5/status') {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(JSON.stringify({ ffmpeg: findFfmpeg(), running: !!canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null, exitCode: canal5TranscodeProcess?.exitCode ?? null, error: canal5TranscodeError, log: canal5TranscodeLog, outputReady: !!canal5TranscodeDir && fs.existsSync(path.join(canal5TranscodeDir, 'index.m3u8')) }));
     }
     if (target.pathname.startsWith('/canal5/')) {
       return handleCanal5TranscodeRequest(target.pathname, target.searchParams, res);

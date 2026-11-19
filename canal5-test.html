@@ -5,7 +5,7 @@
 <title>Pocoyito TV · Laboratorio Canal 5</title>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20"></script>
 <style>
-:root{color-scheme:dark;font-family:Arial,sans-serif;background:#080b16;color:#f7f9ff}*{box-sizing:border-box}body{margin:0;padding:24px;max-width:1050px;margin:auto}header{display:flex;align-items:center;gap:14px;margin-bottom:22px}.logo{width:48px;height:48px;border-radius:13px;background:#5534db;display:grid;place-items:center;font-weight:900;font-size:23px}h1{font-size:22px;margin:0}p{color:#aab5d0}.panel{background:#111a30;border:1px solid #293858;border-radius:15px;padding:18px;margin:14px 0}button{border:0;border-radius:9px;padding:11px 15px;background:#2458dc;color:white;font-weight:bold;cursor:pointer;margin:5px 5px 5px 0}button:disabled{opacity:.5}input{width:100%;background:#080f20;color:white;border:1px solid #405174;border-radius:8px;padding:12px;margin:8px 0}video{width:100%;max-height:55vh;background:#000;border-radius:12px;margin-top:10px}.status{padding:10px;border-radius:8px;background:#0a1224;white-space:pre-wrap;overflow-wrap:anywhere}.ok{color:#6fe0a0}.bad{color:#ff8585}.muted{font-size:13px;color:#9aa8c5}code{overflow-wrap:anywhere}
+:root{color-scheme:dark;font-family:Arial,sans-serif;background:#080b16;color:#f7f9ff}*{box-sizing:border-box}body{margin:0;padding:24px;max-width:1050px;margin:auto}header{display:flex;align-items:center;gap:14px;margin-bottom:22px}.logo{width:48px;height:48px;border-radius:13px;background:#5534db;display:grid;place-items:center;font-weight:900;font-size:23px}h1{font-size:22px;margin:0}p{color:#aab5d0}.panel{background:#111a30;border:1px solid #293858;border-radius:15px;padding:18px;margin:14px 0}button{border:0;border-radius:9px;padding:11px 15px;background:#2458dc;color:white;font-weight:bold;cursor:pointer;margin:5px 5px 5px 0}button:disabled{opacity:.5}input{width:100%;background:#080f20;color:white;border:1px solid #405174;border-radius:8px;padding:12px;margin:8px 0}video{width:100%;max-height:55vh;min-height:220px;background:#000;border-radius:12px;margin-top:10px}.controls{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.status{padding:10px;border-radius:8px;background:#0a1224;white-space:pre-wrap;overflow-wrap:anywhere}.ok{color:#6fe0a0}.bad{color:#ff8585}.muted{font-size:13px;color:#9aa8c5}code{overflow-wrap:anywhere}
 </style></head>
 <body>
 <header><div class="logo">P</div><div><h1>POCOYITO TV · LABORATORIO</h1><div class="muted">Prueba independiente del relay local · Canal 5 México</div></div></header>
@@ -25,8 +25,15 @@
 </div>
 <div class="panel">
 <h2>3. Reproducción y diagnóstico</h2>
-<video id="video" controls playsinline></video>
-<div id="log" class="status">Esperando prueba.</div>
+<div class="controls">
+<button id="startPlay">▶ Iniciar reproducción</button>
+<button id="retryPlay">↻ Reiniciar HLS</button>
+<button id="nativePlay">Probar HLS nativo</button>
+<button id="stopPlay">■ Detener</button>
+</div>
+<video id="video" controls playsinline preload="none"></video>
+<div id="playerState" class="status">Reproductor listo. Primero comprueba el relay y después inicia la reproducción.</div>
+<div id="log" class="status">Diagnóstico detallado aparecerá aquí.</div>
 </div>
 <script>
 const base='http://127.0.0.1:18787';
@@ -98,26 +105,77 @@ $('probe').onclick=async()=>{
   $('probeResult').className='status '+(reports.some(x=>x.includes('✓ Hay paquetes'))?'ok':'bad');
  }catch(e){$('probeResult').textContent='Falló diagnóstico:\n'+e.message;$('probeResult').className='status bad';}
 };
-$('play').onclick=async()=>{
- const raw=$('url').value.trim();if(!raw){log('Primero busca Canal 5 o pega su URL HLS.','bad');return;}
- let u;try{u=new URL(raw);if(u.hostname!=='45.5.118.152'||u.port!=='8000'||!u.pathname.startsWith('/play/'))throw new Error('La URL no corresponde al servidor/ruta de Canal 5 esperados.');}catch(e){log('URL no válida: '+e.message,'bad');return;}
- if(hls){hls.destroy();hls=null;}
- const video=$('video');video.pause();video.removeAttribute('src');video.load();
- const proxied=base+'/hls?u='+encodeURIComponent(u.href);
- log('Solicitando relay local...\n'+proxied);
+function playerState(message,cls=''){ $('playerState').className='status '+cls; $('playerState').textContent=message; }
+function stopPlayer(){
+ if(hls){try{hls.destroy();}catch{}hls=null;}
+ const v=$('video');v.pause();v.removeAttribute('src');v.load();
+ playerState('Reproducción detenida.');
+}
+function getSource(){
+ const raw=$('url').value.trim();if(!raw)throw new Error('Primero busca Canal 5 o pega su URL HLS.');
+ const u=new URL(raw);
+ if(u.hostname!=='45.5.118.152'||u.port!=='8000'||!u.pathname.startsWith('/play/'))throw new Error('La URL no corresponde al servidor/ruta de Canal 5.');
+ return u;
+}
+async function startHls(mode='hls'){
+ let u;try{u=getSource();}catch(e){playerState(e.message,'bad');return;}
+ stopPlayer();
+ const v=$('video'),proxied=base+'/hls?u='+encodeURIComponent(u.href);
+ playerState('Comprobando relay local... '+base);
  try{
-  const check=await fetch(base+'/health',{cache:'no-store'});if(!check.ok)throw new Error('Relay local HTTP '+check.status);
- }catch(e){log('No hay relay local disponible: '+e.message+'\nAbre Pocoyito TV en esta misma PC.','bad');return;}
- if(window.Hls&&Hls.isSupported()){
-  hls=new Hls({enableWorker:true,lowLatencyMode:false});
-  hls.on(Hls.Events.MANIFEST_LOADING,(_,d)=>log('Cargando manifiesto:\n'+d.url));
-  hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>log('Manifiesto recibido. Niveles: '+d.levels.length+'. Pulsa play si no inicia automáticamente.','ok'));
-  hls.on(Hls.Events.FRAG_LOADED,(_,d)=>log('Segmento recibido: '+(d.frag?.url||'segmento')+'\nBytes: '+(d.stats?.loaded||0),'ok'));
-  hls.on(Hls.Events.ERROR,(_,d)=>log('HLS ERROR\nTipo: '+d.type+'\nDetalle: '+d.details+'\nFatal: '+d.fatal+'\nURL: '+(d.frag?.url||d.url||''),'bad'));
-  hls.loadSource(proxied);hls.attachMedia(video);
-  video.play().catch(()=>{});
- }else if(video.canPlayType('application/vnd.apple.mpegurl')){
-  video.src=proxied;video.play().catch(()=>{});
- }else log('Este navegador no soporta HLS.js ni HLS nativo.','bad');
-};
+  const health=await fetch(base+'/health',{cache:'no-store'});
+  if(!health.ok)throw new Error('Relay respondió HTTP '+health.status);
+  const data=await health.json();
+  playerState('Relay conectado · puerto '+data.port+'\nCargando lista HLS...','ok');
+ }catch(e){playerState('No se pudo conectar con tu Pocoyito TV local: '+e.message+'\nAbre la app de PC en esta misma computadora.','bad');return;}
+ if(mode==='native'){
+  if(!v.canPlayType('application/vnd.apple.mpegurl')){playerState('Este navegador no anuncia soporte HLS nativo. Usa HLS.js.','bad');return;}
+  v.src=proxied;
+  v.onloadedmetadata=()=>playerState('HLS nativo: metadatos recibidos. Pulsa reproducir.','ok');
+  v.onerror=()=>playerState('Error del video nativo: '+(v.error?.code||'desconocido')+' '+(v.error?.message||''),'bad');
+  try{await v.play();}catch(e){playerState('Fuente asignada. Pulsa ▶ en el video para iniciar. '+e.message,'ok');}
+  return;
+ }
+ if(!window.Hls||!Hls.isSupported()){playerState('HLS.js no está disponible o MediaSource no es compatible.','bad');return;}
+ hls=new Hls({
+  enableWorker:true,lowLatencyMode:false,startLevel:-1,capLevelToPlayerSize:false,
+  maxBufferLength:30,maxMaxBufferLength:60,backBufferLength:30,
+  manifestLoadingMaxRetry:5,levelLoadingMaxRetry:5,fragLoadingMaxRetry:8,
+  manifestLoadingRetryDelay:1000,levelLoadingRetryDelay:1000,fragLoadingRetryDelay:1000,
+  xhrSetup(xhr){xhr.withCredentials=false;}
+ });
+ const details=[];
+ const add=(msg)=>{details.unshift(new Date().toLocaleTimeString()+' · '+msg);details.splice(14);$('log').textContent=details.join('\n');};
+ hls.on(Hls.Events.MEDIA_ATTACHED,()=>add('MediaSource conectado.'));
+ hls.on(Hls.Events.MANIFEST_LOADING,(_,d)=>add('Solicitando manifiesto: '+d.url));
+ hls.on(Hls.Events.MANIFEST_LOADED,(_,d)=>add('Manifiesto recibido ('+(d.levels?.length||0)+' niveles).'));
+ hls.on(Hls.Events.LEVEL_LOADED,(_,d)=>add('Nivel '+d.level+' · '+(d.details?.fragments?.length||0)+' fragmentos · codecs '+(d.details?.level?.attrs?.CODECS||'no anunciado')));
+ hls.on(Hls.Events.MANIFEST_PARSED,(_,d)=>{
+  const levels=d.levels.map((l,i)=>i+': '+l.width+'x'+l.height+' · '+Math.round(l.bitrate/1000)+' kbps · '+(l.videoCodec||'video codec?')+' / '+(l.audioCodec||'audio codec?')).join('\n');
+  playerState('Manifiesto interpretado. Niveles disponibles: '+d.levels.length+'\n'+levels+'\nPulsa reproducir en el video.','ok');
+  add('MANIFEST_PARSED; inicia reproducción manual para evitar autoplay bloqueado.');
+ });
+ hls.on(Hls.Events.FRAG_LOADED,(_,d)=>add('Fragmento descargado · '+(d.stats?.loaded||0)+' bytes · '+(d.frag?.url||'')));
+ hls.on(Hls.Events.FRAG_PARSING_INIT_SEGMENT,(_,d)=>add('Init segment: '+JSON.stringify(d.id||{})));
+ hls.on(Hls.Events.FRAG_PARSED,(_,d)=>add('Fragmento parseado correctamente · '+(d.frag?.sn??'')));
+ hls.on(Hls.Events.ERROR,(_,d)=>{
+  const msg='HLS '+d.type+' / '+d.details+' · fatal='+d.fatal+' · '+(d.reason||'')+' · '+(d.frag?.url||d.url||'');
+  add(msg);
+  if(d.fatal){
+   if(d.type===Hls.ErrorTypes.NETWORK_ERROR){playerState('Error de red HLS: '+d.details+'. Reintentando...','bad');hls.startLoad();}
+   else if(d.type===Hls.ErrorTypes.MEDIA_ERROR){playerState('Error de decodificación: '+d.details+'. Intentando recuperar el motor multimedia...','bad');hls.recoverMediaError();}
+   else playerState('Error fatal HLS: '+d.details+'. Revisa el diagnóstico inferior.','bad');
+  }else if(d.details==='fragParsingError')playerState('El segmento llegó, pero HLS.js no pudo interpretarlo. Revisa el detalle inferior.','bad');
+ });
+ v.onplaying=()=>playerState('¡Canal 5 está reproduciendo!','ok');
+ v.onwaiting=()=>add('Video esperando más datos (buffering).');
+ v.onerror=()=>{const er=v.error;add('HTMLVideo error code='+(er?.code||'')+' message='+(er?.message||''));};
+ hls.attachMedia(v);
+ hls.on(Hls.Events.MEDIA_ATTACHED,()=>hls.loadSource(proxied));
+}
+$('startPlay').onclick=()=>startHls('hls');
+$('retryPlay').onclick=()=>startHls('hls');
+$('nativePlay').onclick=()=>startHls('native');
+$('stopPlay').onclick=stopPlayer;
+$('play').onclick=()=>startHls('hls');
 </script></body></html>

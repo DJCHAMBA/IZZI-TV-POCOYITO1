@@ -1633,6 +1633,9 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
   const focus=el=>{if(!el)return;el.setAttribute('tabindex',el.getAttribute('tabindex')||'0');el.focus({preventScroll:true});el.scrollIntoView({block:'nearest',inline:'nearest'});};
   document.addEventListener('keydown',e=>{
     const key=e.key;
+    // Esta capa de navegación por foco es exclusiva de Android TV.
+    // En PC dejamos que el manejador de Pocoyito use flechas para zapping y volumen.
+    if(!document.body.classList.contains('android-tv'))return;
     if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(key))return;
     const active=document.activeElement;
     const editing=active&&(['INPUT','TEXTAREA','SELECT'].includes(active.tagName)||active.isContentEditable);

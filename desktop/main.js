@@ -9,8 +9,8 @@ const zlib = require('zlib');
 const ALLOWED_STREAMS = [
   { host: '15.204.142.109', port: '22880', prefix: '/TELEVISA-PROVEEDOR-DISTRITO-COMEDIA/' },
   { host: '187.245.231.226', port: '8000', prefix: '/play/a0uz/' },
-  // Canal 5 México: permitir únicamente sus rutas HLS /play/a03/ a través del relay local.
-  { host: '45.5.118.152', port: '8000', prefix: '/play/a03/' },
+  // Canal 5 México: permitir únicamente sus rutas HLS /play/a03i/ a través del relay local.
+  { host: '45.5.118.152', port: '8000', prefix: '/play/a03i/' },
 ];
 function isAllowedStream(url) {
   return url.protocol === 'http:' && ALLOWED_STREAMS.some(rule =>

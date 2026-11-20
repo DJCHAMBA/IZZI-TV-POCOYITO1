@@ -1614,7 +1614,7 @@ function ligaStatus(g){const s=g.status?.type||{};const state=(s.state||'').toLo
 function ligaTeam(t){const team=t?.team||{};return {name:team.shortDisplayName||team.displayName||'Equipo',logo:team.logo||team.logos?.[0]?.href||''};}
 function renderLigaTvChannels(){
  const root=document.getElementById('ligaTvChannels'),count=document.getElementById('ligaTvCount');if(!root)return;
- const patterns=[/\\bazteca\\s*7\\b/i,/\\bcanal\\s*5\\b/i,/\\btudn\\b/i,/\\bespn(?:\\s*[0-9]+)?\\b/i,/\\bfox\\s*sports?\\b/i,/\\bcaliente\\s*tv\\b/i,/\\bclaro\\s*sports?\\b/i,/\\btvc\\s*deportes?\\b/i,/\\bvix\\b/i];
+ const patterns=[/\bazteca\s*7\b/i,/\bcanal\s*5\b/i,/\btudn\b/i,/\bespn(?:\s*[0-9]+)?\b/i,/\bfox\s*sports?\b/i,/\bcaliente\s*tv\b/i,/\bclaro\s*sports?\b/i,/\btvc\s*deportes?\b/i,/\bvix\b/i];
  const matches=allChannels.filter(c=>patterns.some(rx=>rx.test(c.name+' '+(c.group||''))));
  const seen=new Set(),unique=matches.filter(c=>{const k=normalizeChannelName(c.name);if(seen.has(k))return false;seen.add(k);return true;}).sort((a,b)=>a.name.localeCompare(b.name,'es'));
  if(count)count.textContent=unique.length+' señales encontradas';

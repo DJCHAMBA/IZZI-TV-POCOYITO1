@@ -37,7 +37,9 @@
           ]
         }
       ],
-      "artifactName": "izzi-tv-pocoyito-setup-${version}.${ext}"
+      "artifactName": "izzi-tv-pocoyito-setup-${version}.${ext}",
+      "icon": "icons/pocoyito.ico",
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": [

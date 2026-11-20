@@ -17,10 +17,15 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force desktop/web/icons | Out-Null
+          New-Item -ItemType Directory -Force desktop/icons | Out-Null
+          Copy-Item icons/pocoyito-app.svg desktop/icons/pocoyito-app.svg -Force
+          npm --prefix desktop install --no-save sharp png-to-ico
+          node desktop/scripts/prepare-icon.js
           Copy-Item index.html desktop/web/index.html -Force
           Copy-Item manifest.webmanifest desktop/web/manifest.webmanifest -Force
           Copy-Item service-worker.js desktop/web/service-worker.js -Force
           Copy-Item icons/icon.svg desktop/web/icons/icon.svg -Force
+          Copy-Item icons/pocoyito-app.svg desktop/web/icons/pocoyito-app.svg -Force
       - name: Install dependencies
         working-directory: desktop
         run: npm install

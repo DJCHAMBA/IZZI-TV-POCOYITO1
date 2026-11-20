@@ -375,6 +375,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1440, height: 900, minWidth: 900, minHeight: 600,
     backgroundColor: '#080b16', title: 'izzi TV Pocoyito', autoHideMenuBar: true,
+    icon: path.join(__dirname, 'icons', 'pocoyito.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
@@ -385,6 +386,7 @@ function createWindow() {
   });
 }
 app.whenReady().then(async () => {
+  if (process.platform === 'win32') app.setAppUserModelId('com.djchamba.izzitvpocoyito');
   try { await startLocalProxy(); }
   catch (error) {
     console.error('No se pudo iniciar el proxy IPTV local:', error);

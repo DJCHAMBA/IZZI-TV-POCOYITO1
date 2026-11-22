@@ -1125,7 +1125,7 @@ function playbackUrl(url){
     if(u.hostname==='45.5.118.152'&&u.port==='8000'&&u.pathname.startsWith('/play/a03i/')){
       return relayBase()+'/canal5/index.m3u8?u='+encodeURIComponent(u.href);
     }
-    // Azteca 7: relay local para evitar Mixed Content y conservar la URL original de IPTV-org.
+    // TUDN: mejora exclusiva en la app de escritorio mediante FFmpeg a 1080p, conservando proporción.\n    if (location.protocol === 'file:' && /\\btudn\\b/i.test(String(selected?.name||'')+' '+String(selected?.id||''))) {\n      return 'http://127.0.0.1:18787/tudn/index.m3u8?u='+encodeURIComponent(u.href);\n    }\n    // Azteca 7: relay local para evitar Mixed Content y conservar la URL original de IPTV-org.
     if(u.hostname==='187.245.231.226'&&u.port==='8000'&&u.pathname.startsWith('/play/a0uz/')){
       return 'http://127.0.0.1:18787/hls?u='+encodeURIComponent(u.href);
     }

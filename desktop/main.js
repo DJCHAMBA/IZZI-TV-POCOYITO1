@@ -169,7 +169,7 @@ function isPublicBackupUrl(source) {
   return true;
 }
 function startBackupTranscode(sourceUrl) {
-  if (tudnTranscodeProcess) { try { tudnTranscodeProcess.kill(); } catch {} tudnTranscodeProcess = null; }\n  if (tudnTranscodeDir) { try { fs.rmSync(tudnTranscodeDir, { recursive: true, force: true }); } catch {} tudnTranscodeDir = null; }\n  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
+  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
   if (backupTranscodeDir) { try { fs.rmSync(backupTranscodeDir, { recursive: true, force: true }); } catch {} }
   backupTranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-backup-'));
   backupTranscodeSource = sourceUrl; backupTranscodeLog = [];

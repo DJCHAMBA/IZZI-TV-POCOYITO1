@@ -299,7 +299,10 @@ function startLocalProxy() {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ffmpeg: findFfmpeg(), running: !!canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null, exitCode: canal5TranscodeProcess?.exitCode ?? null, error: canal5TranscodeError, log: canal5TranscodeLog, outputReady: !!canal5TranscodeDir && fs.existsSync(path.join(canal5TranscodeDir, 'index.m3u8')) }));
     }
-    if (target.pathname.startsWith('/tudn/')) {\n      return handleTudnTranscodeRequest(target.pathname, target.searchParams, res);\n    }\n    if (target.pathname.startsWith('/backup/')) {
+    if (target.pathname.startsWith('/tudn/')) {
+      return handleTudnTranscodeRequest(target.pathname, target.searchParams, res);
+    }
+    if (target.pathname.startsWith('/backup/')) {
       return handleBackupTranscodeRequest(target.pathname, target.searchParams, res);
     }
     if (target.pathname.startsWith('/canal5/')) {

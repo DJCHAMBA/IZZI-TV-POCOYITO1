@@ -1260,7 +1260,7 @@ function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAtt
 function playChannel(c,autoStart=false,isFallback=false){
   if(!isFallback){canal5Tried.clear();distritoTried.clear();}
   const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
-  selected=c;if(!String(c.name||'').includes(' · Replay'))replayLiveChannel=null;updateReplay24Button();try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
+  selected=c;const isTudnChannel=/\btudn\b/i.test(String(c.name||'')+' '+String(c.id||''));document.querySelector('.player-shell')?.classList.toggle('tudn-picture-fix',isTudnChannel);if(!String(c.name||'').includes(' · Replay'))replayLiveChannel=null;updateReplay24Button();try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
   const badge=document.getElementById('currentBadge');
   if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
   document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();
@@ -2200,5 +2200,22 @@ body.android-tv .player-shell.pocoyito-fullscreen .controls{padding:10px!importa
 .replay24-head{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid #ffffff18}.replay24-head h3{margin:0;font-size:17px}.replay24-head p{margin:4px 0 0;color:#a9b8d5;font-size:11px}.replay24-head button{margin-left:auto;border:1px solid #ffffff24;border-radius:9px;background:#ffffff10;color:#fff;padding:8px 12px;cursor:pointer}
 .replay24-list{padding:12px;overflow:auto}.replay24-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px;margin-bottom:7px;border:1px solid #ffffff16;border-radius:11px;background:#ffffff08;color:#fff;text-align:left;cursor:pointer}.replay24-item:hover{background:#ffffff16;border-color:#8e9fff}.replay24-time{min-width:96px;color:#9ebcff;font-size:11px;font-weight:800}.replay24-title{font-size:12px;font-weight:800}.replay24-title small{display:block;margin-top:4px;color:#9ba9c5;font-size:10px;font-weight:500}.replay24-empty{padding:24px;text-align:center;color:#aab6ce;font-size:12px;line-height:1.6}
 </style>
+
+<style id="pocoyito-tudn-picture-fix">
+/* Ajustes exclusivos para TUDN: respetar proporción 16:9 y evitar el zoom/crop global de pantalla completa. */
+.player-shell.tudn-picture-fix .screen video{
+  object-fit:contain!important;
+  object-position:center center!important;
+  filter:contrast(1.08) saturate(1.06);
+}
+.player-shell.tudn-picture-fix:fullscreen .screen video,
+.player-shell.tudn-picture-fix:-webkit-full-screen .screen video{
+  object-fit:contain!important;
+  object-position:center center!important;
+  transform:none!important;
+  filter:contrast(1.08) saturate(1.06)!important;
+}
+</style>
+
 </body></html>
 <!-- Catch-up Replay: reproducción de archivos del proveedor, sin grabación local. -->

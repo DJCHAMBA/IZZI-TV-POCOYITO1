@@ -114,6 +114,53 @@ function startCanal5Transcode(sourceUrl) {
   canal5TranscodeProcess.on('exit', (code, signal) => { canal5TranscodeError = code === 0 ? canal5TranscodeError : (canal5TranscodeError || 'FFmpeg terminó con código ' + code + ' (' + signal + ')'); writeProxyLog('FFmpeg Canal 5 terminó. code=' + code + ' signal=' + signal); });
 }
 
+
+let tudnTranscodeProcess = null;
+let tudnTranscodeDir = null;
+let tudnTranscodeSource = null;
+let tudnTranscodeLog = [];
+function startTudnTranscode(sourceUrl) {
+  if (tudnTranscodeProcess) { try { tudnTranscodeProcess.kill(); } catch {} tudnTranscodeProcess = null; }
+  if (tudnTranscodeDir) { try { fs.rmSync(tudnTranscodeDir, { recursive: true, force: true }); } catch {} }
+  tudnTranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-tudn-'));
+  tudnTranscodeSource = sourceUrl; tudnTranscodeLog = [];
+  const output = path.join(tudnTranscodeDir, 'index.m3u8');
+  const headers = ['Accept: */*', 'Accept-Language: es_MX', ''].join('\r\n');
+  const args = [
+    '-hide_banner','-loglevel','warning','-nostdin','-y',
+    '-user_agent','VLC/3.0.23 LibVLC/3.0.23','-headers',headers,'-i',sourceUrl,
+    '-map','0:v:0','-map','0:a:0?',
+    '-vf',"scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,unsharp=5:5:0.45:3:3:0.0,eq=contrast=1.04:saturation=1.05",
+    '-c:v','libx264','-preset','veryfast','-tune','zerolatency','-crf','21','-pix_fmt','yuv420p','-profile:v','high',
+    '-c:a','aac','-b:a','160k','-ac','2','-ar','48000',
+    '-f','hls','-hls_time','4','-hls_list_size','8',
+    '-hls_flags','delete_segments+append_list+independent_segments+omit_endlist',
+    '-hls_segment_filename',path.join(tudnTranscodeDir,'seg_%06d.ts'),output
+  ];
+  writeProxyLog('Iniciando mejora TUDN 1080p con aspecto conservado: '+findFfmpeg());
+  tudnTranscodeProcess=spawn(findFfmpeg(),args,{windowsHide:true,stdio:['ignore','ignore','pipe']});
+  tudnTranscodeProcess.stderr.on('data',chunk=>{const line=chunk.toString().trim();if(line){tudnTranscodeLog.push(line);tudnTranscodeLog=tudnTranscodeLog.slice(-20);writeProxyLog('FFmpeg TUDN: '+line);}});
+  tudnTranscodeProcess.on('error',error=>{tudnTranscodeLog.push('ERROR: '+error.message);writeProxyLog('FFmpeg TUDN no arrancó: '+error.message);});
+  tudnTranscodeProcess.on('exit',(code,signal)=>writeProxyLog('FFmpeg TUDN terminó. code='+code+' signal='+signal));
+}
+async function handleTudnTranscodeRequest(route, searchParams, res) {
+  const isIndex=route==='/tudn/index.m3u8';
+  const segment=route.startsWith('/tudn/')?route.slice('/tudn/'.length):'';
+  const digits=segment.startsWith('seg_')&&segment.endsWith('.ts')?segment.slice(4,-3):'';
+  const isSegment=digits.length===6&&[...digits].every(ch=>ch>='0'&&ch<='9');
+  if(!isIndex&&!isSegment){res.writeHead(404);return res.end('Not found');}
+  if(isIndex){
+    let source;try{source=new URL(searchParams.get('u')||'');}catch{res.writeHead(400);return res.end('Invalid TUDN source URL');}
+    if(!isPublicBackupUrl(source)){res.writeHead(403);return res.end('TUDN source URL is not allowed');}
+    if(tudnTranscodeSource!==source.href||!tudnTranscodeProcess||tudnTranscodeProcess.exitCode!==null)startTudnTranscode(source.href);
+  }else if(!tudnTranscodeDir||!tudnTranscodeProcess){res.writeHead(503,{'Retry-After':'2'});return res.end('TUDN is starting');}
+  const name=isIndex?'index.m3u8':segment,file=path.join(tudnTranscodeDir,name);
+  if(isIndex){const deadline=Date.now()+30000;while(Date.now()<deadline&&!fs.existsSync(file)&&tudnTranscodeProcess&&tudnTranscodeProcess.exitCode===null)await new Promise(resolve=>setTimeout(resolve,250));}
+  if(!fs.existsSync(file)){res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Retry-After':'2','Cache-Control':'no-store'});return res.end('FFmpeg is preparing TUDN 1080p. Retry shortly.');}
+  res.writeHead(200,{'Content-Type':isIndex?'application/vnd.apple.mpegurl; charset=utf-8':'video/MP2T','Cache-Control':'no-store','Access-Control-Allow-Origin':'*'});
+  fs.createReadStream(file).pipe(res);
+}
+
 function isPublicBackupUrl(source) {
   if (!['http:', 'https:'].includes(source.protocol) || source.username || source.password) return false;
   const host = source.hostname.toLowerCase();
@@ -122,7 +169,7 @@ function isPublicBackupUrl(source) {
   return true;
 }
 function startBackupTranscode(sourceUrl) {
-  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
+  if (tudnTranscodeProcess) { try { tudnTranscodeProcess.kill(); } catch {} tudnTranscodeProcess = null; }\n  if (tudnTranscodeDir) { try { fs.rmSync(tudnTranscodeDir, { recursive: true, force: true }); } catch {} tudnTranscodeDir = null; }\n  if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
   if (backupTranscodeDir) { try { fs.rmSync(backupTranscodeDir, { recursive: true, force: true }); } catch {} }
   backupTranscodeDir = fs.mkdtempSync(path.join(app.getPath('temp'), 'pocoyito-backup-'));
   backupTranscodeSource = sourceUrl; backupTranscodeLog = [];
@@ -252,7 +299,7 @@ function startLocalProxy() {
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify({ ffmpeg: findFfmpeg(), running: !!canal5TranscodeProcess && canal5TranscodeProcess.exitCode === null, exitCode: canal5TranscodeProcess?.exitCode ?? null, error: canal5TranscodeError, log: canal5TranscodeLog, outputReady: !!canal5TranscodeDir && fs.existsSync(path.join(canal5TranscodeDir, 'index.m3u8')) }));
     }
-    if (target.pathname.startsWith('/backup/')) {
+    if (target.pathname.startsWith('/tudn/')) {\n      return handleTudnTranscodeRequest(target.pathname, target.searchParams, res);\n    }\n    if (target.pathname.startsWith('/backup/')) {
       return handleBackupTranscodeRequest(target.pathname, target.searchParams, res);
     }
     if (target.pathname.startsWith('/canal5/')) {

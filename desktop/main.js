@@ -411,6 +411,8 @@ function startLocalProxy() {
 }
 
 function stopLocalProxy() {
+  if (tudnTranscodeProcess) { try { tudnTranscodeProcess.kill(); } catch {} tudnTranscodeProcess = null; }
+  if (tudnTranscodeDir) { try { fs.rmSync(tudnTranscodeDir, { recursive: true, force: true }); } catch {} tudnTranscodeDir = null; }
   if (backupTranscodeProcess) { try { backupTranscodeProcess.kill(); } catch {} backupTranscodeProcess = null; }
   if (backupTranscodeDir) { try { fs.rmSync(backupTranscodeDir, { recursive: true, force: true }); } catch {} backupTranscodeDir = null; }
   if (canal5TranscodeProcess) { try { canal5TranscodeProcess.kill(); } catch {} canal5TranscodeProcess = null; }

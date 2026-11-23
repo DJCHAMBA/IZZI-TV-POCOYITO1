@@ -1,3 +1,5 @@
+
+// TUDN aspect-ratio handling: video is scaled with contain in shared player CSS.
 const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');

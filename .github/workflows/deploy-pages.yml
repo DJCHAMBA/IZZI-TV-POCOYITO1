@@ -8,6 +8,7 @@ on:
       - 'azteca7-test.html'
       - 'canal5-test.html'
       - 'reproductor-externo.html'
+      - 'laboratorio-iptv.html'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'icons/**'
@@ -36,7 +37,7 @@ jobs:
       - name: Preparar sitio web
         run: |
           mkdir -p _site/icons
-          cp index.html azteca7-test.html canal5-test.html reproductor-externo.html manifest.webmanifest service-worker.js _site/
+          cp index.html azteca7-test.html canal5-test.html reproductor-externo.html laboratorio-iptv.html manifest.webmanifest service-worker.js _site/
           cp icons/icon.svg _site/icons/
       - name: Subir sitio
         uses: actions/upload-pages-artifact@v3

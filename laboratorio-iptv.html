@@ -22,7 +22,7 @@ main{max-width:1180px;margin:24px auto;padding:0 18px;display:grid;grid-template
 <section class="card"><h2>Reproductor de pruebas</h2>
 <div class="screen"><video id="video" controls playsinline></video></div>
 <div class="controls"><input id="name" class="name" placeholder="Nombre del canal (ej. TUDN)"><input id="url" class="url" placeholder="URL .m3u8 o enlace compatible"><button id="play">Probar señal</button></div>
-<div class="controls"><input id="proxyUrl" class="url" placeholder="Proxy HTTPS (URL de tu Cloudflare Worker)"></div>
+<p class="hint" id="relayHint">Proxy local de IZZI TV Pocoyito: abre la aplicación de Windows en esta misma PC para usar su motor de conexión.</p>
 <div class="controls"><select id="mode"><option value="auto">Modo automático</option><option value="hls">Forzar motor HLS</option><option value="direct">Video directo</option></select><button class="secondary" id="save">Guardar canal</button><button class="secondary" id="stop">Detener</button><button class="secondary" id="full">Pantalla completa</button></div>
 <div class="status"><span class="dot" id="dot"></span><span id="message">Esperando una señal…</span></div>
 <div class="stats"><div class="stat"><small>Estado</small><strong id="state">En espera</strong></div><div class="stat"><small>Resolución</small><strong id="resolution">—</strong></div><div class="stat"><small>Tiempo activo</small><strong id="uptime">00:00</strong></div></div>
@@ -38,10 +38,11 @@ function log(s,type='wait'){const d=document.createElement('div');d.className='i
 function state(s,t='wait'){$('message').textContent=s;$('state').textContent=t==='ok'?'Reproduciendo':t==='bad'?'Error':'Probando';$('dot').className='dot '+t}
 function stop(){if(engine){engine.destroy();engine=null}v.pause();v.removeAttribute('src');v.load();clearInterval(tick);tick=null;start=0;$('uptime').textContent='00:00';$('resolution').textContent='—';state('Reproductor detenido')}
 function play(url,label){
-const proxyBase=$('proxyUrl').value.trim();
-if(/^http:\/\//i.test(url)&&proxyBase){
-  if(!/^https:\/\//i.test(proxyBase)){state('La URL del proxy debe comenzar con https://','bad');return}
-  const p=new URL(proxyBase);p.searchParams.set('url',url);url=p.toString();
+// Reutiliza el mismo proxy local que usa IZZI TV Pocoyito Desktop.
+if(/^http:\/\//i.test(url) && /^http:\/\/45\.5\.118\.152:8000\/play\//i.test(url)){
+  const original=url;
+  url='http://127.0.0.1:18787/hls?u='+encodeURIComponent(original);
+  log('Usando proxy local de IZZI TV Pocoyito','ok');
 }
 if(!url){state('Pega una URL primero','bad');return}stop();state('Conectando con '+(label||'la señal')+'…');log('Iniciando: '+(label||url));const mode=$('mode').value,looks=/\.m3u8($|\?)/i.test(url)||/\.php($|\?)/i.test(url),native=v.canPlayType('application/vnd.apple.mpegurl');
 if(mode==='direct'){v.src=url;v.play().catch(e=>{state('No inició: '+e.message,'bad');log(e.message,'bad')});return}
@@ -57,7 +58,5 @@ function persist(){localStorage.setItem('pocoyito-lab-channels',JSON.stringify(s
 $('save').onclick=()=>{const url=$('url').value.trim();if(!url){state('Escribe una URL primero','bad');return}if(saved.some(x=>x.url===url)){state('Ese canal ya está guardado');return}saved.push({name:$('name').value.trim()||'Canal',url});persist();log('Canal guardado','ok')};
 $('clear').onclick=()=>{if(confirm('¿Borrar todos los canales guardados?')){saved=[];persist()}};
 $('export').onclick=()=>{const data='#EXTM3U\n'+saved.map(c=>'#EXTINF:-1,'+c.name+'\n'+c.url).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'audio/x-mpegurl'}));a.download='pocoyito-canales.m3u';a.click();URL.revokeObjectURL(a.href)};
-$('clearLogs').onclick=()=>$('logs').innerHTML='<div class="empty">Aquí aparecerán los resultados.</div>';$('proxyUrl').value=localStorage.getItem('pocoyito-proxy-url')||'';
-$('proxyUrl').addEventListener('change',()=>localStorage.setItem('pocoyito-proxy-url',$('proxyUrl').value.trim()));
-render();
+$('clearLogs').onclick=()=>$('logs').innerHTML='<div class="empty">Aquí aparecerán los resultados.</div>';render();
 </script></body></html>

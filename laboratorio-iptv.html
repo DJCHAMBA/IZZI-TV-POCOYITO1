@@ -59,9 +59,6 @@ function render(){const root=$('channels');root.innerHTML='';if(!saved.length){r
 function persist(){localStorage.setItem('pocoyito-lab-channels',JSON.stringify(saved));render()}
 $('save').onclick=()=>{const url=$('url').value.trim();if(!url){state('Escribe una URL primero','bad');return}if(saved.some(x=>x.url===url)){state('Ese canal ya está guardado');return}saved.push({name:$('name').value.trim()||'Canal',url});persist();log('Canal guardado','ok')};
 $('clear').onclick=()=>{if(confirm('¿Borrar todos los canales guardados?')){saved=[];persist()}};
-$('export').onclick=()=>{const data='#EXTM3U
-'+saved.map(c=>'#EXTINF:-1,'+c.name+'
-'+c.url).join('
-');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'audio/x-mpegurl'}));a.download='pocoyito-canales.m3u';a.click();URL.revokeObjectURL(a.href)};
+$('export').onclick=()=>{const data='#EXTM3U\n'+saved.map(c=>'#EXTINF:-1,'+c.name+'\n'+c.url).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'audio/x-mpegurl'}));a.download='pocoyito-canales.m3u';a.click();URL.revokeObjectURL(a.href)};
 $('clearLogs').onclick=()=>$('logs').innerHTML='<div class="empty">Aquí aparecerán los resultados.</div>';render();
 </script></body></html>

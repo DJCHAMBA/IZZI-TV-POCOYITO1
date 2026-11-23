@@ -2241,5 +2241,38 @@ video.tudn-picture-fix{
 }
 </style>
 
+
+<style id="pocoyito-tudn-final-framing">
+/* TUDN: neutraliza las reglas generales de zoom del reproductor en todos los modos. */
+.player-shell.tudn-picture-fix .screen video,
+.player-shell.tudn-picture-fix:fullscreen .screen video,
+.player-shell.tudn-picture-fix:-webkit-full-screen .screen video,
+.player-shell.tudn-picture-fix.pocoyito-fullscreen .screen video,
+.player-shell.tudn-picture-fix:fullscreen video#video,
+.player-shell.tudn-picture-fix:-webkit-full-screen video#video{
+  object-fit:contain!important;
+  object-position:50% 50%!important;
+  transform:none!important;
+  translate:none!important;
+  scale:1!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+.player-shell.tudn-picture-fix .screen{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#000!important;
+  overflow:hidden!important;
+}
+</style>
+
 </body></html>
 <!-- Catch-up Replay: reproducción de archivos del proveedor, sin grabación local. -->

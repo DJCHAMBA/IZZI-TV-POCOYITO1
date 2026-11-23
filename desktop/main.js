@@ -132,14 +132,14 @@ function startTudnTranscode(sourceUrl) {
     '-hide_banner','-loglevel','warning','-nostdin','-y',
     '-user_agent','VLC/3.0.23 LibVLC/3.0.23','-headers',headers,'-i',sourceUrl,
     '-map','0:v:0','-map','0:a:0?',
-    '-vf',"scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,unsharp=5:5:0.45:3:3:0.0,eq=contrast=1.04:saturation=1.05",
+    '-vf',"scale=1728:972:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:color=black,setsar=1,unsharp=5:5:0.45:3:3:0.0,eq=contrast=1.04:saturation=1.05",
     '-c:v','libx264','-preset','veryfast','-tune','zerolatency','-crf','21','-pix_fmt','yuv420p','-profile:v','high',
     '-c:a','aac','-b:a','160k','-ac','2','-ar','48000',
     '-f','hls','-hls_time','4','-hls_list_size','8',
     '-hls_flags','delete_segments+append_list+independent_segments+omit_endlist',
     '-hls_segment_filename',path.join(tudnTranscodeDir,'seg_%06d.ts'),output
   ];
-  writeProxyLog('Iniciando mejora TUDN 1080p con aspecto conservado: '+findFfmpeg());
+  writeProxyLog('Iniciando TUDN con encuadre reducido 10% en lienzo 1080p: '+findFfmpeg());
   tudnTranscodeProcess=spawn(findFfmpeg(),args,{windowsHide:true,stdio:['ignore','ignore','pipe']});
   tudnTranscodeProcess.stderr.on('data',chunk=>{const line=chunk.toString().trim();if(line){tudnTranscodeLog.push(line);tudnTranscodeLog=tudnTranscodeLog.slice(-20);writeProxyLog('FFmpeg TUDN: '+line);}});
   tudnTranscodeProcess.on('error',error=>{tudnTranscodeLog.push('ERROR: '+error.message);writeProxyLog('FFmpeg TUDN no arrancó: '+error.message);});

@@ -1264,7 +1264,7 @@ function cleanup(){if(hls){hls.destroy();hls=null;}video.pause();video.removeAtt
 function playChannel(c,autoStart=false,isFallback=false){
   if(!isFallback){canal5Tried.clear();distritoTried.clear();}
   const token=++playbackToken; if(/canal\s*5/i.test(c.name))canal5Tried.add(c.url);
-  selected=c;const isTudnChannel=/\btudn\b/i.test(String(c.name||'')+' '+String(c.id||''));document.querySelector('.player-shell')?.classList.toggle('tudn-picture-fix',isTudnChannel);if(!String(c.name||'').includes(' · Replay'))replayLiveChannel=null;updateReplay24Button();try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
+  selected=c;const isTudnChannel=/\btudn\b/i.test(String(c.name||'')+' '+String(c.id||''));document.querySelector('.player-shell')?.classList.toggle('tudn-picture-fix',isTudnChannel);video.classList.toggle('tudn-picture-fix',isTudnChannel);if(isTudnChannel){Object.assign(video.style,{objectFit:'contain',objectPosition:'center center',transform:'none',minWidth:'0',minHeight:'0',maxWidth:'100%',maxHeight:'100%'});}else{['objectFit','objectPosition','transform','minWidth','minHeight','maxWidth','maxHeight'].forEach(k=>video.style[k]='');}if(!String(c.name||'').includes(' · Replay'))replayLiveChannel=null;updateReplay24Button();try{localStorage.setItem(LAST_CHANNEL_KEY,c.url);const recent=JSON.parse(localStorage.getItem('pocoyitoRecentChannelsV1')||'[]').filter(x=>x!==c.url);recent.unshift(c.url);localStorage.setItem('pocoyitoRecentChannelsV1',JSON.stringify(recent.slice(0,30)));}catch(e){}if(document.getElementById('guideModal')?.classList.contains('open'))updateGuideFeature(c);syncFavoriteButton();cleanup();
   const badge=document.getElementById('currentBadge');
   if(badge){badge.textContent='';badge.appendChild(createChannelLogo(c));}
   document.getElementById('currentName').textContent=c.name;document.getElementById('infoTitle').textContent=c.name+' · En directo';overlay.classList.remove('hidden');spinner.style.display='block';message.textContent='Conectando con '+c.name+'…';setStatus('CONECTANDO');render();
@@ -2218,6 +2218,26 @@ body.android-tv .player-shell.pocoyito-fullscreen .controls{padding:10px!importa
   object-position:center center!important;
   transform:none!important;
   filter:contrast(1.08) saturate(1.06)!important;
+}
+</style>
+
+
+<style id="pocoyito-tudn-no-zoom-v2">
+/* TUDN only: override global full-screen cover/scale rules. */
+.player-shell.tudn-picture-fix .screen,
+.player-shell.tudn-picture-fix:fullscreen .screen,
+.player-shell.tudn-picture-fix:-webkit-full-screen .screen{
+  background:#000!important; overflow:hidden!important;
+}
+.player-shell.tudn-picture-fix .screen video,
+.player-shell.tudn-picture-fix:fullscreen .screen video,
+.player-shell.tudn-picture-fix:-webkit-full-screen .screen video,
+video.tudn-picture-fix{
+  object-fit:contain!important; object-position:center center!important;
+  transform:none!important; transform-origin:center center!important;
+  width:100%!important; height:100%!important;
+  min-width:0!important; min-height:0!important;
+  max-width:100%!important; max-height:100%!important;
 }
 </style>
 

@@ -37,7 +37,8 @@ let saved=[];try{saved=JSON.parse(localStorage.getItem('pocoyito-lab-channels')|
 function log(s,type='wait'){const d=document.createElement('div');d.className='item';d.style.borderLeft='3px solid '+(type==='ok'?'#40d69a':type==='bad'?'#ff647d':'#f4c45b');const m=document.createElement('div');m.className='meta';const b=document.createElement('b'),sm=document.createElement('small');b.textContent=s;sm.textContent=new Date().toLocaleTimeString();m.append(b,sm);d.append(m);if($('logs').querySelector('.empty'))$('logs').innerHTML='';$('logs').prepend(d)}
 function state(s,t='wait'){$('message').textContent=s;$('state').textContent=t==='ok'?'Reproduciendo':t==='bad'?'Error':'Probando';$('dot').className='dot '+t}
 function applyFit(){v.classList.remove('zoom90','zoom80','fill');const fit=$('fit').value;if(fit==='zoom90'||fit==='zoom80'||fit==='fill')v.classList.add(fit)}
-$('fit').onchange=applyFit;\nfunction stop(){if(engine){engine.destroy();engine=null}v.pause();v.removeAttribute('src');v.load();clearInterval(tick);tick=null;start=0;$('uptime').textContent='00:00';$('resolution').textContent='—';state('Reproductor detenido')}
+$('fit').onchange=applyFit;
+function stop(){if(engine){engine.destroy();engine=null}v.pause();v.removeAttribute('src');v.load();clearInterval(tick);tick=null;start=0;$('uptime').textContent='00:00';$('resolution').textContent='—';state('Reproductor detenido')}
 function play(url,label){
 // Reutiliza el mismo proxy local que usa IZZI TV Pocoyito Desktop.
 if(/^http:\/\//i.test(url) && /^http:\/\/45\.5\.118\.152:8000\/play\//i.test(url)){
@@ -58,6 +59,9 @@ function render(){const root=$('channels');root.innerHTML='';if(!saved.length){r
 function persist(){localStorage.setItem('pocoyito-lab-channels',JSON.stringify(saved));render()}
 $('save').onclick=()=>{const url=$('url').value.trim();if(!url){state('Escribe una URL primero','bad');return}if(saved.some(x=>x.url===url)){state('Ese canal ya está guardado');return}saved.push({name:$('name').value.trim()||'Canal',url});persist();log('Canal guardado','ok')};
 $('clear').onclick=()=>{if(confirm('¿Borrar todos los canales guardados?')){saved=[];persist()}};
-$('export').onclick=()=>{const data='#EXTM3U\n'+saved.map(c=>'#EXTINF:-1,'+c.name+'\n'+c.url).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'audio/x-mpegurl'}));a.download='pocoyito-canales.m3u';a.click();URL.revokeObjectURL(a.href)};
+$('export').onclick=()=>{const data='#EXTM3U
+'+saved.map(c=>'#EXTINF:-1,'+c.name+'
+'+c.url).join('
+');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type:'audio/x-mpegurl'}));a.download='pocoyito-canales.m3u';a.click();URL.revokeObjectURL(a.href)};
 $('clearLogs').onclick=()=>$('logs').innerHTML='<div class="empty">Aquí aparecerán los resultados.</div>';render();
 </script></body></html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080b18">
+<title>Radio México | IZZI TV Pocoyito</title>
+<style>
+:root{color-scheme:dark;--bg:#080b18;--panel:#121a31;--line:#ffffff20;--muted:#a5b1cc;--accent:#7657ff;--blue:#168bff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 0,#29205f 0,transparent 38%),radial-gradient(ellipse at 90% 8%,#103c68 0,transparent 34%),var(--bg);color:#f8f9ff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+header{height:70px;display:flex;align-items:center;gap:16px;padding:0 clamp(16px,4vw,52px);background:#090d1feF;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:4}
+header button,.action{border:1px solid var(--line);background:#1a2340;color:#fff;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+.brand{font-weight:900;letter-spacing:.2px}.brand small{display:block;font-size:9px;letter-spacing:2px;color:#a99aff;margin-top:4px}
+main{width:min(1250px,94vw);margin:32px auto 50px}.kicker{font-size:11px;letter-spacing:3px;color:#a99aff;font-weight:900}
+h1{font-size:clamp(34px,5vw,54px);margin:9px 0 7px;letter-spacing:-2px}h1 span{color:#8e7aff}
+.sub{color:var(--muted);font-size:13px;margin:0 0 22px}
+.player{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:18px;background:linear-gradient(110deg,#171d3c,#10243c);border:1px solid var(--line);border-radius:15px;margin-bottom:18px}
+.now{display:flex;align-items:center;gap:14px;min-width:0}.disc{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(from 20deg,#7657ff,#18aaff,#7657ff);font-size:24px;box-shadow:0 0 25px #7657ff55;flex:0 0 auto}
+.now strong{display:block;font-size:17px}.now small{display:block;color:var(--muted);margin-top:5px;font-size:11px}
+.player-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.play{background:linear-gradient(120deg,#7554ff,#168bff)!important;border:0!important}
+audio{display:none}
+.filters{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:10px;margin:18px 0}
+input,select{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:#0d1428;color:white;outline:none}input:focus,select:focus{border-color:#8d78ff}
+.city-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 12px}.city-title h2{font-size:17px;margin:0}.city-title span{font-size:11px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:11px}
+.station{padding:14px;background:linear-gradient(145deg,#151d35,#0e1528);border:1px solid var(--line);border-radius:12px;min-width:0}
+.station.active{border-color:#8a75ff;box-shadow:0 0 0 1px #8a75ff44}
+.station-top{display:flex;align-items:center;gap:10px}.station-logo{width:42px;height:42px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(135deg,#704dff,#128bdf);font-weight:900;font-size:13px;flex:0 0 auto}
+.station h3{font-size:13px;margin:0;line-height:1.3}.station small{color:var(--muted);font-size:10px;display:block;margin-top:4px}
+.station p{color:#c2cce1;font-size:11px;margin:12px 0}
+.station-actions{display:flex;gap:7px}.station-actions button{flex:1;border:1px solid var(--line);background:#202b4a;color:#fff;border-radius:7px;padding:9px 7px;font-size:11px;font-weight:800;cursor:pointer}.station-actions .play-mini{background:#263c71;border-color:#5269aa}.station-actions button:hover{filter:brightness(1.25)}
+.empty{padding:32px;text-align:center;color:var(--muted);background:#11192d;border:1px dashed var(--line);border-radius:12px}
+.note{font-size:10px;color:#8391b1;line-height:1.7;margin-top:22px}
+@media(max-width:650px){header{height:62px}.player{grid-template-columns:1fr}.player-controls{justify-content:flex-start}.filters{grid-template-columns:1fr}.now strong{font-size:14px}}
+</style>
+</head>
+<body>
+<header><button type="button" onclick="history.length>1?history.back():location.href='./index.html'">← Volver</button><div class="brand">IZZI TV POCOYITO<small>RADIO MÉXICO · EN VIVO</small></div></header>
+<main>
+<div class="kicker">UNA RADIO PARA CADA CIUDAD</div><h1>Radio <span>México.</span></h1>
+<p class="sub">Explora emisoras mexicanas por estado y ciudad. Busca tu estación, reproduce y guarda tus favoritas.</p>
+<section class="player">
+ <div class="now"><div class="disc">♫</div><div><strong id="nowName">Selecciona una estación</strong><small id="nowMeta">La radio que te acompaña · México</small></div></div>
+ <div class="player-controls"><button class="action play" id="togglePlay">▶ Reproducir</button><button class="action" id="stopPlay">■ Detener</button><label style="font-size:10px;color:#aab7d3">VOL <input id="volume" type="range" min="0" max="1" step=".05" value=".85" style="width:85px;vertical-align:middle;padding:0"></label></div>
+ <audio id="audio" preload="none"></audio>
+</section>
+<div class="filters">
+ <input id="search" type="search" placeholder="Buscar radio, frecuencia o ciudad…">
+ <select id="state"><option value="">Todos los estados</option></select>
+ <select id="city"><option value="">Todas las ciudades</option></select>
+</div>
+<div class="city-title"><h2>Emisoras disponibles</h2><span id="count">Cargando catálogo…</span></div>
+<div class="grid" id="stations"></div>
+<p class="note">Las señales son enlaces públicos de streaming publicados por sus emisoras o directorios de radio. La disponibilidad depende de cada estación y algunos enlaces pueden cambiar o dejar de funcionar. Las emisoras que no permitan reproducción externa deberán escucharse desde su sitio oficial. IZZI TV Pocoyito no aloja ni retransmite el audio.</p>
+</main>
+<script>
+const stations=[
+{name:"@FM 104.9",city:"Mexicali",state:"Baja California",freq:"104.9 FM",genre:"Pop / éxitos",url:"http://stream2.dyndns.org:8000/xhmc.mp3?"},
+{name:"940 Oldies AM",city:"Mexicali",state:"Baja California",freq:"940 AM",genre:"Clásicos",url:"http://192.95.39.65:5410/;"},
+{name:"Ke Buena",city:"Mexicali",state:"Baja California",freq:"850 AM",genre:"Regional mexicano",url:"http://stream2.dyndns.org:8000/xezf.mp3/;"},
+{name:"La Bestia Grupera",city:"Mexicali",state:"Baja California",freq:"92.3 FM",genre:"Grupera",url:"http://stream2.dyndns.org:8000/xhmmf.mp3?"},
+{name:"La Dinámica",city:"Mexicali",state:"Baja California",freq:"105.9 FM",genre:"Música y entretenimiento",url:"http://stream2.dyndns.org:8000/xhsu.mp3/;"},
+{name:"La Gran D",city:"Mexicali",state:"Baja California",freq:"1050 AM",genre:"Radio local",url:"http://stream2.dyndns.org:8000/xed.mp3?"},
+{name:"La Rocola",city:"Mexicali",state:"Baja California",freq:"990 AM",genre:"Clásicos",url:"http://stream2.dyndns.org:8000/xecl.mp3?"},
+{name:"Radio Mexicana",city:"Mexicali",state:"Baja California",freq:"910 AM",genre:"Regional mexicano",url:"http://s1.radiorama.com.mx:9570/;"},
+{name:"Súper",city:"Mexicali",state:"Baja California",freq:"89.9 FM",genre:"Música y entretenimiento",url:"http://stream2.dyndns.org:8000/xhsol.mp3?"},
+{name:"Súper",city:"Mexicali",state:"Baja California",freq:"1370 AM",genre:"Radio local",url:"http://s1.radiorama.com.mx:9564/;"},
+{name:"Tu Música FM",city:"Tijuana",state:"Baja California",freq:"Radio online",genre:"Música",url:"http://192.254.193.215:8007/;"},
+{name:"Máxima FM",city:"Guadalajara",state:"Jalisco",freq:"106.7 FM",genre:"Música",url:"http://192.99.16.17:3410/;"},
+{name:"Milenio Radio",city:"Guadalajara",state:"Jalisco",freq:"105.1 FM",genre:"Noticias",url:"http://radio.promosat.com:8018/stream"},
+{name:"Radio eXtremo",city:"Guadalajara",state:"Jalisco",freq:"Radio online",genre:"Música",url:"http://89.46.67.143:9190/stream"},
+{name:"Radio Mujer",city:"Guadalajara",state:"Jalisco",freq:"1040 AM",genre:"Radio hablada",url:"http://radio.promosat.com:8002/stream"},
+{name:"Zona Tres",city:"Guadalajara",state:"Jalisco",freq:"91.5 FM",genre:"Noticias y actualidad",url:"http://radio.promosat.com:8006/stream"},
+{name:"Los 40",city:"Ciudad de México",state:"Ciudad de México",freq:"101.7 FM",genre:"Pop",url:"http://19173.live.streamtheworld.com/LOS40_MEXICOAAC.aac?"},
+{name:"Radio Disney",city:"Ciudad de México",state:"Ciudad de México",freq:"99.3 FM",genre:"Pop",url:"http://disneymxradio-lh.akamaihd.net/i/MXDisneyRADIO_1@147029/master.m3u8"},
+{name:"W Radio",city:"Ciudad de México",state:"Ciudad de México",freq:"96.9 FM",genre:"Noticias y conversación",url:"http://18723.live.streamtheworld.com/W_RADIO_SC"},
+{name:"El Chiltepin",city:"Hermosillo",state:"Sonora",freq:"Radio online",genre:"Regional / local",url:"http://198.27.64.106:4024/stream"},
+{name:"Rclásicos",city:"Hermosillo",state:"Sonora",freq:"Radio online",genre:"Clásicos",url:"http://149.56.23.143:9100/stream"},
+{name:"Proyecto Puente",city:"Hermosillo",state:"Sonora",freq:"Radio online",genre:"Noticias",url:"http://149.56.23.143:8200/stream"},
+{name:"Amor",city:"Aguascalientes",state:"Aguascalientes",freq:"104.5 FM",genre:"Romántica",url:"http://zer.zuperdns.net:1045/;"},
+{name:"Azul",city:"Aguascalientes",state:"Aguascalientes",freq:"106.9 FM",genre:"Música",url:"http://tunein.gvstream.net:8282/;"},
+{name:"Estéreo Mendel",city:"Aguascalientes",state:"Aguascalientes",freq:"103.7 FM",genre:"Música",url:"http://tunein.gvstream.net:8034/;"},
+{name:"Exa",city:"Aguascalientes",state:"Aguascalientes",freq:"97.3 FM",genre:"Pop",url:"http://tunein.gvstream.net:9046/;"},
+{name:"La Kaliente",city:"Aguascalientes",state:"Aguascalientes",freq:"102.9 FM",genre:"Grupera",url:"http://zer.zuperdns.net:1021/;"},
+{name:"La Mexicana",city:"Aguascalientes",state:"Aguascalientes",freq:"91.3 FM",genre:"Regional mexicano",url:"http://tunein.gvstream.net:9042/;"},
+{name:"La Mejor",city:"Aguascalientes",state:"Aguascalientes",freq:"93.7 FM",genre:"Regional mexicano",url:"http://tunein.gvstream.net:9232/;"},
+{name:"La Poderosa",city:"Aguascalientes",state:"Aguascalientes",freq:"107.7 FM",genre:"Regional mexicano",url:"http://201.159.48.105:2871/"},
+{name:"La Ranchera",city:"Aguascalientes",state:"Aguascalientes",freq:"106.1 FM",genre:"Regional mexicano",url:"http://zer.zuperdns.net:1006/;"},
+{name:"Magia",city:"Aguascalientes",state:"Aguascalientes",freq:"101.7 FM",genre:"Música",url:"http://201.159.48.107:88/broadwave.mp3?src=1"},
+{name:"Radio BI",city:"Aguascalientes",state:"Aguascalientes",freq:"88.7 FM",genre:"Radio local",url:"http://201.159.48.107:2860/"},
+{name:"Stereorey",city:"Aguascalientes",state:"Aguascalientes",freq:"100.9 FM",genre:"Clásicos",url:"http://tunein.gvstream.net:9038/;"},
+{name:"Más Que Radio",city:"Calvillo",state:"Aguascalientes",freq:"107.3 FM",genre:"Radio local",url:"http://50.22.218.197:8783/;"},
+{name:"Super Stereo Miled",city:"Toluca",state:"Estado de México",freq:"98.9 FM",genre:"Música",url:"http://192.99.34.205:8068/stream"},
+{name:"Jarochos Radio",city:"Veracruz",state:"Veracruz",freq:"Radio online",genre:"Regional / local",url:"http://65.60.62.181:9900/stream"},
+{name:"Tono",city:"Murguía",state:"Nayarit",freq:"96.9 FM",genre:"Radio local",url:"http://stream3.dyndns.org:8000/xhmug.mp3?"},
+{name:"Tepic Radio",city:"Tepic",state:"Nayarit",freq:"104.1 FM",genre:"Cultural / pública",official:"https://radio.tepic.gob.mx/"},
+{name:"Aztlán Radio",city:"Tepic",state:"Nayarit",freq:"100.3 FM",genre:"Noticias y cultura",official:"https://aztlanradio.nayarit.gob.mx/"},
+{name:"La Nayarita",city:"Tepic",state:"Nayarit",freq:"97.7 FM",genre:"Regional mexicano",official:"https://radioramanayarit.mx/"},
+{name:"La Más Picuda",city:"Tepic",state:"Nayarit",freq:"93.7 FM",genre:"Regional mexicano",official:"https://radioramanayarit.mx/"},
+{name:"La LUPE",city:"Tepic",state:"Nayarit",freq:"88.3 FM",genre:"Clásicos en español",official:"https://www.iheart.com/"},
+{name:"LOS40 Nayarit",city:"Tepic",state:"Nayarit",freq:"104.9 FM",genre:"Pop",official:"https://www.los40.com.mx/"}
+];
+const audio=document.getElementById('audio'),search=document.getElementById('search'),state=document.getElementById('state'),city=document.getElementById('city'),grid=document.getElementById('stations');
+let current=null;let favs=[];try{favs=JSON.parse(localStorage.getItem('pocoyitoRadioFavorites')||'[]')}catch(e){}
+function esc(v){return String(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function fillFilters(){const states=[...new Set(stations.map(s=>s.state))].sort((a,b)=>a.localeCompare(b,'es'));states.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;state.appendChild(o)});fillCities()}
+function fillCities(){const old=city.value;city.innerHTML='<option value="">Todas las ciudades</option>';[...new Set(stations.filter(s=>!state.value||s.state===state.value).map(s=>s.city))].sort((a,b)=>a.localeCompare(b,'es')).forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;city.appendChild(o)});if([...city.options].some(o=>o.value===old))city.value=old}
+function render(){const q=search.value.toLocaleLowerCase('es').trim();const rows=stations.filter(s=>(!state.value||s.state===state.value)&&(!city.value||s.city===city.value)&&(!q||(s.name+' '+s.city+' '+s.state+' '+s.freq+' '+s.genre).toLocaleLowerCase('es').includes(q)));document.getElementById('count').textContent=rows.length+' emisoras';grid.innerHTML='';if(!rows.length){grid.innerHTML='<div class="empty">No encontramos estaciones con esos filtros.</div>';return}rows.forEach(s=>{const i=stations.indexOf(s);const b=document.createElement('article');b.className='station'+(current===i?' active':'');b.innerHTML='<div class="station-top"><div class="station-logo">'+esc(s.name.slice(0,2).toUpperCase())+'</div><div><h3>'+esc(s.name)+'</h3><small>'+esc(s.city+', '+s.state)+' · '+esc(s.freq)+'</small></div></div><p>'+esc(s.genre)+'</p><div class="station-actions"><button class="play-mini" data-play="'+i+'">'+(current===i&&!audio.paused?'Ⅱ Escuchando':'▶ Escuchar')+'</button><button data-fav="'+i+'">'+(favs.includes(s.name+'|'+s.city)?'♥ Guardada':'♡ Favorito')+'</button>'+(s.official?'<button data-official="'+i+'">Sitio oficial</button>':'')+'</div>';grid.appendChild(b)});}
+async function play(i){const s=stations[i];if(!s.url){if(s.official)window.open(s.official,'_blank','noopener');return}current=i;document.getElementById('nowName').textContent=s.name;document.getElementById('nowMeta').textContent=s.city+', '+s.state+' · '+s.freq+' · '+s.genre;audio.src=s.url;audio.volume=Number(document.getElementById('volume').value);document.getElementById('togglePlay').textContent='Ⅱ Reproduciendo…';render();try{await audio.play();document.getElementById('togglePlay').textContent='Ⅱ Pausar'}catch(e){document.getElementById('togglePlay').textContent='▶ Reintentar';document.getElementById('nowMeta').textContent='No se pudo iniciar automáticamente. Prueba otra estación o abre su sitio oficial.'}}
+grid.addEventListener('click',e=>{const p=e.target.closest('[data-play]'),f=e.target.closest('[data-fav]'),o=e.target.closest('[data-official]');if(p)play(Number(p.dataset.play));if(f){const s=stations[Number(f.dataset.fav)],k=s.name+'|'+s.city;favs=favs.includes(k)?favs.filter(x=>x!==k):favs.concat(k);localStorage.setItem('pocoyitoRadioFavorites',JSON.stringify(favs));render()}if(o){const s=stations[Number(o.dataset.official)];window.open(s.official,'_blank','noopener')}});
+search.addEventListener('input',render);state.addEventListener('change',()=>{fillCities();render()});city.addEventListener('change',render);
+document.getElementById('togglePlay').onclick=async()=>{if(!current){const first=stations.findIndex(s=>s.url);if(first>=0)play(first);return}if(audio.paused){try{await audio.play();document.getElementById('togglePlay').textContent='Ⅱ Pausar'}catch(e){document.getElementById('togglePlay').textContent='▶ Reintentar'}}else{audio.pause();document.getElementById('togglePlay').textContent='▶ Reproducir'}};
+document.getElementById('stopPlay').onclick=()=>{audio.pause();audio.removeAttribute('src');audio.load();document.getElementById('togglePlay').textContent='▶ Reproducir';if(current!==null){document.getElementById('nowMeta').textContent=stations[current].city+', '+stations[current].state+' · Detenido'}};
+document.getElementById('volume').oninput=e=>audio.volume=Number(e.target.value);
+audio.addEventListener('error',()=>{document.getElementById('togglePlay').textContent='▶ Reintentar';document.getElementById('nowMeta').textContent='La señal no respondió. Puede estar temporalmente fuera de servicio.'});
+audio.addEventListener('playing',()=>{document.getElementById('togglePlay').textContent='Ⅱ Pausar';render()});
+audio.addEventListener('pause',()=>{if(current!==null)render()});
+fillFilters();render();
+</script>
+</body></html>

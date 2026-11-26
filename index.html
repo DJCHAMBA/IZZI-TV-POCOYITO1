@@ -927,6 +927,7 @@ body.android-tv :focus{scroll-margin:90px}
     <button type="button" data-home-tab="inicio" class="active" title="Inicio"><span class="nav-icon">⌂</span><small>Inicio</small></button>
     <button type="button" data-open-channel-search title="Buscar canal"><span class="nav-icon">⌕</span><small>Buscar</small></button>
     <button type="button" data-open-tv title="Televisión"><span class="nav-icon">▣</span><small>En vivo</small></button>
+    <button type="button" data-radio-open title="Radio México"><span class="nav-icon">♫</span><small>Radio</small></button>
     <button type="button" data-home-action="explore" title="Explorar"><span class="nav-icon">▦</span><small>Explorar</small></button>
     <button type="button" data-home-action="categories" title="Países"><span class="nav-icon">🌎</span><small>Países</small></button>
     <button type="button" data-open-vod="movies" title="Películas"><span class="nav-icon">▤</span><small>Películas</small></button>
@@ -2117,6 +2118,8 @@ if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){window.a
  }
  window.PocoyitoWorld={refresh,open};
 })();
+
+document.querySelectorAll('[data-radio-open]').forEach(el=>el.addEventListener('click',()=>{window.location.href='./radio.html';}));
 </script>
 
 <style id="pocoyito-usage-refresh">

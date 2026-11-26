@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['desktop/**', 'index.html', '.github/workflows/desktop-windows.yml']
+    paths: ['desktop/**', 'index.html', 'radio.html', '.github/workflows/desktop-windows.yml']
 permissions:
   contents: read
 jobs:
@@ -22,6 +22,7 @@ jobs:
           npm --prefix desktop install --no-save sharp png-to-ico
           node desktop/scripts/prepare-icon.js
           Copy-Item index.html desktop/web/index.html -Force
+          Copy-Item radio.html desktop/web/radio.html -Force
           Copy-Item manifest.webmanifest desktop/web/manifest.webmanifest -Force
           Copy-Item service-worker.js desktop/web/service-worker.js -Force
           Copy-Item icons/icon.svg desktop/web/icons/icon.svg -Force

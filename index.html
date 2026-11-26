@@ -1157,7 +1157,7 @@ function parseM3U(text,source){const lines=text.split(/\r?\n/),out=[];const head
 function mergeChannels(channels){
  // TUDN: conservar la variante existente de 580p y las dos señales nuevas solicitadas.
  const isTudn=c=>(String(c.name||'')+' '+String(c.id||'')+' '+String(c.group||'')).toLowerCase().includes('tudn');
- const isAllowedTudn=c=>/580p/i.test(String(c.name||'')+' '+String(c.id||''))||c.id==='TUDN.mx@HD-NEW-1'||c.id==='TUDN.mx@HD-NEW-2';
+ const isAllowedTudn=c=>/580p/i.test(String(c.name||'')+' '+String(c.id||'')+' '+String(c.url||''))||c.id==='TUDN.mx@HD-NEW-1'||c.id==='TUDN.mx@HD-NEW-2';
  channels=channels.filter(c=>!isTudn(c)||isAllowedTudn(c));
  // Conservar únicamente la primera variante de Azteca 7: la de IPTV-org.
  const aztecaSeen=new Set();

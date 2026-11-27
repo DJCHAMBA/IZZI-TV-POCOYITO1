@@ -12,6 +12,7 @@ on:
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'icons/**'
+      - 'chivaspro/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -39,6 +40,7 @@ jobs:
           mkdir -p _site/icons
           cp index.html azteca7-test.html canal5-test.html reproductor-externo.html laboratorio-iptv.html manifest.webmanifest service-worker.js _site/
           cp icons/icon.svg _site/icons/
+          cp -r chivaspro _site/chivaspro
       - name: Subir sitio
         uses: actions/upload-pages-artifact@v3
         with:

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101018">
+<title>ChivasPro | TUDN</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+:root{color-scheme:dark;--red:#e31b35;--bg:#0b0b11;--panel:#171720;--muted:#a7a7b5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#26202b 0,#0b0b11 55%);color:#fff;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;display:grid;place-items:center;padding:24px}
+.wrap{width:min(100%,1000px)}header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:12px}.crest{width:48px;height:48px;border-radius:14px;background:linear-gradient(145deg,#f22b45,#9e071b);display:grid;place-items:center;font-weight:1000;font-size:19px;box-shadow:0 8px 30px #e31b3540}.brand h1{font-size:clamp(22px,4vw,32px);margin:0;letter-spacing:.4px}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}.live{border:1px solid #e31b3566;color:#ff6478;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:800;letter-spacing:1px}
+.player{background:#000;border:1px solid #ffffff18;border-radius:18px;overflow:hidden;box-shadow:0 25px 80px #0009;position:relative;aspect-ratio:16/9}video{width:100%;height:100%;display:block;background:#000;object-fit:contain}.overlay{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}.playhint{background:#e31b35e8;border-radius:50%;width:64px;height:64px;display:grid;place-items:center;font-size:26px;box-shadow:0 6px 30px #e31b3566}.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--panel);padding:16px;border:1px solid #ffffff12;border-top:0;border-radius:0 0 18px 18px}.status{font-size:13px;color:var(--muted)}.status b{color:#fff}.actions{display:flex;gap:9px;flex-wrap:wrap}button{border:0;border-radius:10px;padding:10px 14px;background:#292936;color:#fff;font-weight:700;cursor:pointer}button.primary{background:var(--red)}button:hover{filter:brightness(1.13)}.note{color:#9292a1;font-size:12px;line-height:1.5;margin:14px 3px}.error{color:#ff8795}
+@media(max-width:560px){body{padding:14px}.player{aspect-ratio:16/9;border-radius:12px}.bar{border-radius:0 0 12px 12px}.live{font-size:10px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="brand"><div class="crest">CP</div><div><h1>ChivasPro</h1><p>Zona de prueba · TUDN</p></div></div><span class="live">● EN VIVO</span></header>
+<section class="player"><video id="video" controls playsinline autoplay></video><div class="overlay" id="overlay"><div class="playhint">▶</div></div></section>
+<section class="bar"><div class="status" id="status">Estado: <b>Conectando con la señal…</b></div><div class="actions"><button class="primary" id="play">▶ Reproducir</button><button id="reload">↻ Recargar señal</button><button id="full">⛶ Pantalla completa</button></div></section>
+<p class="note">Página experimental. La reproducción depende de que la fuente esté activa y permita acceso desde el navegador. Los enlaces con token pueden caducar; utiliza únicamente señales que tengas autorización para reproducir.</p>
+</main>
+<script>
+const SOURCE = "https://b2zmawnpyww.fubo18.com/tudn/mono.m3u8?token=cdfb0a7b98b32f868f487d9e70a5c779276977a6-75-1795759419-1795741419";
+const video=document.getElementById('video'),status=document.getElementById('status'),overlay=document.getElementById('overlay');
+let hls;
+function say(message,error=false){status.innerHTML='Estado: <b class="'+(error?'error':'')+'">'+message+'</b>'}
+function start(){
+ if(hls){hls.destroy();hls=null}
+ say('Conectando con la señal…');
+ overlay.style.display='grid';
+ if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=SOURCE;video.play().catch(()=>say('Señal lista. Presiona Reproducir.'));return}
+ if(window.Hls&&Hls.isSupported()){
+  hls=new Hls({enableWorker:true,lowLatencyMode:true});
+  hls.loadSource(SOURCE);hls.attachMedia(video);
+  hls.on(Hls.Events.MANIFEST_PARSED,()=>{say('Señal encontrada');video.play().catch(()=>say('Señal lista. Presiona Reproducir.'))});
+  hls.on(Hls.Events.ERROR,(_,data)=>{if(data.fatal)say('No se pudo cargar. Puede haber expirado el token o la fuente bloquea el acceso.',true)});
+ }else say('Este navegador no admite reproducción HLS.',true);
+}
+video.addEventListener('playing',()=>{say('Reproduciendo TUDN');overlay.style.display='none'});
+video.addEventListener('waiting',()=>say('Cargando…'));
+video.addEventListener('error',()=>say('Error de reproducción. Revisa la señal o su token.',true));
+document.getElementById('play').onclick=()=>video.play().catch(()=>say('El navegador bloqueó la reproducción. Intenta de nuevo.',true));
+document.getElementById('reload').onclick=start;
+document.getElementById('full').onclick=()=>{const p=document.querySelector('.player');if(p.requestFullscreen)p.requestFullscreen();else if(video.webkitEnterFullscreen)video.webkitEnterFullscreen()};
+start();
+</script>
+</body>
+</html>
